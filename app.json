@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "ReelQuest Fishing",
+    "slug": "reelquest-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./public/fishing.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./public/fishing.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a1a2e"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.reelquest.fishing"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./public/fishing.png",
+        "backgroundColor": "#1a1a2e"
+      },
+      "package": "com.reelquest.fishing"
+    },
+    "web": {
+      "favicon": "./public/fishing.png"
+    },
+    "plugins": [
+      "expo-asset"
+    ]
+  }
+}
