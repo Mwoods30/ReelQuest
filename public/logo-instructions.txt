@@ -1,0 +1,1 @@
+# Save the transparent ReelQuest logo as 'reelquest-logo.png' in this directory

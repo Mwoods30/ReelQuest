@@ -8,25 +8,33 @@ function App() {
   const HomeScreen = () => (
     <div className="container">
       <div className="scroll-content">
-        <h1 className="title">ReelQuest Fishing</h1>
+        <div className="logo-section">
+          <div className="logo-container">
+            <img src="/Reelquest.png" alt="ReelQuest - Fishing Rod and Fish Logo" />
+          </div>
+        </div>
+        <div className="title-section">
+        
+        <h1 className="title">ReelQuest </h1>
+        </div>
         <p className="welcome-text">
-          Welcome to ReelQuest, the most immersive fishing experience on the web!
-          <br />Cast your line, catch rare fish, and climb the leaderboard.
+          Welcome to <span className="brand-accent">ReelQuest</span>, the most immersive fishing experience on the web!
+          <br />Cast your line, catch <span className="brand-accent-green">rare fish</span>, and climb the leaderboard.
           <br />Built with React and modern web technologies.
         </p>
         
         <div className="features-container">
           <div className="feature-item">
-            <p className="feature-text">🎮 Play a realistic fishing game in your browser</p>
+            <p className="feature-text">🎮 Play a realistic <span className="brand-accent">fishing game</span> in your browser</p>
           </div>
           <div className="feature-item">
-            <p className="feature-text">🏆 Compete for high scores on the leaderboard</p>
+            <p className="feature-text">🏆 Compete for <span className="brand-accent-green">high scores</span> on the leaderboard</p>
           </div>
           <div className="feature-item">
-            <p className="feature-text">🐟 Discover and catch rare fish</p>
+            <p className="feature-text">🐟 Discover and catch <span className="brand-accent-green">rare fish</span> species</p>
           </div>
           <div className="feature-item">
-            <p className="feature-text">🧑‍💻 Built by passionate developers</p>
+            <p className="feature-text">🧑‍💻 Built by <span className="brand-accent">passionate developers</span></p>
           </div>
         </div>
 
@@ -45,11 +53,11 @@ function App() {
     <div className="container">
       <div className="game-container">
         <p className="game-text">
-          🎮 Fishing Game Coming Soon...
+          🎮 <span className="brand-accent">Fishing Game</span> Coming Soon...
           <br /><br />
-          Your fishing adventure awaits!
+          Your <span className="brand-accent-green">fishing adventure</span> awaits!
           <br /><br />
-          (WebGL game will load here)
+          (Interactive game will load here)
         </p>
       </div>
       {renderBottomTabs()}
@@ -74,13 +82,13 @@ function App() {
         <h1 className="title">About</h1>
         <div className="about-container">
           <p className="about-text">
-            ReelQuest is a modern web-based fishing game. Cast your line, catch rare fish, and compete for the top score!
+            <span className="brand-accent">ReelQuest</span> is a modern web-based fishing game. Cast your line, catch <span className="brand-accent-green">rare fish</span>, and compete for the top score!
           </p>
           <p className="about-text">
-            Developed by: Matthew Woods, Ryan McKearnin, Tyler Klimczak, Willow Iloka
+            <strong>Developed by:</strong> <span className="brand-accent">Matthew Woods</span>, <span className="brand-accent-green">Ryan McKearnin</span>, <span className="brand-accent">Tyler Klimczak</span>, <span className="brand-accent-green">Willow Iloka</span>
           </p>
           <p className="about-text">
-            Built with React and modern web technologies.
+            Built with <span className="brand-accent">React</span> and modern web technologies.
           </p>
         </div>
       </div>
@@ -94,7 +102,7 @@ function App() {
         className={`tab ${currentScreen === 'home' ? 'active-tab' : ''}`}
         onClick={() => setCurrentScreen('home')}
       >
-        <span className={`tab-icon ${currentScreen === 'home' ? 'active-tab-icon' : ''}`}>🏠</span>
+        <span className={`tab-icon ${currentScreen === 'home' ? 'active-tab-icon' : ''}`}>🏚️</span>
         <span className={`tab-label ${currentScreen === 'home' ? 'active-tab-label' : ''}`}>Home</span>
       </button>
       
@@ -102,7 +110,7 @@ function App() {
         className={`tab ${currentScreen === 'game' ? 'active-tab' : ''}`}
         onClick={() => setCurrentScreen('game')}
       >
-        <span className={`tab-icon ${currentScreen === 'game' ? 'active-tab-icon' : ''}`}>🎮</span>
+        <span className={`tab-icon ${currentScreen === 'game' ? 'active-tab-icon' : ''}`}>🕹️</span>
         <span className={`tab-label ${currentScreen === 'game' ? 'active-tab-label' : ''}`}>Play</span>
       </button>
       
@@ -110,7 +118,7 @@ function App() {
         className={`tab ${currentScreen === 'leaderboard' ? 'active-tab' : ''}`}
         onClick={() => setCurrentScreen('leaderboard')}
       >
-        <span className={`tab-icon ${currentScreen === 'leaderboard' ? 'active-tab-icon' : ''}`}>🏆</span>
+        <span className={`tab-icon ${currentScreen === 'leaderboard' ? 'active-tab-icon' : ''}`}>💯</span>
         <span className={`tab-label ${currentScreen === 'leaderboard' ? 'active-tab-label' : ''}`}>Scores</span>
       </button>
       
@@ -118,7 +126,7 @@ function App() {
         className={`tab ${currentScreen === 'about' ? 'active-tab' : ''}`}
         onClick={() => setCurrentScreen('about')}
       >
-        <span className={`tab-icon ${currentScreen === 'about' ? 'active-tab-icon' : ''}`}>ℹ️</span>
+        <span className={`tab-icon ${currentScreen === 'about' ? 'active-tab-icon' : ''}`}>𝍕</span>
         <span className={`tab-label ${currentScreen === 'about' ? 'active-tab-label' : ''}`}>About</span>
       </button>
     </div>
