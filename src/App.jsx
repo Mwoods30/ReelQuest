@@ -1,6 +1,6 @@
-
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './App.css';
+import FishingGame from './components/FishingGame.jsx';
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState('home');
@@ -49,20 +49,29 @@ function App() {
     </div>
   );
 
-  const GameScreen = () => (
-    <div className="container">
-      <div className="game-container">
-        <p className="game-text">
-          🎮 <span className="brand-accent">Fishing Game</span> Coming Soon...
-          <br /><br />
-          Your <span className="brand-accent-green">fishing adventure</span> awaits!
-          <br /><br />
-          (Interactive game will load here)
-        </p>
+  const GameScreen = () => {
+    const handleGameComplete = (gameResult) => {
+      console.log('Game completed:', gameResult);
+      // Here you could update user stats, show achievements, etc.
+    };
+
+    return (
+      <div className="container play-container">
+        <div className="play-content">
+          <div className="play-header">
+            <h1 className="title">Play ReelQuest</h1>
+            <p className="play-subtitle">
+              Cast your line and race the clock. Catch as many fish as you can in 60 seconds!
+            </p>
+          </div>
+          <div className="game-container">
+            <FishingGame onGameComplete={handleGameComplete} />
+          </div>
+        </div>
+        {renderBottomTabs()}
       </div>
-      {renderBottomTabs()}
-    </div>
-  );
+    );
+  };
 
   const LeaderboardScreen = () => (
     <div className="container">
