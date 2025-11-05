@@ -46,7 +46,7 @@
 }
 
 .container {
-  min-height: 100vh;
+  min-height: 200vh;
   background: var(--bg-gradient);
   position: relative;
   display: flex;
@@ -272,6 +272,8 @@
 .play-container {
   padding-bottom: 0;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .play-content {
@@ -279,9 +281,10 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  align-items: center;
   gap: clamp(1rem, 2.5vw, 1.75rem);
   padding: clamp(0.75rem, 4vw, 1.5rem);
+  padding-top: 120px;
 }
 
 .play-header {
@@ -303,22 +306,22 @@
 .game-container {
   flex: 1;
   width: 100%;
-  max-width: 100%;
-  margin: 0;
+  max-width: 1600px;
+  margin: 0 auto;
   border-radius: var(--border-radius-xl);
   background: var(--card-gradient);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 8px solid rgba(255, 255, 255, 0.1);
   display: flex;
   justify-content: center;
-  align-items: stretch;
-  margin-bottom: 0;
-  padding: clamp(0.75rem, 2vw, 1.2rem);
-  height: clamp(640px, calc(100vh - 160px), 1100px);
-  min-height: clamp(560px, calc(100vh - 220px), 940px);
+  align-items: center;
+  margin-bottom: 1;
+  padding: 0;
+  height: auto;
+  min-height: 920px;
   backdrop-filter: blur(20px);
   box-shadow: var(--shadow-xl);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .game-container::before {
@@ -415,6 +418,16 @@
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
 }
 
+.tab-bar-top {
+  position: fixed;
+  top: 0;
+  bottom: auto;
+  border-top: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem 1rem 0.75rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
 .tab {
   flex: 1;
   display: flex;
@@ -508,6 +521,7 @@
   
   .play-content {
     padding: 1.5rem;
+    padding-top: 110px;
   }
 
   .play-subtitle {
@@ -516,8 +530,8 @@
 
   .game-container {
     padding: 0.75rem;
-    height: min(720px, calc(100vh - 140px));
-    min-height: min(560px, calc(100vh - 160px));
+    height: min(800px, calc(100vh - 100px));
+    min-height: min(650px, calc(100vh - 120px));
   }
   
   .features-container {
@@ -546,6 +560,7 @@
   
   .play-content {
     padding: 1.25rem 1rem;
+    padding-top: 100px;
   }
 
   .play-subtitle {
@@ -554,8 +569,8 @@
 
   .game-container {
     padding: 0.5rem;
-    height: calc(100vh - 140px);
-    min-height: calc(100vh - 160px);
+    height: calc(100vh - 80px);
+    min-height: calc(100vh - 100px);
   }
   
   .features-container {

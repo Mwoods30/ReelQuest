@@ -4,6 +4,148 @@ import './FishingGame.css';
 
 const GAME_DURATION = 60;
 const STORAGE_KEY = 'reelquest:fishing:best-score';
+const PLAYER_DATA_KEY = 'reelquest:player:data';
+const GLOBAL_SCORES_KEY = 'reelquest:global:leaderboard';
+const PLAYER_STATS_KEY = 'reelquest:player:stats';
+
+// Progression System Constants
+const LEVEL_XP_REQUIREMENTS = [
+  0, 100, 250, 450, 700, 1000, 1350, 1750, 2200, 2700, 3250, 3850, 4500, 5200, 5950
+];
+
+const XP_PER_CATCH = {
+  'Common': 15,
+  'Uncommon': 25,
+  'Rare': 40,
+  'Legendary': 75
+};
+
+// Shop System Constants
+const SHOP_ITEMS = {
+  environments: [
+    {
+      id: 'mountain_lake',
+      name: 'Mountain Lake',
+      description: 'Crystal clear waters with alpine fish species',
+      emoji: '🏔️',
+      price: 200,
+      levelRequired: 3,
+      owned: false
+    },
+    {
+      id: 'ocean_reef',
+      name: 'Ocean Reef',
+      description: 'Tropical waters teeming with exotic fish',
+      emoji: '🌊',
+      price: 500,
+      levelRequired: 5,
+      owned: false
+    },
+    {
+      id: 'deep_sea',
+      name: 'Deep Sea',
+      description: 'Mysterious depths with legendary creatures',
+      emoji: '🌀',
+      price: 1000,
+      levelRequired: 8,
+      owned: false
+    }
+  ],
+  upgrades: [
+    {
+      id: 'better_rod',
+      name: 'Carbon Fiber Rod',
+      description: 'Increases reel power by 25%',
+      emoji: '🎣',
+      price: 150,
+      levelRequired: 2,
+      owned: false,
+      effect: { type: 'reel_power', value: 1.25 }
+    },
+    {
+      id: 'lucky_lure',
+      name: 'Lucky Lure',
+      description: 'Increases rare fish spawn rate by 20%',
+      emoji: '✨',
+      price: 300,
+      levelRequired: 4,
+      owned: false,
+      effect: { type: 'rare_chance', value: 1.2 }
+    },
+    {
+      id: 'master_hooks',
+      name: 'Master Hooks',
+      description: 'Reduces fish escape chance by 30%',
+      emoji: '🪝',
+      price: 400,
+      levelRequired: 6,
+      owned: false,
+      effect: { type: 'escape_reduction', value: 0.7 }
+    },
+    {
+      id: 'xp_booster',
+      name: 'Experience Booster',
+      description: 'Gain 50% more XP from catches',
+      emoji: '⚡',
+      price: 600,
+      levelRequired: 7,
+      owned: false,
+      effect: { type: 'xp_multiplier', value: 1.5 }
+    }
+  ]
+};
+
+// Achievement System
+const ACHIEVEMENTS = [
+  {
+    id: 'first_catch',
+    name: 'First Catch',
+    description: 'Catch your first fish',
+    emoji: '🎣',
+    requirement: { type: 'catches', value: 1 },
+    reward: 50
+  },
+  {
+    id: 'collector',
+    name: 'Collector',
+    description: 'Catch 10 fish',
+    emoji: '🐠',
+    requirement: { type: 'catches', value: 10 },
+    reward: 100
+  },
+  {
+    id: 'rare_hunter',
+    name: 'Rare Hunter',
+    description: 'Catch a rare or legendary fish',
+    emoji: '🏆',
+    requirement: { type: 'rarity', value: 'Rare' },
+    reward: 150
+  },
+  {
+    id: 'level_up',
+    name: 'Level Up',
+    description: 'Reach level 2',
+    emoji: '⭐',
+    requirement: { type: 'level', value: 2 },
+    reward: 75
+  },
+  {
+    id: 'millionaire',
+    name: 'Rich Fisher',
+    description: 'Accumulate 500 coins',
+    emoji: '💰',
+    requirement: { type: 'currency', value: 500 },
+    reward: 200
+  },
+  {
+    id: 'shopper',
+    name: 'First Purchase',
+    description: 'Buy your first shop item',
+    emoji: '🛒',
+    requirement: { type: 'shop_purchase', value: 1 },
+    reward: 100
+  }
+];
 
 const PHASES = Object.freeze({
   IDLE: 'idle',
@@ -21,7 +163,10 @@ const FISH_TYPES = [
     rarity: 'Common',
     points: 10,
     difficulty: 1.0,
-    escapeRate: 1.0
+    escapeRate: 1.0,
+    minSize: 4,
+    maxSize: 8,
+    value: 5
   },
   {
     name: 'Yellow Perch',
@@ -29,7 +174,10 @@ const FISH_TYPES = [
     rarity: 'Common',
     points: 14,
     difficulty: 1.2,
-    escapeRate: 1.2
+    escapeRate: 1.2,
+    minSize: 6,
+    maxSize: 10,
+    value: 8
   },
   {
     name: 'Rainbow Trout',
@@ -37,7 +185,10 @@ const FISH_TYPES = [
     rarity: 'Uncommon',
     points: 20,
     difficulty: 1.6,
-    escapeRate: 1.4
+    escapeRate: 1.4,
+    minSize: 8,
+    maxSize: 14,
+    value: 12
   },
   {
     name: 'Striped Bass',
@@ -45,15 +196,21 @@ const FISH_TYPES = [
     rarity: 'Rare',
     points: 28,
     difficulty: 1.9,
-    escapeRate: 1.6
+    escapeRate: 1.6,
+    minSize: 12,
+    maxSize: 20,
+    value: 25
   },
   {
     name: 'Golden Marlin',
     emoji: '🐋',
     rarity: 'Legendary',
-    points: 40,
-    difficulty: 2.4,
-    escapeRate: 1.9
+    points: 50,
+    difficulty: 2.5,
+    escapeRate: 2.0,
+    minSize: 16,
+    maxSize: 28,
+    value: 60
   }
 ];
 
@@ -77,12 +234,14 @@ const pickRandomFish = () => {
   for (const fish of FISH_TYPES) {
     target -= rarityWeight(fish.rarity);
     if (target <= 0) {
-      return { ...fish, id: cryptoRandomId() };
+      const sizeInches = fish.minSize + Math.random() * (fish.maxSize - fish.minSize);
+      return { ...fish, id: cryptoRandomId(), sizeInches };
     }
   }
 
   const fallback = FISH_TYPES[FISH_TYPES.length - 1];
-  return { ...fallback, id: cryptoRandomId() };
+  const sizeInches = fallback.minSize + Math.random() * (fallback.maxSize - fallback.minSize);
+  return { ...fallback, id: cryptoRandomId(), sizeInches };
 };
 
 const cryptoRandomId = () => {
@@ -104,6 +263,156 @@ const readStoredBestScore = () => {
 const writeStoredBestScore = (value) => {
   if (!safeLocalStorage) return;
   safeLocalStorage.setItem(STORAGE_KEY, String(value));
+};
+
+// Player Data Storage Functions
+const readPlayerData = () => {
+  if (!safeLocalStorage) return getDefaultPlayerData();
+  const stored = safeLocalStorage.getItem(PLAYER_DATA_KEY);
+  return stored ? { ...getDefaultPlayerData(), ...JSON.parse(stored) } : getDefaultPlayerData();
+};
+
+const writePlayerData = (playerData) => {
+  if (!safeLocalStorage) return;
+  safeLocalStorage.setItem(PLAYER_DATA_KEY, JSON.stringify(playerData));
+};
+
+const getDefaultPlayerData = () => ({
+  level: 1,
+  xp: 0,
+  currency: 0,
+  inventory: [],
+  achievements: [],
+  totalCatches: 0,
+  totalFishSold: 0,
+  ownedEnvironments: ['crystal_lake'],
+  ownedUpgrades: [],
+  currentEnvironment: 'crystal_lake',
+  totalPurchases: 0,
+  playerName: `Fisher${Math.floor(Math.random() * 10000)}`,
+  gamesPlayed: 0,
+  totalPlayTime: 0
+});
+
+// Global Leaderboard Functions
+const readGlobalScores = () => {
+  if (!safeLocalStorage) return [];
+  const stored = safeLocalStorage.getItem(GLOBAL_SCORES_KEY);
+  return stored ? JSON.parse(stored) : [];
+};
+
+const writeGlobalScores = (scores) => {
+  if (!safeLocalStorage) return;
+  safeLocalStorage.setItem(GLOBAL_SCORES_KEY, JSON.stringify(scores));
+};
+
+const addToGlobalLeaderboard = (playerData, gameResult) => {
+  const globalScores = readGlobalScores();
+  
+  const newEntry = {
+    id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    playerName: playerData.playerName || `Fisher${Math.floor(Math.random() * 10000)}`,
+    score: gameResult.score,
+    catches: gameResult.catches,
+    longestStreak: gameResult.longestStreak,
+    level: playerData.level,
+    timestamp: new Date().toISOString(),
+    date: new Date().toLocaleDateString()
+  };
+  
+  globalScores.push(newEntry);
+  
+  // Keep only top 100 scores to prevent storage bloat
+  globalScores.sort((a, b) => b.score - a.score);
+  const topScores = globalScores.slice(0, 100);
+  
+  writeGlobalScores(topScores);
+  return newEntry;
+};
+
+// Player Statistics Functions
+const readPlayerStats = () => {
+  if (!safeLocalStorage) return getDefaultPlayerStats();
+  const stored = safeLocalStorage.getItem(PLAYER_STATS_KEY);
+  return stored ? { ...getDefaultPlayerStats(), ...JSON.parse(stored) } : getDefaultPlayerStats();
+};
+
+const writePlayerStats = (stats) => {
+  if (!safeLocalStorage) return;
+  safeLocalStorage.setItem(PLAYER_STATS_KEY, JSON.stringify(stats));
+};
+
+const getDefaultPlayerStats = () => ({
+  gamesPlayed: 0,
+  totalScore: 0,
+  totalCatches: 0,
+  totalPlayTime: 0,
+  bestScore: 0,
+  bestStreak: 0,
+  avgScore: 0,
+  favoriteFish: null,
+  fishCaught: {},
+  lastPlayed: null
+});
+
+const updatePlayerStats = (gameResult, playTime) => {
+  const stats = readPlayerStats();
+  
+  stats.gamesPlayed += 1;
+  stats.totalScore += gameResult.score;
+  stats.totalCatches += gameResult.catches;
+  stats.totalPlayTime += playTime;
+  stats.bestScore = Math.max(stats.bestScore, gameResult.score);
+  stats.bestStreak = Math.max(stats.bestStreak, gameResult.longestStreak);
+  stats.avgScore = Math.round(stats.totalScore / stats.gamesPlayed);
+  stats.lastPlayed = new Date().toISOString();
+  
+  writePlayerStats(stats);
+  return stats;
+};
+
+// Progression System Functions
+const calculateLevelFromXP = (xp) => {
+  for (let i = LEVEL_XP_REQUIREMENTS.length - 1; i >= 0; i--) {
+    if (xp >= LEVEL_XP_REQUIREMENTS[i]) {
+      return i + 1;
+    }
+  }
+  return 1;
+};
+
+const checkAchievements = (playerData, newStats) => {
+  const unlockedAchievements = [];
+  
+  ACHIEVEMENTS.forEach(achievement => {
+    if (playerData.achievements.includes(achievement.id)) return;
+    
+    let requirementMet = false;
+    switch (achievement.requirement.type) {
+      case 'catches':
+        requirementMet = newStats.totalCatches >= achievement.requirement.value;
+        break;
+      case 'level':
+        requirementMet = newStats.level >= achievement.requirement.value;
+        break;
+      case 'currency':
+        requirementMet = newStats.currency >= achievement.requirement.value;
+        break;
+      case 'rarity':
+        requirementMet = newStats.lastCaughtRarity === achievement.requirement.value || 
+                        newStats.lastCaughtRarity === 'Legendary';
+        break;
+      case 'shop_purchase':
+        requirementMet = newStats.totalPurchases >= achievement.requirement.value;
+        break;
+    }
+    
+    if (requirementMet) {
+      unlockedAchievements.push(achievement);
+    }
+  });
+  
+  return unlockedAchievements;
 };
 
 const formatTime = (seconds) => {
@@ -146,6 +455,16 @@ function FishingGame({ onGameComplete }) {
   const [lastCatch, setLastCatch] = useState(null);
   const [statusMessage, setStatusMessage] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
+  
+  // Progression and Collection State
+  const [playerData, setPlayerData] = useState(readPlayerData);
+  const [inventory, setInventory] = useState([]);
+  const [showShop, setShowShop] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [gameStartTime, setGameStartTime] = useState(null);
+  const [playerStats, setPlayerStats] = useState(readPlayerStats());
+  const [gameMode, setGameMode] = useState('home'); // 'home' | 'playing'
 
   const streakRef = useRef(0);
   const timerRef = useRef(null);
@@ -193,6 +512,20 @@ function FishingGame({ onGameComplete }) {
     clearCelebration();
   }, [clearTimer, clearBiteTimeout, clearReelDecay, clearCelebration]);
 
+  const getUpgradeMultiplier = useCallback((upgradeType) => {
+    if (!playerData?.ownedUpgrades) return 1;
+    
+    const relevantUpgrades = SHOP_ITEMS.upgrades.filter(upgrade => 
+      playerData.ownedUpgrades.includes(upgrade.id) && upgrade.effect.type === upgradeType
+    );
+    
+    return relevantUpgrades.reduce((multiplier, upgrade) => {
+      return upgradeType === 'escape_reduction' 
+        ? multiplier * upgrade.effect.value 
+        : multiplier * upgrade.effect.value;
+    }, 1);
+  }, [playerData?.ownedUpgrades]);
+
   const endGame = useCallback(() => {
     if (phase === PHASES.ENDED) return;
 
@@ -211,6 +544,43 @@ function FishingGame({ onGameComplete }) {
       writeStoredBestScore(nextBest);
     }
 
+    // Calculate game session time
+    const sessionTime = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 60;
+    
+    const gameResult = {
+      score,
+      catches: totalCatches,
+      bestScore: nextBest,
+      longestStreak
+    };
+
+    // Update player statistics
+    const updatedStats = updatePlayerStats(gameResult, sessionTime);
+    setPlayerStats(updatedStats);
+
+    // Add to global leaderboard if score is good enough
+    if (score > 0) {
+      const leaderboardEntry = addToGlobalLeaderboard(playerData, gameResult);
+      
+      // Update player data with games played
+      const updatedPlayerData = {
+        ...playerData,
+        gamesPlayed: (playerData.gamesPlayed || 0) + 1,
+        totalPlayTime: (playerData.totalPlayTime || 0) + sessionTime
+      };
+      setPlayerData(updatedPlayerData);
+      writePlayerData(updatedPlayerData);
+
+      // Show leaderboard position message
+      const globalScores = readGlobalScores();
+      const position = globalScores.findIndex(entry => entry.id === leaderboardEntry.id) + 1;
+      if (position <= 10) {
+        setStatusMessage(`New high score! You're #${position} on the global leaderboard!`);
+      } else if (position <= 50) {
+        setStatusMessage(`Great job! You're #${position} on the global leaderboard!`);
+      }
+    }
+
     onGameComplete?.({
       score,
       catches: totalCatches,
@@ -219,7 +589,7 @@ function FishingGame({ onGameComplete }) {
     });
 
     setPhase(PHASES.ENDED);
-  }, [phase, cleanupAll, bestScore, score, totalCatches, longestStreak, onGameComplete]);
+  }, [phase, cleanupAll, bestScore, score, totalCatches, longestStreak, onGameComplete, gameStartTime, playerData]);
 
   const handleEscape = useCallback(
     (fish) => {
@@ -247,11 +617,69 @@ function FishingGame({ onGameComplete }) {
       const streakBonus = nextStreak > 1 ? nextStreak * 5 : 0;
       const pointsEarned = fish.points + streakBonus;
 
+      // XP and Level Progression
+      const baseXP = XP_PER_CATCH[fish.rarity] || 10;
+      const xpMultiplier = getUpgradeMultiplier('xp_multiplier');
+      const xpGained = Math.floor(baseXP * xpMultiplier);
+      const newXP = playerData.xp + xpGained;
+      const newLevel = calculateLevelFromXP(newXP);
+      const leveledUp = newLevel > playerData.level;
+
+      // Add fish to inventory
+      const caughtFish = {
+        ...fish,
+        id: `catch-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        caughtAt: new Date().toISOString(),
+        size: fish.sizeInches,
+        value: fish.value
+      };
+
+      setInventory(prev => [...prev, caughtFish]);
+
+      // Update player data
+      const updatedPlayerData = {
+        ...playerData,
+        xp: newXP,
+        level: newLevel,
+        totalCatches: playerData.totalCatches + 1
+      };
+
+      // Check for achievements
+      const newStats = {
+        ...updatedPlayerData,
+        lastCaughtRarity: fish.rarity
+      };
+      const newAchievements = checkAchievements(playerData, newStats);
+      
+      if (newAchievements.length > 0) {
+        updatedPlayerData.achievements = [...playerData.achievements, ...newAchievements.map(a => a.id)];
+        
+        // Add achievement rewards to currency
+        const achievementReward = newAchievements.reduce((sum, achievement) => sum + achievement.reward, 0);
+        updatedPlayerData.currency = (updatedPlayerData.currency || 0) + achievementReward;
+      }
+      setPlayerData(updatedPlayerData);
+      writePlayerData(updatedPlayerData);
+
       setScore((value) => value + pointsEarned);
       setTotalCatches((value) => value + 1);
-      setLastCatch({ ...fish, pointsEarned, streak: nextStreak, streakBonus });
+      setLastCatch({ 
+        ...fish, 
+        pointsEarned, 
+        streak: nextStreak, 
+        streakBonus,
+        xpGained,
+        leveledUp,
+        newLevel,
+        achievements: newAchievements
+      });
       setPhase(PHASES.CELEBRATE);
-      setStatusMessage(`You landed a ${fish.name}!`);
+      
+      let statusMsg = `You landed a ${fish.name}! +${xpGained} XP`;
+      if (leveledUp) statusMsg += ` | Level Up! Now Level ${newLevel}`;
+      if (newAchievements.length > 0) statusMsg += ` | Achievement Unlocked!`;
+      setStatusMessage(statusMsg);
+      
       setCurrentFish(null);
       setReelProgress(100);
 
@@ -259,17 +687,97 @@ function FishingGame({ onGameComplete }) {
       celebrationTimeoutRef.current = setTimeout(() => {
         setPhase(PHASES.READY);
         setReelProgress(0);
-      }, 1200);
+      }, 1800);
     },
-    [clearReelDecay, clearCelebration]
+    [clearReelDecay, clearCelebration, playerData, getUpgradeMultiplier]
   );
+
+  const sellFish = useCallback((fishId) => {
+    const fishToSell = inventory.find(fish => fish.id === fishId);
+    if (!fishToSell) return;
+
+    const saleValue = fishToSell.value;
+    const updatedInventory = inventory.filter(fish => fish.id !== fishId);
+    const updatedPlayerData = {
+      ...playerData,
+      currency: playerData.currency + saleValue,
+      totalFishSold: (playerData.totalFishSold || 0) + 1
+    };
+
+    setInventory(updatedInventory);
+    setPlayerData(updatedPlayerData);
+    writePlayerData(updatedPlayerData);
+    
+    setStatusMessage(`Sold ${fishToSell.name} for ${saleValue} coins!`);
+  }, [inventory, playerData]);
+
+  const sellAllFish = useCallback(() => {
+    if (inventory.length === 0) return;
+
+    const totalValue = inventory.reduce((sum, fish) => sum + fish.value, 0);
+    const updatedPlayerData = {
+      ...playerData,
+      currency: playerData.currency + totalValue,
+      totalFishSold: (playerData.totalFishSold || 0) + inventory.length
+    };
+
+    setInventory([]);
+    setPlayerData(updatedPlayerData);
+    writePlayerData(updatedPlayerData);
+    
+    setStatusMessage(`Sold all fish for ${totalValue} coins!`);
+  }, [inventory, playerData]);
+
+  const purchaseItem = useCallback((itemType, itemId) => {
+    const items = SHOP_ITEMS[itemType];
+    const item = items?.find(i => i.id === itemId);
+    
+    if (!item || playerData.currency < item.price || playerData.level < item.levelRequired) {
+      setStatusMessage('Cannot purchase this item!');
+      return;
+    }
+
+    const updatedPlayerData = {
+      ...playerData,
+      currency: playerData.currency - item.price,
+      totalPurchases: (playerData.totalPurchases || 0) + 1
+    };
+
+    if (itemType === 'environments') {
+      updatedPlayerData.ownedEnvironments = [...(playerData.ownedEnvironments || ['crystal_lake']), itemId];
+    } else if (itemType === 'upgrades') {
+      updatedPlayerData.ownedUpgrades = [...(playerData.ownedUpgrades || []), itemId];
+    }
+
+    // Check for achievements
+    const newStats = {
+      ...updatedPlayerData
+    };
+    const newAchievements = checkAchievements(playerData, newStats);
+    
+    if (newAchievements.length > 0) {
+      updatedPlayerData.achievements = [...playerData.achievements, ...newAchievements.map(a => a.id)];
+      const achievementReward = newAchievements.reduce((sum, achievement) => sum + achievement.reward, 0);
+      updatedPlayerData.currency += achievementReward;
+    }
+
+    setPlayerData(updatedPlayerData);
+    writePlayerData(updatedPlayerData);
+    
+    let purchaseMsg = `Purchased ${item.name}!`;
+    if (newAchievements.length > 0) purchaseMsg += ' Achievement unlocked!';
+    setStatusMessage(purchaseMsg);
+  }, [playerData]);
 
   const handleReel = useCallback(() => {
     if (phase !== PHASES.HOOKED || !currentFish) return;
 
-    const reelPower = Math.max(8, 20 - currentFish.difficulty * 4);
+    const baseReelPower = Math.max(8, 20 - currentFish.difficulty * 4);
+    const reelMultiplier = getUpgradeMultiplier('reel_power');
+    const reelPower = baseReelPower * reelMultiplier;
+    
     setReelProgress((value) => Math.min(100, value + reelPower));
-  }, [phase, currentFish]);
+  }, [phase, currentFish, getUpgradeMultiplier]);
 
   const beginFishFight = useCallback(
     (fish) => {
@@ -280,10 +788,12 @@ function FishingGame({ onGameComplete }) {
 
       clearReelDecay();
       reelDecayRef.current = setInterval(() => {
-        setReelProgress((value) => Math.max(0, value - (fish.escapeRate * 0.9 + 0.6)));
+        const escapeMultiplier = getUpgradeMultiplier('escape_reduction');
+        const escapeRate = (fish.escapeRate * 0.9 + 0.6) * escapeMultiplier;
+        setReelProgress((value) => Math.max(0, value - escapeRate));
       }, 150);
     },
-    [clearReelDecay]
+    [clearReelDecay, getUpgradeMultiplier]
   );
 
   const castLine = useCallback(() => {
@@ -317,7 +827,18 @@ function FishingGame({ onGameComplete }) {
     setCurrentFish(null);
     setReelProgress(0);
     setTimeLeft(GAME_DURATION);
+    setGameStartTime(Date.now());
+    setGameMode('playing');
     setPhase(PHASES.READY);
+  }, [cleanupAll]);
+
+  const returnToHome = useCallback(() => {
+    cleanupAll();
+    setPhase(PHASES.IDLE);
+    setGameMode('home');
+    setShowShop(false);
+    setShowLeaderboard(false);
+    setShowInstructions(false);
   }, [cleanupAll]);
 
   useEffect(() => {
@@ -420,6 +941,383 @@ function FishingGame({ onGameComplete }) {
   const timeDisplay = formatTime(timeLeft);
   const isPlaying = phase !== PHASES.IDLE && phase !== PHASES.ENDED;
 
+  // Home Screen Render
+  if (gameMode === 'home') {
+    return (
+      <div 
+        ref={gameRef}
+        className={`fishing-game home-screen ${isFullscreen ? 'fullscreen-game' : ''}`} 
+        role="group" 
+        aria-label="ReelQuest Fishing Game Home"
+      >
+        <div className="water-background" aria-hidden="true">
+          {bubbles.map((bubble) => (
+            <span
+              key={bubble.id}
+              className="bubble"
+              style={{
+                left: bubble.left,
+                width: bubble.size,
+                height: bubble.size,
+                animationDuration: `${bubble.duration}s`,
+                animationDelay: `${bubble.delay}s`
+              }}
+            />
+          ))}
+          {swimmers.map((fish) => (
+            <span
+              key={fish.id}
+              className="swimming-fish"
+              style={{
+                left: fish.left,
+                top: fish.top,
+                animationDuration: `${fish.duration}s`,
+                animationDelay: `${fish.delay}s`
+              }}
+            >
+              🐟
+            </span>
+          ))}
+        </div>
+
+        <div className="home-ui">
+          <div className="home-header">
+            <div className="game-title">
+              <h1>🎣 ReelQuest</h1>
+              <p>Master the art of fishing</p>
+            </div>
+            
+            <div className="player-info-card">
+              <div className="player-details">
+                <h3>{playerData.playerName}</h3>
+                <div className="player-stats-summary">
+                  <span>Level {playerData.level}</span>
+                  <span>💰 {playerData.currency}</span>
+                  <span>🏆 {playerStats.bestScore}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="home-content">
+            <div className="main-actions">
+              <button className="play-game-button" onClick={startGame}>
+                🎣 Start Fishing
+              </button>
+              <p className="game-description">
+                Cast your line and catch as many fish as you can in 60 seconds!
+              </p>
+            </div>
+
+            <div className="menu-grid">
+              <button 
+                className="menu-button inventory-menu" 
+                onClick={() => setShowShop(true)}
+              >
+                <div className="menu-icon">🎒</div>
+                <div className="menu-text">
+                  <h4>Inventory & Shop</h4>
+                  <p>Sell fish and buy upgrades</p>
+                  <span className="menu-badge">{inventory.length} fish</span>
+                </div>
+              </button>
+
+              <button 
+                className="menu-button leaderboard-menu" 
+                onClick={() => setShowLeaderboard(true)}
+              >
+                <div className="menu-icon">🏆</div>
+                <div className="menu-text">
+                  <h4>Leaderboard</h4>
+                  <p>Global rankings & stats</p>
+                  <span className="menu-badge">#{readGlobalScores().findIndex(s => s.playerName === playerData.playerName) + 1 || 'Unranked'}</span>
+                </div>
+              </button>
+
+              <button 
+                className="menu-button guide-menu" 
+                onClick={() => setShowInstructions(true)}
+              >
+                <div className="menu-icon">ℹ️</div>
+                <div className="menu-text">
+                  <h4>How to Play</h4>
+                  <p>Learn the fishing basics</p>
+                </div>
+              </button>
+
+              <button 
+                className="menu-button settings-menu" 
+                onClick={toggleFullscreen}
+              >
+                <div className="menu-icon">{isFullscreen ? '⤦' : '⛶'}</div>
+                <div className="menu-text">
+                  <h4>Fullscreen</h4>
+                  <p>{isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}</p>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Overlays for home screen */}
+          {showShop && (
+            <div className="shop-overlay">
+              <div className="shop-content">
+                <div className="shop-header">
+                  <h3>🎒 Your Inventory</h3>
+                  <p>Sell your fish to earn coins!</p>
+                  <button className="close-overlay-button" onClick={() => setShowShop(false)}>✕</button>
+                  <div className="shop-stats">
+                    <span>Fish: {inventory.length}</span>
+                    <span>Value: {inventory.reduce((sum, fish) => sum + fish.value, 0)} coins</span>
+                  </div>
+                </div>
+                
+                {inventory.length > 0 ? (
+                  <div className="inventory-section">
+                    <div className="inventory-actions">
+                      <button 
+                        className="sell-all-button" 
+                        onClick={sellAllFish}
+                      >
+                        Sell All ({inventory.reduce((sum, fish) => sum + fish.value, 0)} coins)
+                      </button>
+                    </div>
+                    
+                    <div className="inventory-grid">
+                      {inventory.map((fish) => (
+                        <div key={fish.id} className="inventory-item">
+                          <span className="inventory-fish-emoji">{fish.emoji}</span>
+                          <div className="inventory-fish-details">
+                            <div className="inventory-fish-name">{fish.name}</div>
+                            <div className="inventory-fish-meta">
+                              {fish.size?.toFixed(1)}&quot; • {fish.rarity}
+                            </div>
+                            <div className="inventory-fish-value">{fish.value} coins</div>
+                          </div>
+                          <button 
+                            className="sell-fish-button" 
+                            onClick={() => sellFish(fish.id)}
+                          >
+                            Sell
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="empty-inventory">
+                    <p>No fish in inventory. Go catch some!</p>
+                  </div>
+                )}
+                
+                <div className="shop-section">
+                  <h4>🏪 Shop - Environments</h4>
+                  <div className="shop-grid">
+                    {SHOP_ITEMS.environments.map((env) => (
+                      <div key={env.id} className="shop-item">
+                        <span className="shop-item-emoji">{env.emoji}</span>
+                        <div className="shop-item-details">
+                          <div className="shop-item-name">{env.name}</div>
+                          <div className="shop-item-description">{env.description}</div>
+                          <div className="shop-item-requirements">
+                            Level {env.levelRequired} • {env.price} coins
+                          </div>
+                        </div>
+                        <button 
+                          className="shop-purchase-button" 
+                          onClick={() => purchaseItem('environments', env.id)}
+                          disabled={
+                            (playerData.ownedEnvironments || ['crystal_lake']).includes(env.id) ||
+                            playerData.currency < env.price ||
+                            playerData.level < env.levelRequired
+                          }
+                        >
+                          {(playerData.ownedEnvironments || ['crystal_lake']).includes(env.id) 
+                            ? 'Owned' 
+                            : playerData.level < env.levelRequired 
+                            ? `Level ${env.levelRequired}` 
+                            : 'Buy'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="shop-section">
+                  <h4>⚙️ Shop - Upgrades</h4>
+                  <div className="shop-grid">
+                    {SHOP_ITEMS.upgrades.map((upgrade) => (
+                      <div key={upgrade.id} className="shop-item">
+                        <span className="shop-item-emoji">{upgrade.emoji}</span>
+                        <div className="shop-item-details">
+                          <div className="shop-item-name">{upgrade.name}</div>
+                          <div className="shop-item-description">{upgrade.description}</div>
+                          <div className="shop-item-requirements">
+                            Level {upgrade.levelRequired} • {upgrade.price} coins
+                          </div>
+                        </div>
+                        <button 
+                          className="shop-purchase-button" 
+                          onClick={() => purchaseItem('upgrades', upgrade.id)}
+                          disabled={
+                            (playerData.ownedUpgrades || []).includes(upgrade.id) ||
+                            playerData.currency < upgrade.price ||
+                            playerData.level < upgrade.levelRequired
+                          }
+                        >
+                          {(playerData.ownedUpgrades || []).includes(upgrade.id) 
+                            ? 'Owned' 
+                            : playerData.level < upgrade.levelRequired 
+                            ? `Level ${upgrade.levelRequired}` 
+                            : 'Buy'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="achievements-section">
+                  <h4>🏆 Achievements</h4>
+                  <div className="achievements-grid">
+                    {ACHIEVEMENTS.map((achievement) => (
+                      <div 
+                        key={achievement.id} 
+                        className={`achievement-item ${
+                          playerData.achievements?.includes(achievement.id) ? 'unlocked' : 'locked'
+                        }`}
+                      >
+                        <span className="achievement-emoji">{achievement.emoji}</span>
+                        <div className="achievement-details">
+                          <div className="achievement-name">{achievement.name}</div>
+                          <div className="achievement-description">{achievement.description}</div>
+                          {playerData.achievements?.includes(achievement.id) && (
+                            <div className="achievement-reward">+{achievement.reward} coins</div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showLeaderboard && (
+            <div className="leaderboard-overlay">
+              <div className="leaderboard-content">
+                <div className="leaderboard-header">
+                  <h3>🏆 Global Leaderboard</h3>
+                  <p>Top fishers from around the world</p>
+                  <button className="close-overlay-button" onClick={() => setShowLeaderboard(false)}>✕</button>
+                </div>
+                
+                <div className="stats-section">
+                  <h4>📊 Your Statistics</h4>
+                  <div className="stats-grid">
+                    <div className="stat-card">
+                      <span className="stat-number">{playerStats.gamesPlayed}</span>
+                      <span className="stat-label">Games Played</span>
+                    </div>
+                    <div className="stat-card">
+                      <span className="stat-number">{playerStats.bestScore}</span>
+                      <span className="stat-label">Best Score</span>
+                    </div>
+                    <div className="stat-card">
+                      <span className="stat-number">{playerStats.avgScore}</span>
+                      <span className="stat-label">Avg Score</span>
+                    </div>
+                    <div className="stat-card">
+                      <span className="stat-number">{playerStats.bestStreak}</span>
+                      <span className="stat-label">Best Streak</span>
+                    </div>
+                    <div className="stat-card">
+                      <span className="stat-number">{playerStats.totalCatches}</span>
+                      <span className="stat-label">Total Catches</span>
+                    </div>
+                    <div className="stat-card">
+                      <span className="stat-number">{Math.floor(playerStats.totalPlayTime / 60)}m</span>
+                      <span className="stat-label">Play Time</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="leaderboard-section">
+                  <h4>🥇 Top Scores</h4>
+                  <div className="leaderboard-list">
+                    {readGlobalScores().slice(0, 20).map((entry, index) => (
+                      <div 
+                        key={entry.id} 
+                        className={`leaderboard-entry ${
+                          entry.playerName === playerData.playerName ? 'current-player' : ''
+                        }`}
+                      >
+                        <div className="rank">
+                          {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                        </div>
+                        <div className="player-info">
+                          <div className="player-name">{entry.playerName}</div>
+                          <div className="player-meta">
+                            Level {entry.level} • {entry.date}
+                          </div>
+                        </div>
+                        <div className="score-info">
+                          <div className="score">{entry.score} pts</div>
+                          <div className="catches">{entry.catches} catches</div>
+                        </div>
+                        <div className="streak">
+                          {entry.longestStreak} streak
+                        </div>
+                      </div>
+                    ))}
+                    {readGlobalScores().length === 0 && (
+                      <div className="empty-leaderboard">
+                        <p>No scores yet. Be the first to set a record!</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showInstructions && (
+            <div className="instructions-overlay">
+              <div className="instructions-content">
+                <h3>How to Play</h3>
+                <button className="close-overlay-button" onClick={() => setShowInstructions(false)}>✕</button>
+                <ul>
+                  <li>Hit &quot;Start Fishing&quot; then cast your line to begin the 60 second run.</li>
+                  <li>When a fish bites, click &quot;Reel&quot; repeatedly to fill the meter.</li>
+                  <li>Keep your streak alive to earn bonus points on every catch.</li>
+                  <li>Legendary fish are rare, but worth big points when you land them.</li>
+                </ul>
+                <div className="fish-guide">
+                  <h4>Species Guide</h4>
+                  <div className="fish-list">
+                    {FISH_TYPES.map((fish) => (
+                      <div key={fish.name} className="fish-item">
+                        <span className="fish-emoji" aria-hidden="true">
+                          {fish.emoji}
+                        </span>
+                        <div className="fish-details">
+                          <div>{fish.name}</div>
+                          <div>
+                            {fish.points} pts • {fish.rarity}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Game Screen Render
   return (
     <div 
       ref={gameRef}
@@ -463,6 +1361,24 @@ function FishingGame({ onGameComplete }) {
             <span className="score-label">Score</span>
             <span className="score-value">{score}</span>
           </div>
+          <div className="level-display">
+            <span className="level-label">Level {playerData?.level || 1}</span>
+            <div className="xp-bar">
+              <div 
+                className="xp-fill" 
+                style={{ 
+                  width: `${Math.min(100, ((playerData?.xp || 0) / (LEVEL_XP_REQUIREMENTS[playerData?.level || 1] || (playerData?.xp || 0) + 1)) * 100)}%` 
+                }}
+              />
+            </div>
+            <span className="xp-text">
+              {playerData?.xp || 0}/{LEVEL_XP_REQUIREMENTS[playerData?.level || 1] || 'Max'}
+            </span>
+          </div>
+          <div className="currency-display">
+            <span className="currency-label">💰</span>
+            <span className="currency-value">{playerData.currency || 0}</span>
+          </div>
           <div className="timer-display">
             <span className="timer-label">Time</span>
             <span className="timer-value">{timeDisplay}</span>
@@ -471,15 +1387,19 @@ function FishingGame({ onGameComplete }) {
             <span className="best-score-label">Best</span>
             <span className="best-score-value">{Math.max(bestScore, score)}</span>
           </div>
-          <button 
-            className="fullscreen-button" 
-            onClick={toggleFullscreen}
-            aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-            title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-          >
-            {isFullscreen ? '⤦' : '⛶'}
-          </button>
+          <div className="header-buttons">
+            <button 
+              className="home-button-game" 
+              onClick={returnToHome}
+              aria-label="Return to home"
+              title="Return to home"
+            >
+              🏠
+            </button>
+          </div>
         </header>
+
+
 
         <div className="game-stats">
           <div className="stat-item">
@@ -533,10 +1453,25 @@ function FishingGame({ onGameComplete }) {
           <div className="caught-fish" role="status">
             <span className="caught-emoji">{lastCatch.emoji}</span>
             <span className="caught-name">{lastCatch.name}</span>
-            <span className="caught-points">
-              +{lastCatch.pointsEarned} pts
-              {lastCatch.streakBonus ? ` (streak x${lastCatch.streak})` : ''}
-            </span>
+            <div className="caught-rewards">
+              <span className="caught-points">
+                +{lastCatch.pointsEarned} pts
+                {lastCatch.streakBonus ? ` (streak x${lastCatch.streak})` : ''}
+              </span>
+              <span className="caught-xp">+{lastCatch.xpGained} XP</span>
+              {lastCatch.leveledUp && (
+                <span className="level-up">🌟 Level {lastCatch.newLevel}!</span>
+              )}
+              {lastCatch.achievements?.length > 0 && (
+                <div className="new-achievements">
+                  {lastCatch.achievements.map(achievement => (
+                    <span key={achievement.id} className="achievement-unlock">
+                      🏆 {achievement.name}!
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         ) : null}
 
@@ -555,44 +1490,18 @@ function FishingGame({ onGameComplete }) {
               </p>
               {score >= bestScore ? <p className="new-record">New personal best!</p> : null}
             </div>
+            <div className="game-over-actions">
+              <button className="home-button" onClick={returnToHome}>
+                🏠 Home
+              </button>
+              <button className="shop-button-end" onClick={() => setShowShop(true)}>
+                🛒 Shop
+              </button>
+            </div>
           </div>
         ) : null}
 
-        <div className="instructions">
-          <h3>How to Play</h3>
-          <ul>
-            <li>Hit &quot;Start&quot; then cast your line to begin the 60 second run.</li>
-            <li>When a fish bites, click &quot;Reel&quot; repeatedly to fill the meter.</li>
-            <li>Keep your streak alive to earn bonus points on every catch.</li>
-            <li>Legendary fish are rare, but worth big points when you land them.</li>
-          </ul>
-          <div className="fish-guide">
-            <h4>Species Guide</h4>
-            <div className="fish-list">
-              {FISH_TYPES.map((fish) => (
-                <div key={fish.name} className="fish-item">
-                  <span className="fish-emoji" aria-hidden="true">
-                    {fish.emoji}
-                  </span>
-                  <div className="fish-details">
-                    <div>{fish.name}</div>
-                    <div>
-                      {fish.points} pts • {fish.rarity}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
         <div className="game-controls">
-          {phase === PHASES.IDLE ? (
-            <button className="start-button" type="button" onClick={startGame}>
-              Start 60s Challenge
-            </button>
-          ) : null}
-
           {phase === PHASES.READY ? (
             <button className="cast-button" type="button" onClick={castLine}>
               Cast Line

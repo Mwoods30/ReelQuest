@@ -57,18 +57,16 @@ function App() {
 
     return (
       <div className="container play-container">
+        {renderTopTabs()}
         <div className="play-content">
           <div className="play-header">
             <h1 className="title">Play ReelQuest</h1>
-            <p className="play-subtitle">
-              Cast your line and race the clock. Catch as many fish as you can in 60 seconds!
-            </p>
+            <p className="play-subtitle">Cast your line and race the clock. Catch as many fish as you can in 60 seconds!</p>
           </div>
           <div className="game-container">
             <FishingGame onGameComplete={handleGameComplete} />
           </div>
         </div>
-        {renderBottomTabs()}
       </div>
     );
   };
@@ -107,6 +105,42 @@ function App() {
 
   const renderBottomTabs = () => (
     <div className="tab-bar">
+      <button 
+        className={`tab ${currentScreen === 'home' ? 'active-tab' : ''}`}
+        onClick={() => setCurrentScreen('home')}
+      >
+        <span className={`tab-icon ${currentScreen === 'home' ? 'active-tab-icon' : ''}`}>🏚️</span>
+        <span className={`tab-label ${currentScreen === 'home' ? 'active-tab-label' : ''}`}>Home</span>
+      </button>
+      
+      <button 
+        className={`tab ${currentScreen === 'game' ? 'active-tab' : ''}`}
+        onClick={() => setCurrentScreen('game')}
+      >
+        <span className={`tab-icon ${currentScreen === 'game' ? 'active-tab-icon' : ''}`}>🕹️</span>
+        <span className={`tab-label ${currentScreen === 'game' ? 'active-tab-label' : ''}`}>Play</span>
+      </button>
+      
+      <button 
+        className={`tab ${currentScreen === 'leaderboard' ? 'active-tab' : ''}`}
+        onClick={() => setCurrentScreen('leaderboard')}
+      >
+        <span className={`tab-icon ${currentScreen === 'leaderboard' ? 'active-tab-icon' : ''}`}>💯</span>
+        <span className={`tab-label ${currentScreen === 'leaderboard' ? 'active-tab-label' : ''}`}>Scores</span>
+      </button>
+      
+      <button 
+        className={`tab ${currentScreen === 'about' ? 'active-tab' : ''}`}
+        onClick={() => setCurrentScreen('about')}
+      >
+        <span className={`tab-icon ${currentScreen === 'about' ? 'active-tab-icon' : ''}`}>𝍕</span>
+        <span className={`tab-label ${currentScreen === 'about' ? 'active-tab-label' : ''}`}>About</span>
+      </button>
+    </div>
+  );
+
+  const renderTopTabs = () => (
+    <div className="tab-bar tab-bar-top">
       <button 
         className={`tab ${currentScreen === 'home' ? 'active-tab' : ''}`}
         onClick={() => setCurrentScreen('home')}
