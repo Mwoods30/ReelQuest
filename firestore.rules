@@ -1,0 +1,96 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions for validation
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isValidUserData(data) {
+      return data.keys().hasAll(['playerName', 'level', 'xp', 'currency', 'createdAt']) &&
+             data.playerName is string &&
+             data.playerName.size() <= 50 &&
+             data.level is int &&
+             data.level >= 1 &&
+             data.level <= 100 &&
+             data.xp is int &&
+             data.xp >= 0 &&
+             data.currency is int &&
+             data.currency >= 0;
+    }
+    
+    function isValidLeaderboardEntry(data) {
+      return data.keys().hasAll(['userId', 'playerName', 'score', 'catches', 'timestamp']) &&
+             data.userId is string &&
+             data.playerName is string &&
+             data.playerName.size() <= 50 &&
+             data.score is int &&
+             data.score >= 0 &&
+             data.score <= 100000 &&
+             data.catches is int &&
+             data.catches >= 0 &&
+             data.catches <= 1000;
+    }
+    
+    function isValidGameSession(data) {
+      return data.keys().hasAll(['userId', 'score', 'catches', 'timestamp']) &&
+             data.userId is string &&
+             data.score is int &&
+             data.score >= 0 &&
+             data.catches is int &&
+             data.catches >= 0;
+    }
+    
+    // Users collection - users can only access their own data
+    match /users/{userId} {
+      allow read, write: if isOwner(userId) && 
+        (resource == null || isValidUserData(resource.data)) &&
+        (request.resource == null || isValidUserData(request.resource.data));
+      
+      // Prevent users from modifying certain protected fields
+      allow update: if isOwner(userId) && 
+        request.resource.data.createdAt == resource.data.createdAt &&
+        request.resource.data.gamesPlayed >= resource.data.gamesPlayed &&
+        request.resource.data.totalPlayTime >= resource.data.totalPlayTime;
+    }
+    
+    // Leaderboard collection - read public, write authenticated with validation
+    match /leaderboard/{entryId} {
+      allow read: if true;
+      
+      allow create: if isAuthenticated() && 
+        isValidLeaderboardEntry(request.resource.data) &&
+        request.resource.data.userId == request.auth.uid;
+      
+      // Prevent updates to leaderboard entries (immutable)
+      allow update, delete: if false;
+    }
+    
+    // Game sessions - users can only access their own sessions
+    match /gameSessions/{sessionId} {
+      allow read, create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        isValidGameSession(request.resource.data);
+      
+      // Prevent updates to game sessions (immutable)
+      allow update, delete: if false;
+    }
+    
+    // Admin collection (for future admin features)
+    match /admin/{document=**} {
+      // Only allow admin access (implement custom claims later)
+      allow read, write: if false;
+    }
+    
+    // Prevent access to any other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

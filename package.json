@@ -8,10 +8,18 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "firebase:serve": "npm run build && firebase emulators:start --only hosting",
+    "firebase:deploy": "npm run build && firebase deploy",
+    "firebase:deploy:hosting": "npm run build && firebase deploy --only hosting",
+    "firebase:deploy:rules": "firebase deploy --only firestore:rules",
+    "firebase:emulators": "firebase emulators:start",
+    "firebase:emulators:ui": "firebase emulators:start --import=./firebase-data --export-on-exit",
+    "test:security": "firebase emulators:exec --only firestore 'npm run test:firestore-rules'",
+    "env:setup": "cp .env.example .env.local"
   },
   "dependencies": {
-    "firebase": "^12.4.0",
+    "firebase": "^12.5.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
