@@ -754,6 +754,152 @@ html {
   border-color: rgba(217, 119, 6, 0.3);
 }
 
+/* Authentication UI Styles */
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: var(--bg-gradient);
+}
+
+.loading-content {
+  text-align: center;
+  color: white;
+}
+
+.loading-content h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: var(--brand-orange);
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  border-left: 4px solid var(--brand-orange);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 1rem auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.user-status-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: var(--card-gradient);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid rgba(217, 119, 6, 0.2);
+}
+
+.user-welcome {
+  text-align: center;
+}
+
+.welcome-message {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.user-stats-mini {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: var(--brand-green);
+}
+
+.user-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.profile-button, .sign-out-button {
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.profile-button:hover, .sign-out-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.profile-button {
+  background: rgba(30, 144, 255, 0.2);
+  border-color: rgba(30, 144, 255, 0.4);
+}
+
+.profile-button:hover {
+  background: rgba(30, 144, 255, 0.3);
+}
+
+.guest-status {
+  text-align: center;
+}
+
+.guest-message {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.95rem;
+}
+
+.sign-in-link {
+  background: none;
+  border: none;
+  color: var(--brand-orange);
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.sign-in-link:hover {
+  color: var(--brand-orange-light);
+}
+
+.auth-button {
+  padding: 1rem 2rem;
+  margin-top: 1rem;
+  background: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-green-dark) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-lg);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.auth-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), var(--shadow-green-glow);
+}
+
+.player-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--border-radius-md);
+  color: white;
+  font-weight: 600;
+}
+
 /* Reduce motion for accessibility */
 @media (prefers-reduced-motion: reduce) {
   *,

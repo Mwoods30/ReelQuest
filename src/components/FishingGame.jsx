@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import './FishingGame.css';
+import {
+  sellFishFromInventory,
+  addToLeaderboard,
+  subscribeToLeaderboard,
+  logGameSession
+} from '../firebase/database.js';
 
 const GAME_DURATION = 60;
 const STORAGE_KEY = 'reelquest:fishing:best-score';
@@ -442,7 +448,7 @@ const createSwimField = () =>
     delay: randomBetween(0, 2)
   }));
 
-function FishingGame({ onGameComplete }) {
+function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
   const [phase, setPhase] = useState(PHASES.IDLE);
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState(readStoredBestScore);
@@ -457,14 +463,23 @@ function FishingGame({ onGameComplete }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   
+  // Initialize player data based on authentication status
+  const initializePlayerData = () => {
+    if (isAuthenticated && userProfile) {
+      return userProfile;
+    }
+    return readPlayerData();
+  };
+
   // Progression and Collection State
-  const [playerData, setPlayerData] = useState(readPlayerData);
+  const [playerData, setPlayerData] = useState(initializePlayerData);
   const [inventory, setInventory] = useState([]);
   const [showShop, setShowShop] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [gameStartTime, setGameStartTime] = useState(null);
   const [playerStats, setPlayerStats] = useState(readPlayerStats());
   const [gameMode, setGameMode] = useState('home'); // 'home' | 'playing'
+  const [globalLeaderboard, setGlobalLeaderboard] = useState([]);
 
   const streakRef = useRef(0);
   const timerRef = useRef(null);
@@ -505,6 +520,43 @@ function FishingGame({ onGameComplete }) {
     }
   }, []);
 
+  // Sync userProfile with local playerData when user logs in/out
+  useEffect(() => {
+    if (isAuthenticated && userProfile) {
+      setPlayerData(userProfile);
+      setInventory(userProfile.inventory || []);
+    } else {
+      setPlayerData(readPlayerData());
+      setInventory([]);
+    }
+  }, [isAuthenticated, userProfile]);
+
+  // Load global leaderboard
+  useEffect(() => {
+    let unsubscribe;
+
+    const loadLeaderboard = async () => {
+      if (isAuthenticated) {
+        // Use Firebase real-time leaderboard for authenticated users
+        unsubscribe = subscribeToLeaderboard((scores) => {
+          setGlobalLeaderboard(scores);
+        });
+      } else {
+        // Use localStorage leaderboard for guests
+        const localScores = readGlobalScores();
+        setGlobalLeaderboard(localScores);
+      }
+    };
+
+    loadLeaderboard();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [isAuthenticated]);
+
   const cleanupAll = useCallback(() => {
     clearTimer();
     clearBiteTimeout();
@@ -526,7 +578,7 @@ function FishingGame({ onGameComplete }) {
     }, 1);
   }, [playerData?.ownedUpgrades]);
 
-  const endGame = useCallback(() => {
+  const endGame = useCallback(async () => {
     if (phase === PHASES.ENDED) return;
 
     cleanupAll();
@@ -558,26 +610,50 @@ function FishingGame({ onGameComplete }) {
     const updatedStats = updatePlayerStats(gameResult, sessionTime);
     setPlayerStats(updatedStats);
 
-    // Add to global leaderboard if score is good enough
+    // Add to global leaderboard and save progress
     if (score > 0) {
-      const leaderboardEntry = addToGlobalLeaderboard(playerData, gameResult);
-      
-      // Update player data with games played
-      const updatedPlayerData = {
-        ...playerData,
-        gamesPlayed: (playerData.gamesPlayed || 0) + 1,
-        totalPlayTime: (playerData.totalPlayTime || 0) + sessionTime
-      };
-      setPlayerData(updatedPlayerData);
-      writePlayerData(updatedPlayerData);
+      if (isAuthenticated && user) {
+        // Firebase operations for authenticated users
+        try {
+          // Add to Firebase leaderboard
+          const leaderboardResult = await addToLeaderboard(user.uid, gameResult, playerData);
+          
+          // Log game session
+          await logGameSession(user.uid, {
+            score: gameResult.score,
+            catches: gameResult.catches,
+            longestStreak: gameResult.longestStreak,
+            playTime: sessionTime
+          });
 
-      // Show leaderboard position message
-      const globalScores = readGlobalScores();
-      const position = globalScores.findIndex(entry => entry.id === leaderboardEntry.id) + 1;
-      if (position <= 10) {
-        setStatusMessage(`New high score! You're #${position} on the global leaderboard!`);
-      } else if (position <= 50) {
-        setStatusMessage(`Great job! You're #${position} on the global leaderboard!`);
+          if (leaderboardResult.success) {
+            setStatusMessage(`Game saved! Check the leaderboard to see your ranking!`);
+          }
+        } catch (error) {
+          console.error('Error saving game to Firebase:', error);
+          setStatusMessage('Game completed but failed to save to server.');
+        }
+      } else {
+        // localStorage operations for guests
+        const leaderboardEntry = addToGlobalLeaderboard(playerData, gameResult);
+        
+        // Update player data with games played
+        const updatedPlayerData = {
+          ...playerData,
+          gamesPlayed: (playerData.gamesPlayed || 0) + 1,
+          totalPlayTime: (playerData.totalPlayTime || 0) + sessionTime
+        };
+        setPlayerData(updatedPlayerData);
+        writePlayerData(updatedPlayerData);
+
+        // Show leaderboard position message
+        const globalScores = readGlobalScores();
+        const position = globalScores.findIndex(entry => entry.id === leaderboardEntry.id) + 1;
+        if (position <= 10) {
+          setStatusMessage(`New high score! You're #${position} on the global leaderboard!`);
+        } else if (position <= 50) {
+          setStatusMessage(`Great job! You're #${position} on the global leaderboard!`);
+        }
       }
     }
 
@@ -589,7 +665,7 @@ function FishingGame({ onGameComplete }) {
     });
 
     setPhase(PHASES.ENDED);
-  }, [phase, cleanupAll, bestScore, score, totalCatches, longestStreak, onGameComplete, gameStartTime, playerData]);
+  }, [phase, cleanupAll, bestScore, score, totalCatches, longestStreak, onGameComplete, gameStartTime, playerData, isAuthenticated, user]);
 
   const handleEscape = useCallback(
     (fish) => {
@@ -692,41 +768,65 @@ function FishingGame({ onGameComplete }) {
     [clearReelDecay, clearCelebration, playerData, getUpgradeMultiplier]
   );
 
-  const sellFish = useCallback((fishId) => {
+  const sellFish = useCallback(async (fishId) => {
     const fishToSell = inventory.find(fish => fish.id === fishId);
     if (!fishToSell) return;
 
     const saleValue = fishToSell.value;
     const updatedInventory = inventory.filter(fish => fish.id !== fishId);
-    const updatedPlayerData = {
-      ...playerData,
-      currency: playerData.currency + saleValue,
-      totalFishSold: (playerData.totalFishSold || 0) + 1
-    };
 
-    setInventory(updatedInventory);
-    setPlayerData(updatedPlayerData);
-    writePlayerData(updatedPlayerData);
-    
-    setStatusMessage(`Sold ${fishToSell.name} for ${saleValue} coins!`);
-  }, [inventory, playerData]);
+    if (isAuthenticated && user) {
+      // Use Firebase for authenticated users
+      const result = await sellFishFromInventory(user.uid, fishId, saleValue, updatedInventory);
+      if (result.success) {
+        setInventory(updatedInventory);
+        setStatusMessage(`Sold ${fishToSell.name} for ${saleValue} coins!`);
+      } else {
+        setStatusMessage('Failed to sell fish. Please try again.');
+      }
+    } else {
+      // Use localStorage for guests
+      const updatedPlayerData = {
+        ...playerData,
+        currency: playerData.currency + saleValue,
+        totalFishSold: (playerData.totalFishSold || 0) + 1
+      };
 
-  const sellAllFish = useCallback(() => {
+      setInventory(updatedInventory);
+      setPlayerData(updatedPlayerData);
+      writePlayerData(updatedPlayerData);
+      setStatusMessage(`Sold ${fishToSell.name} for ${saleValue} coins!`);
+    }
+  }, [inventory, playerData, isAuthenticated, user]);
+
+  const sellAllFish = useCallback(async () => {
     if (inventory.length === 0) return;
 
     const totalValue = inventory.reduce((sum, fish) => sum + fish.value, 0);
-    const updatedPlayerData = {
-      ...playerData,
-      currency: playerData.currency + totalValue,
-      totalFishSold: (playerData.totalFishSold || 0) + inventory.length
-    };
 
-    setInventory([]);
-    setPlayerData(updatedPlayerData);
-    writePlayerData(updatedPlayerData);
-    
-    setStatusMessage(`Sold all fish for ${totalValue} coins!`);
-  }, [inventory, playerData]);
+    if (isAuthenticated && user) {
+      // Use Firebase for authenticated users
+      const result = await sellFishFromInventory(user.uid, 'all', totalValue, []);
+      if (result.success) {
+        setInventory([]);
+        setStatusMessage(`Sold all fish for ${totalValue} coins!`);
+      } else {
+        setStatusMessage('Failed to sell fish. Please try again.');
+      }
+    } else {
+      // Use localStorage for guests
+      const updatedPlayerData = {
+        ...playerData,
+        currency: playerData.currency + totalValue,
+        totalFishSold: (playerData.totalFishSold || 0) + inventory.length
+      };
+
+      setInventory([]);
+      setPlayerData(updatedPlayerData);
+      writePlayerData(updatedPlayerData);
+      setStatusMessage(`Sold all fish for ${totalValue} coins!`);
+    }
+  }, [inventory, playerData, isAuthenticated, user]);
 
   const purchaseItem = useCallback((itemType, itemId) => {
     const items = SHOP_ITEMS[itemType];
@@ -1030,7 +1130,7 @@ function FishingGame({ onGameComplete }) {
                 <div className="menu-text">
                   <h4>Leaderboard</h4>
                   <p>Global rankings & stats</p>
-                  <span className="menu-badge">#{readGlobalScores().findIndex(s => s.playerName === playerData.playerName) + 1 || 'Unranked'}</span>
+                  <span className="menu-badge">#{globalLeaderboard.findIndex(s => s.playerName === playerData.playerName) + 1 || 'Unranked'}</span>
                 </div>
               </button>
 
@@ -1244,7 +1344,7 @@ function FishingGame({ onGameComplete }) {
                 <div className="leaderboard-section">
                   <h4>🥇 Top Scores</h4>
                   <div className="leaderboard-list">
-                    {readGlobalScores().slice(0, 20).map((entry, index) => (
+                    {globalLeaderboard.slice(0, 20).map((entry, index) => (
                       <div 
                         key={entry.id} 
                         className={`leaderboard-entry ${
@@ -1269,7 +1369,7 @@ function FishingGame({ onGameComplete }) {
                         </div>
                       </div>
                     ))}
-                    {readGlobalScores().length === 0 && (
+                    {globalLeaderboard.length === 0 && (
                       <div className="empty-leaderboard">
                         <p>No scores yet. Be the first to set a record!</p>
                       </div>
@@ -1546,7 +1646,10 @@ function FishingGame({ onGameComplete }) {
 }
 
 FishingGame.propTypes = {
-  onGameComplete: PropTypes.func
+  onGameComplete: PropTypes.func,
+  user: PropTypes.object,
+  userProfile: PropTypes.object,
+  isAuthenticated: PropTypes.bool
 };
 
 export default FishingGame;

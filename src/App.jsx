@@ -1,9 +1,21 @@
 import { useState } from 'react';
 import './App.css';
 import FishingGame from './components/FishingGame.jsx';
+import AuthForm from './components/AuthForm.jsx';
+import UserProfile from './components/UserProfile.jsx';
+import { UserProvider } from './contexts/UserContext.jsx';
+import { useUser } from './hooks/useUser.js';
+import { signOutUser } from './firebase/auth.js';
 
-function App() {
+function AppContent() {
   const [currentScreen, setCurrentScreen] = useState('home');
+  const [showAuth, setShowAuth] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const { user, userProfile, loading, isAuthenticated } = useUser();
+
+  const handleSignOut = async () => {
+    await signOutUser();
+  };
 
   const HomeScreen = () => (
     <div className="container">
@@ -14,9 +26,43 @@ function App() {
           </div>
         </div>
         <div className="title-section">
-        
-        <h1 className="title">ReelQuest </h1>
+          <h1 className="title">ReelQuest</h1>
         </div>
+        
+        {/* User Status Section */}
+        <div className="user-status-section">
+          {isAuthenticated ? (
+            <div className="user-welcome">
+              <p className="welcome-message">
+                Welcome back, <span className="brand-accent">{userProfile?.playerName || 'Fisher'}</span>!
+              </p>
+              <div className="user-stats-mini">
+                <span>Level {userProfile?.level || 1}</span>
+                <span>💰 {userProfile?.currency || 0}</span>
+              </div>
+              <div className="user-actions">
+                <button className="profile-button" onClick={() => setShowProfile(true)}>
+                  👤 Profile
+                </button>
+                <button className="sign-out-button" onClick={handleSignOut}>
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="guest-status">
+              <p className="guest-message">
+                Playing as guest - <button 
+                  className="sign-in-link" 
+                  onClick={() => setShowAuth(true)}
+                >
+                  Sign in
+                </button> to save progress!
+              </p>
+            </div>
+          )}
+        </div>
+        
         <p className="welcome-text">
           Welcome to <span className="brand-accent">ReelQuest</span>, the most immersive fishing experience on the web!
           <br />Cast your line, catch <span className="brand-accent-green">rare fish</span>, and climb the leaderboard.
@@ -44,6 +90,15 @@ function App() {
         >
           Play Now
         </button>
+        
+        {!isAuthenticated && (
+          <button 
+            className="auth-button"
+            onClick={() => setShowAuth(true)}
+          >
+            Sign In / Register
+          </button>
+        )}
       </div>
       {renderBottomTabs()}
     </div>
@@ -62,26 +117,27 @@ function App() {
           <div className="play-header">
             <h1 className="title">Play ReelQuest</h1>
             <p className="play-subtitle">Cast your line and race the clock. Catch as many fish as you can in 60 seconds!</p>
+            {isAuthenticated && userProfile && (
+              <div className="player-info-header">
+                <span>{userProfile.playerName} - Level {userProfile.level}</span>
+                <span>💰 {userProfile.currency}</span>
+              </div>
+            )}
           </div>
           <div className="game-container">
-            <FishingGame onGameComplete={handleGameComplete} />
+            <FishingGame 
+              onGameComplete={handleGameComplete}
+              user={user}
+              userProfile={userProfile}
+              isAuthenticated={isAuthenticated}
+            />
           </div>
         </div>
       </div>
     );
   };
 
-  const LeaderboardScreen = () => (
-    <div className="container">
-      <div className="scroll-content">
-        <h1 className="title">Leaderboard</h1>
-        <div className="leaderboard-container">
-          <p className="no-scores-text">No scores yet. Start playing to see your results!</p>
-        </div>
-      </div>
-      {renderBottomTabs()}
-    </div>
-  );
+
 
   const AboutScreen = () => (
     <div className="container">
@@ -121,13 +177,6 @@ function App() {
         <span className={`tab-label ${currentScreen === 'game' ? 'active-tab-label' : ''}`}>Play</span>
       </button>
       
-      <button 
-        className={`tab ${currentScreen === 'leaderboard' ? 'active-tab' : ''}`}
-        onClick={() => setCurrentScreen('leaderboard')}
-      >
-        <span className={`tab-icon ${currentScreen === 'leaderboard' ? 'active-tab-icon' : ''}`}>💯</span>
-        <span className={`tab-label ${currentScreen === 'leaderboard' ? 'active-tab-label' : ''}`}>Scores</span>
-      </button>
       
       <button 
         className={`tab ${currentScreen === 'about' ? 'active-tab' : ''}`}
@@ -157,13 +206,6 @@ function App() {
         <span className={`tab-label ${currentScreen === 'game' ? 'active-tab-label' : ''}`}>Play</span>
       </button>
       
-      <button 
-        className={`tab ${currentScreen === 'leaderboard' ? 'active-tab' : ''}`}
-        onClick={() => setCurrentScreen('leaderboard')}
-      >
-        <span className={`tab-icon ${currentScreen === 'leaderboard' ? 'active-tab-icon' : ''}`}>💯</span>
-        <span className={`tab-label ${currentScreen === 'leaderboard' ? 'active-tab-label' : ''}`}>Scores</span>
-      </button>
       
       <button 
         className={`tab ${currentScreen === 'about' ? 'active-tab' : ''}`}
@@ -179,13 +221,44 @@ function App() {
     switch (currentScreen) {
       case 'home': return <HomeScreen />;
       case 'game': return <GameScreen />;
-      case 'leaderboard': return <LeaderboardScreen />;
       case 'about': return <AboutScreen />;
       default: return <HomeScreen />;
     }
   };
 
-  return renderCurrentScreen();
+  if (loading) {
+    return (
+      <div className="container">
+        <div className="loading-screen">
+          <div className="loading-content">
+            <h2>🎣 ReelQuest</h2>
+            <p>Loading your fishing adventure...</p>
+            <div className="loading-spinner"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {renderCurrentScreen()}
+      {showAuth && (
+        <AuthForm onAuthSuccess={() => setShowAuth(false)} />
+      )}
+      {showProfile && (
+        <UserProfile onClose={() => setShowProfile(false)} />
+      )}
+    </>
+  );
+}
+
+function App() {
+  return (
+    <UserProvider>
+      <AppContent />
+    </UserProvider>
+  );
 }
 
 export default App;
