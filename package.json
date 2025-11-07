@@ -14,7 +14,8 @@
     "firebase:deploy:hosting": "npm run build && firebase deploy --only hosting",
     "firebase:deploy:rules": "firebase deploy --only firestore:rules",
     "firebase:emulators": "firebase emulators:start",
-    "firebase:emulators:ui": "firebase emulators:start --import=./firebase-data --export-on-exit",
+  "firebase:emulators:ui": "firebase emulators:start --import=./firebase-data --export-on-exit",
+  "backfill:users": "node ./scripts/backfillUsers.js",
     "test:security": "firebase emulators:exec --only firestore 'npm run test:firestore-rules'",
     "env:setup": "cp .env.example .env.local"
   },
@@ -32,6 +33,7 @@
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.14",
+    "firebase-admin": "^12.2.0",
     "vite": "^5.4.10"
   }
 }

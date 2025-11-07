@@ -1,104 +1,112 @@
-# ReelQuest - Web Fishing Game
+# ReelQuest – Web Fishing Game
 
-A modern web-based fishing game built with React and Vite.
+ReelQuest is a modern browser-based fishing adventure built with React, Vite, and Firebase. Cast, compete, and climb the leaderboard while your progress stays synced in the cloud.
 
-## 🎮 Features
+## 🎮 Core Features
 
-- Interactive fishing experience in your browser
-- Modern React-based architecture
-- Responsive design for all devices
-- Built with Vite for fast development and optimized builds
+- Fast, reactive gameplay with streaks, XP, levels, and unlockable environments
+- Firebase Authentication, Firestore persistence, and live leaderboard support
+- Guest fallback with local storage for offline play
+- Responsive UI and fullscreen support for desktop and mobile
 
-## 🚀 Deployment
+## 🧰 Development Workflow
 
-This project is configured for easy deployment to Netlify.
-
-### Option 1: Deploy from Git Repository
-
-1. Push your code to GitHub
-2. Go to [Netlify](https://netlify.com)
-3. Click "New site from Git"
-4. Connect your GitHub repository
-5. Netlify will automatically detect the build settings from `netlify.toml`
-
-### Option 2: Manual Deploy
-
-1. Build the project locally:
-   ```bash
-   npm run build
-   ```
-
-2. Upload the `dist` folder to Netlify:
-   - Go to [Netlify](https://netlify.com)
-   - Drag and drop the `dist` folder to the deployment area
-
-### Build Configuration
-
-The project includes:
-- **Build Command**: `npm run build`
-- **Publish Directory**: `dist`
-- **Node Version**: 18
-- **SPA Redirects**: Configured for proper routing
-
-## 🛠️ Development
+| Command | Purpose |
+| ------- | ------- |
+| `npm install` | Install dependencies |
+| `npm run dev` | Start Vite dev server on `http://localhost:5173` |
+| `npm run build` | Produce production bundle in `dist/` |
+| `npm run preview` | Preview the production build locally |
+| `npm run firebase:emulators` | Start Auth, Firestore, Hosting emulators |
+| `npm run firebase:serve` | Build then launch Hosting emulator |
+| `npm run firebase:deploy` | Build and deploy Hosting & Firestore |
+| `npm run firebase:deploy:hosting` | Build and deploy Hosting only |
+| `npm run firebase:deploy:rules` | Deploy Firestore security rules only |
 
 ### Prerequisites
 - Node.js 18+
-- npm
+- npm 9+
+- [Firebase CLI](https://firebase.google.com/docs/cli) (`npm install -g firebase-tools`)
 
-### Local Development
+### Environment Variables
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
+Copy `.env.example` to the appropriate environment file (development uses `.env.local` or `.env.development`) and populate with Firebase credentials. **Never commit populated `.env*` files.**
 
-2. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-3. Open [http://localhost:5173](http://localhost:5173) in your browser
-
-### Build for Production
-
-```bash
-npm run build
+```
+cp .env.example .env.local
 ```
 
-### Preview Production Build
+Required keys:
 
-```bash
-npm run preview
-```
+- `VITE_FIREBASE_API_KEY`
+- `VITE_FIREBASE_AUTH_DOMAIN`
+- `VITE_FIREBASE_PROJECT_ID`
+- `VITE_FIREBASE_STORAGE_BUCKET`
+- `VITE_FIREBASE_MESSAGING_SENDER_ID`
+- `VITE_FIREBASE_APP_ID`
+- `VITE_FIREBASE_MEASUREMENT_ID` (optional for Analytics)
+
+## � Firebase Deployment
+
+1. **Authenticate & select project**
+   ```bash
+   firebase login
+   firebase use <project-id>
+   ```
+
+2. **Build and deploy Hosting + Firestore**
+   ```bash
+   npm run firebase:deploy
+   ```
+
+3. **Deploy only security rules (fast iteration)**
+   ```bash
+   npm run firebase:deploy:rules
+   ```
+
+4. **Verify security headers** – Firebase Hosting now enforces HSTS, X-Frame-Options, nosniff, referrer, and permissions policies. After deployment:
+   ```bash
+   curl -I https://<your-domain>
+   ```
+
+5. **Rotate credentials if leaked** – If any `.env` values or build artifacts were exposed, generate new Firebase API keys and update secrets before redeploying.
+
+### Firestore Rules
+
+Firestore rules live at `firestore.rules`. They enforce:
+- Owners-only access to `/users/{uid}` documents
+- Strict validation on leaderboard and session entries
+- Denial of writes to unknown collections
+
+Run the Firestore emulator (`npm run firebase:emulators`) to test rules locally.
 
 ## 📦 Project Structure
 
 ```
 src/
-  ├── App.jsx          # Main application component
-  ├── App.css          # Application styles
-  ├── main.jsx         # Application entry point
-  └── index.css        # Global styles
+  components/    # Auth, game, and profile UI
+  contexts/      # React context providers (e.g., UserContext)
+  firebase/      # Firebase SDK wrappers (auth, config, database)
+  hooks/         # Reusable React hooks
 public/
-  ├── _redirects       # Netlify redirect rules
-  └── fishing.png      # Favicon
-netlify.toml           # Netlify deployment configuration
+  _redirects     # SPA fallback (compatible with Firebase Hosting)
+scripts/
+  backfillUsers.js  # Admin tool for sanitizing legacy user docs
+firebase.json    # Hosting config with security headers
+firestore.rules  # Firestore security rules
 ```
 
-## 🎯 MVP Features (Release 1)
+## 🔐 Security Checklist
 
-- [x] Fishing Mechanics: Cast, reel and catch fish
-- [x] Multiple Fish Species: 3+ different fish types
-- [x] Game Environment: Single fishing environment
-- [ ] Collection System: Track caught fish and rarity
-- [ ] Progression System: Level-based unlocks
-- [ ] Persistence: Save/load between sessions
+- `.gitignore` excludes `.env*` files; keep secrets in local env or CI vaults
+- Firebase Hosting adds HSTS, X-Frame-Options, nosniff, referrer, and permissions headers
+- Firestore rules limit reads/writes to authenticated owners and validated payloads
+- Run `npm audit --omit=dev` regularly (current status: 0 vulnerabilities)
 
 ## 👥 Development Team
 
 - Matthew Woods
-- Ryan McKearnin  
+- Ryan McKearnin
 - Tyler Klimczak
 - Willow Iloka
 

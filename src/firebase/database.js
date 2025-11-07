@@ -50,7 +50,7 @@ export const createUserProfile = async (userId, userData) => {
     return { success: true, data: defaultUserData };
   } catch (error) {
     console.error('Error creating user profile:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error.message, errorCode: error.code };
   }
 };
 
@@ -61,12 +61,16 @@ export const getUserProfile = async (userId) => {
     
     if (docSnap.exists()) {
       return { success: true, data: docSnap.data() };
-    } else {
-      return { success: false, error: 'User profile not found' };
     }
+
+    return { success: false, error: 'User profile not found', errorCode: 'not-found' };
   } catch (error) {
-    console.error('Error getting user profile:', error);
-    return { success: false, error: error.message };
+    if (error?.code === 'permission-denied') {
+      console.warn('Firestore permission denied while fetching user profile.');
+    } else {
+      console.error('Error getting user profile:', error);
+    }
+    return { success: false, error: error.message, errorCode: error.code };
   }
 };
 
@@ -272,11 +276,20 @@ export const unlockAchievement = async (userId, achievementId, reward = 0) => {
 };
 
 // Real-time User Profile Listener
-export const subscribeToUserProfile = (userId, callback) => {
+export const subscribeToUserProfile = (userId, callback, errorCallback) => {
   const docRef = doc(db, USERS_COLLECTION, userId);
-  return onSnapshot(docRef, (doc) => {
-    if (doc.exists()) {
-      callback({ id: doc.id, ...doc.data() });
+  return onSnapshot(
+    docRef,
+    (docSnap) => {
+      if (docSnap.exists()) {
+        callback({ id: docSnap.id, ...docSnap.data() });
+      }
+    },
+    (error) => {
+      console.error('Error subscribing to user profile:', error);
+      if (typeof errorCallback === 'function') {
+        errorCallback(error);
+      }
     }
-  });
+  );
 };

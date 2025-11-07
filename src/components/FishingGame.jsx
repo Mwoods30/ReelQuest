@@ -5,7 +5,8 @@ import {
   sellFishFromInventory,
   addToLeaderboard,
   subscribeToLeaderboard,
-  logGameSession
+  logGameSession,
+  saveGameProgress
 } from '../firebase/database.js';
 
 const GAME_DURATION = 60;
@@ -26,37 +27,50 @@ const XP_PER_CATCH = {
   'Legendary': 75
 };
 
+const ENVIRONMENT_LIBRARY = Object.freeze({
+  crystal_lake: {
+    id: 'crystal_lake',
+    name: 'Crystal Lake',
+    description: 'Peaceful freshwater retreat with balanced fish spawns',
+    emoji: '🏞️',
+    levelRequired: 1,
+    price: 0,
+    purchasable: false
+  },
+  mountain_lake: {
+    id: 'mountain_lake',
+    name: 'Mountain Lake',
+    description: 'Crystal clear waters with alpine fish species',
+    emoji: '🏔️',
+    price: 200,
+    levelRequired: 3,
+    purchasable: true
+  },
+  ocean_reef: {
+    id: 'ocean_reef',
+    name: 'Ocean Reef',
+    description: 'Tropical waters teeming with exotic fish',
+    emoji: '🌊',
+    price: 500,
+    levelRequired: 5,
+    purchasable: true
+  },
+  deep_sea: {
+    id: 'deep_sea',
+    name: 'Deep Sea',
+    description: 'Mysterious depths with legendary creatures',
+    emoji: '🌀',
+    price: 1000,
+    levelRequired: 8,
+    purchasable: true
+  }
+});
+
 // Shop System Constants
 const SHOP_ITEMS = {
-  environments: [
-    {
-      id: 'mountain_lake',
-      name: 'Mountain Lake',
-      description: 'Crystal clear waters with alpine fish species',
-      emoji: '🏔️',
-      price: 200,
-      levelRequired: 3,
-      owned: false
-    },
-    {
-      id: 'ocean_reef',
-      name: 'Ocean Reef',
-      description: 'Tropical waters teeming with exotic fish',
-      emoji: '🌊',
-      price: 500,
-      levelRequired: 5,
-      owned: false
-    },
-    {
-      id: 'deep_sea',
-      name: 'Deep Sea',
-      description: 'Mysterious depths with legendary creatures',
-      emoji: '🌀',
-      price: 1000,
-      levelRequired: 8,
-      owned: false
-    }
-  ],
+  environments: Object.values(ENVIRONMENT_LIBRARY)
+    .filter((env) => env.purchasable)
+    .map((env) => ({ ...env })),
   upgrades: [
     {
       id: 'better_rod',
@@ -162,6 +176,23 @@ const PHASES = Object.freeze({
   ENDED: 'ended'
 });
 
+const getLevelDifficultyProfile = (level = 1) => {
+  const progress = Math.max(0, level - 1);
+  const reelPenalty = Math.min(0.45, progress * 0.03);
+  const decayBoost = Math.min(0.85, progress * 0.04);
+  const startPenalty = Math.min(0.55, progress * 0.03);
+  const rarityBias = Math.min(0.55, progress * 0.05);
+  const biteWindowMod = Math.max(0.65, 1 - progress * 0.02);
+
+  return {
+    reelPowerMod: Math.max(0.4, 1 - reelPenalty),
+    decayMod: 1 + decayBoost,
+    initialProgressPenalty: startPenalty,
+    rarityBias,
+    biteWindowMod
+  };
+};
+
 const FISH_TYPES = [
   {
     name: 'Bluegill',
@@ -233,12 +264,32 @@ const rarityWeight = (rarity) => {
   }
 };
 
-const pickRandomFish = () => {
-  const totalWeight = FISH_TYPES.reduce((sum, fish) => sum + rarityWeight(fish.rarity), 0);
+const getAdjustedRarityWeight = (rarity, rarityBias) => {
+  const baseWeight = rarityWeight(rarity);
+  if (!rarityBias) return baseWeight;
+
+  switch (rarity.toLowerCase()) {
+    case 'legendary':
+      return baseWeight * (1 + rarityBias * 1.3);
+    case 'rare':
+      return baseWeight * (1 + rarityBias * 1.0);
+    case 'uncommon':
+      return baseWeight * (1 + rarityBias * 0.45);
+    default:
+      return baseWeight * Math.max(0.4, 1 - rarityBias * 1.25);
+  }
+};
+
+const pickRandomFish = (level = 1) => {
+  const difficultyProfile = getLevelDifficultyProfile(level);
+  const totalWeight = FISH_TYPES.reduce(
+    (sum, fish) => sum + getAdjustedRarityWeight(fish.rarity, difficultyProfile.rarityBias),
+    0
+  );
   let target = Math.random() * totalWeight;
 
   for (const fish of FISH_TYPES) {
-    target -= rarityWeight(fish.rarity);
+    target -= getAdjustedRarityWeight(fish.rarity, difficultyProfile.rarityBias);
     if (target <= 0) {
       const sizeInches = fish.minSize + Math.random() * (fish.maxSize - fish.minSize);
       return { ...fish, id: cryptoRandomId(), sizeInches };
@@ -312,6 +363,25 @@ const writeGlobalScores = (scores) => {
   safeLocalStorage.setItem(GLOBAL_SCORES_KEY, JSON.stringify(scores));
 };
 
+const dedupeLeaderboardEntries = (entries) => {
+  if (!Array.isArray(entries)) return [];
+
+  const seen = new Set();
+  const sorted = entries
+    .filter(Boolean)
+    .slice()
+    .sort((a, b) => (b?.score || 0) - (a?.score || 0));
+
+  const unique = [];
+  for (const entry of sorted) {
+    const key = entry.userId || entry.playerName || entry.id;
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    unique.push(entry);
+  }
+  return unique;
+};
+
 const addToGlobalLeaderboard = (playerData, gameResult) => {
   const globalScores = readGlobalScores();
   
@@ -328,12 +398,18 @@ const addToGlobalLeaderboard = (playerData, gameResult) => {
   
   globalScores.push(newEntry);
   
-  // Keep only top 100 scores to prevent storage bloat
-  globalScores.sort((a, b) => b.score - a.score);
-  const topScores = globalScores.slice(0, 100);
+  const dedupedScores = dedupeLeaderboardEntries(globalScores);
+  const topScores = dedupedScores.slice(0, 100);
   
   writeGlobalScores(topScores);
-  return newEntry;
+  const savedEntry = topScores.find((entry) => {
+    if (entry.userId && playerData?.uid) {
+      return entry.userId === playerData.uid;
+    }
+    return entry.playerName === newEntry.playerName;
+  });
+
+  return savedEntry || newEntry;
 };
 
 // Player Statistics Functions
@@ -448,7 +524,7 @@ const createSwimField = () =>
     delay: randomBetween(0, 2)
   }));
 
-function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
+function FishingGame({ onGameComplete, user, userProfile, isAuthenticated, onProfileCacheUpdate }) {
   const [phase, setPhase] = useState(PHASES.IDLE);
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState(readStoredBestScore);
@@ -480,6 +556,51 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
   const [playerStats, setPlayerStats] = useState(readPlayerStats());
   const [gameMode, setGameMode] = useState('home'); // 'home' | 'playing'
   const [globalLeaderboard, setGlobalLeaderboard] = useState([]);
+  const ownedEnvironmentIds = playerData?.ownedEnvironments?.length
+    ? playerData.ownedEnvironments
+    : ['crystal_lake'];
+  const activeEnvironmentId = playerData?.currentEnvironment || 'crystal_lake';
+  const activeEnvironment =
+    ENVIRONMENT_LIBRARY[activeEnvironmentId] || ENVIRONMENT_LIBRARY.crystal_lake;
+  const environmentClassName = `environment-${activeEnvironment.id}`;
+  const environmentInventory = ownedEnvironmentIds
+    .map((envId) => ENVIRONMENT_LIBRARY[envId])
+    .filter(Boolean);
+  const syncPlayerData = useCallback((nextData, { skipCacheUpdate = false } = {}) => {
+    if (!nextData) {
+      return;
+    }
+
+    setPlayerData(nextData);
+
+    if (skipCacheUpdate) {
+      return;
+    }
+
+    if (isAuthenticated && onProfileCacheUpdate) {
+      onProfileCacheUpdate(nextData);
+    }
+  }, [isAuthenticated, onProfileCacheUpdate]);
+  const playerLevel = playerData?.level || 1;
+  const levelDifficulty = useMemo(() => getLevelDifficultyProfile(playerLevel), [playerLevel]);
+  const persistProgress = useCallback((updates) => {
+    if (!isAuthenticated || !user) {
+      return;
+    }
+
+    const sanitized = Object.fromEntries(
+      Object.entries(updates).filter(([, value]) => value !== undefined)
+    );
+
+    if (Object.keys(sanitized).length === 0) {
+      return;
+    }
+
+    saveGameProgress(user.uid, sanitized).catch((error) => {
+      console.error('Failed to sync progress to Firebase:', error);
+    });
+  }, [isAuthenticated, user]);
+
 
   const streakRef = useRef(0);
   const timerRef = useRef(null);
@@ -523,13 +644,13 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
   // Sync userProfile with local playerData when user logs in/out
   useEffect(() => {
     if (isAuthenticated && userProfile) {
-      setPlayerData(userProfile);
+      syncPlayerData(userProfile, { skipCacheUpdate: true });
       setInventory(userProfile.inventory || []);
     } else {
-      setPlayerData(readPlayerData());
+      syncPlayerData(readPlayerData());
       setInventory([]);
     }
-  }, [isAuthenticated, userProfile]);
+  }, [isAuthenticated, userProfile, syncPlayerData]);
 
   // Load global leaderboard
   useEffect(() => {
@@ -539,12 +660,12 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
       if (isAuthenticated) {
         // Use Firebase real-time leaderboard for authenticated users
         unsubscribe = subscribeToLeaderboard((scores) => {
-          setGlobalLeaderboard(scores);
+          setGlobalLeaderboard(dedupeLeaderboardEntries(scores));
         });
       } else {
         // Use localStorage leaderboard for guests
         const localScores = readGlobalScores();
-        setGlobalLeaderboard(localScores);
+        setGlobalLeaderboard(dedupeLeaderboardEntries(localScores));
       }
     };
 
@@ -626,6 +747,23 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
             playTime: sessionTime
           });
 
+          const remotePlayerData = {
+            ...playerData,
+            gamesPlayed: (playerData.gamesPlayed || 0) + 1,
+            totalPlayTime: (playerData.totalPlayTime || 0) + sessionTime,
+            bestScore: Math.max(playerData.bestScore || 0, nextBest),
+            xp: playerData.xp,
+            level: playerData.level
+          };
+          syncPlayerData(remotePlayerData);
+          persistProgress({
+            gamesPlayed: remotePlayerData.gamesPlayed,
+            totalPlayTime: remotePlayerData.totalPlayTime,
+            bestScore: remotePlayerData.bestScore,
+            xp: remotePlayerData.xp,
+            level: remotePlayerData.level
+          });
+
           if (leaderboardResult.success) {
             setStatusMessage(`Game saved! Check the leaderboard to see your ranking!`);
           }
@@ -643,11 +781,12 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
           gamesPlayed: (playerData.gamesPlayed || 0) + 1,
           totalPlayTime: (playerData.totalPlayTime || 0) + sessionTime
         };
-        setPlayerData(updatedPlayerData);
+        syncPlayerData(updatedPlayerData);
         writePlayerData(updatedPlayerData);
 
         // Show leaderboard position message
         const globalScores = readGlobalScores();
+        setGlobalLeaderboard(dedupeLeaderboardEntries(globalScores));
         const position = globalScores.findIndex(entry => entry.id === leaderboardEntry.id) + 1;
         if (position <= 10) {
           setStatusMessage(`New high score! You're #${position} on the global leaderboard!`);
@@ -665,7 +804,7 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
     });
 
     setPhase(PHASES.ENDED);
-  }, [phase, cleanupAll, bestScore, score, totalCatches, longestStreak, onGameComplete, gameStartTime, playerData, isAuthenticated, user]);
+  }, [phase, cleanupAll, bestScore, score, totalCatches, longestStreak, onGameComplete, gameStartTime, playerData, isAuthenticated, user, persistProgress, syncPlayerData]);
 
   const handleEscape = useCallback(
     (fish) => {
@@ -710,14 +849,16 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
         value: fish.value
       };
 
-      setInventory(prev => [...prev, caughtFish]);
+      const newInventory = [...inventory, caughtFish];
+      setInventory(newInventory);
 
       // Update player data
       const updatedPlayerData = {
         ...playerData,
         xp: newXP,
         level: newLevel,
-        totalCatches: playerData.totalCatches + 1
+        totalCatches: (playerData.totalCatches || 0) + 1,
+        inventory: newInventory
       };
 
       // Check for achievements
@@ -726,16 +867,36 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
         lastCaughtRarity: fish.rarity
       };
       const newAchievements = checkAchievements(playerData, newStats);
-      
+      let nextCurrency = playerData.currency || 0;
+
       if (newAchievements.length > 0) {
-        updatedPlayerData.achievements = [...playerData.achievements, ...newAchievements.map(a => a.id)];
+        updatedPlayerData.achievements = [
+          ...(playerData.achievements || []),
+          ...newAchievements.map((achievement) => achievement.id)
+        ];
         
         // Add achievement rewards to currency
         const achievementReward = newAchievements.reduce((sum, achievement) => sum + achievement.reward, 0);
-        updatedPlayerData.currency = (updatedPlayerData.currency || 0) + achievementReward;
+        nextCurrency += achievementReward;
       }
-      setPlayerData(updatedPlayerData);
+
+      updatedPlayerData.currency = nextCurrency;
+  syncPlayerData(updatedPlayerData);
       writePlayerData(updatedPlayerData);
+
+      if (isAuthenticated && user) {
+        persistProgress({
+          xp: updatedPlayerData.xp,
+          level: updatedPlayerData.level,
+          totalCatches: updatedPlayerData.totalCatches,
+          achievements: updatedPlayerData.achievements,
+          currency: updatedPlayerData.currency,
+          inventory: newInventory,
+          ownedEnvironments: updatedPlayerData.ownedEnvironments,
+          ownedUpgrades: updatedPlayerData.ownedUpgrades,
+          totalPurchases: updatedPlayerData.totalPurchases
+        });
+      }
 
       setScore((value) => value + pointsEarned);
       setTotalCatches((value) => value + 1);
@@ -765,7 +926,7 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
         setReelProgress(0);
       }, 1800);
     },
-    [clearReelDecay, clearCelebration, playerData, getUpgradeMultiplier]
+    [clearReelDecay, clearCelebration, playerData, getUpgradeMultiplier, inventory, isAuthenticated, persistProgress, user, syncPlayerData]
   );
 
   const sellFish = useCallback(async (fishId) => {
@@ -780,6 +941,18 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
       const result = await sellFishFromInventory(user.uid, fishId, saleValue, updatedInventory);
       if (result.success) {
         setInventory(updatedInventory);
+        const updatedPlayerData = {
+          ...playerData,
+          currency: (playerData.currency || 0) + saleValue,
+          totalFishSold: (playerData.totalFishSold || 0) + 1,
+          inventory: updatedInventory
+        };
+  syncPlayerData(updatedPlayerData);
+        persistProgress({
+          currency: updatedPlayerData.currency,
+          totalFishSold: updatedPlayerData.totalFishSold,
+          inventory: updatedInventory
+        });
         setStatusMessage(`Sold ${fishToSell.name} for ${saleValue} coins!`);
       } else {
         setStatusMessage('Failed to sell fish. Please try again.');
@@ -793,11 +966,11 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
       };
 
       setInventory(updatedInventory);
-      setPlayerData(updatedPlayerData);
+  syncPlayerData(updatedPlayerData);
       writePlayerData(updatedPlayerData);
       setStatusMessage(`Sold ${fishToSell.name} for ${saleValue} coins!`);
     }
-  }, [inventory, playerData, isAuthenticated, user]);
+  }, [inventory, playerData, isAuthenticated, user, persistProgress, syncPlayerData]);
 
   const sellAllFish = useCallback(async () => {
     if (inventory.length === 0) return;
@@ -809,6 +982,18 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
       const result = await sellFishFromInventory(user.uid, 'all', totalValue, []);
       if (result.success) {
         setInventory([]);
+        const updatedPlayerData = {
+          ...playerData,
+          currency: (playerData.currency || 0) + totalValue,
+          totalFishSold: (playerData.totalFishSold || 0) + inventory.length,
+          inventory: []
+        };
+  syncPlayerData(updatedPlayerData);
+        persistProgress({
+          currency: updatedPlayerData.currency,
+          totalFishSold: updatedPlayerData.totalFishSold,
+          inventory: []
+        });
         setStatusMessage(`Sold all fish for ${totalValue} coins!`);
       } else {
         setStatusMessage('Failed to sell fish. Please try again.');
@@ -822,29 +1007,50 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
       };
 
       setInventory([]);
-      setPlayerData(updatedPlayerData);
+  syncPlayerData(updatedPlayerData);
       writePlayerData(updatedPlayerData);
       setStatusMessage(`Sold all fish for ${totalValue} coins!`);
     }
-  }, [inventory, playerData, isAuthenticated, user]);
+  }, [inventory, playerData, isAuthenticated, user, persistProgress, syncPlayerData]);
 
   const purchaseItem = useCallback((itemType, itemId) => {
     const items = SHOP_ITEMS[itemType];
-    const item = items?.find(i => i.id === itemId);
-    
-    if (!item || playerData.currency < item.price || playerData.level < item.levelRequired) {
-      setStatusMessage('Cannot purchase this item!');
+    const item = items?.find((i) => i.id === itemId);
+
+    if (!item) {
+      setStatusMessage('Item not found.');
+      return;
+    }
+
+    if (itemType === 'environments') {
+      const alreadyOwned = (playerData.ownedEnvironments || ['crystal_lake']).includes(itemId);
+      if (alreadyOwned) {
+        setStatusMessage('Environment already unlocked. Equip it from your inventory.');
+        return;
+      }
+    }
+
+    if (playerData.currency < item.price) {
+      setStatusMessage('Not enough coins for this purchase.');
+      return;
+    }
+
+    if (playerData.level < item.levelRequired) {
+      setStatusMessage(`Reach level ${item.levelRequired} to unlock this item.`);
       return;
     }
 
     const updatedPlayerData = {
       ...playerData,
-      currency: playerData.currency - item.price,
+      currency: (playerData.currency || 0) - item.price,
       totalPurchases: (playerData.totalPurchases || 0) + 1
     };
 
     if (itemType === 'environments') {
-      updatedPlayerData.ownedEnvironments = [...(playerData.ownedEnvironments || ['crystal_lake']), itemId];
+      const nextOwned = new Set(playerData.ownedEnvironments || ['crystal_lake']);
+      nextOwned.add(itemId);
+      updatedPlayerData.ownedEnvironments = Array.from(nextOwned);
+      updatedPlayerData.currentEnvironment = itemId;
     } else if (itemType === 'upgrades') {
       updatedPlayerData.ownedUpgrades = [...(playerData.ownedUpgrades || []), itemId];
     }
@@ -854,46 +1060,114 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
       ...updatedPlayerData
     };
     const newAchievements = checkAchievements(playerData, newStats);
-    
+
     if (newAchievements.length > 0) {
-      updatedPlayerData.achievements = [...playerData.achievements, ...newAchievements.map(a => a.id)];
-      const achievementReward = newAchievements.reduce((sum, achievement) => sum + achievement.reward, 0);
+      updatedPlayerData.achievements = [
+        ...playerData.achievements,
+        ...newAchievements.map((a) => a.id)
+      ];
+      const achievementReward = newAchievements.reduce(
+        (sum, achievement) => sum + achievement.reward,
+        0
+      );
       updatedPlayerData.currency += achievementReward;
     }
 
-    setPlayerData(updatedPlayerData);
+    syncPlayerData(updatedPlayerData);
     writePlayerData(updatedPlayerData);
-    
-    let purchaseMsg = `Purchased ${item.name}!`;
-    if (newAchievements.length > 0) purchaseMsg += ' Achievement unlocked!';
+    if (isAuthenticated && user) {
+      const persistPayload = {
+        currency: updatedPlayerData.currency,
+        totalPurchases: updatedPlayerData.totalPurchases,
+        achievements: updatedPlayerData.achievements
+      };
+
+      if (itemType === 'environments') {
+        persistPayload.ownedEnvironments = updatedPlayerData.ownedEnvironments;
+        persistPayload.currentEnvironment = updatedPlayerData.currentEnvironment;
+      } else if (itemType === 'upgrades') {
+        persistPayload.ownedUpgrades = updatedPlayerData.ownedUpgrades;
+      }
+
+      persistProgress(persistPayload);
+    }
+
+    const itemName = ENVIRONMENT_LIBRARY[itemId]?.name || item.name;
+    let purchaseMsg = `Purchased ${itemName}!`;
+    if (itemType === 'environments') {
+      purchaseMsg = `Unlocked ${itemName}! Equipped automatically.`;
+    }
+    if (newAchievements.length > 0) {
+      purchaseMsg += ' Achievement unlocked!';
+    }
     setStatusMessage(purchaseMsg);
-  }, [playerData]);
+  }, [playerData, isAuthenticated, user, persistProgress, syncPlayerData]);
+
+  const equipEnvironment = useCallback((environmentId) => {
+    const envConfig = ENVIRONMENT_LIBRARY[environmentId];
+    if (!envConfig) {
+      setStatusMessage('Environment not available.');
+      return;
+    }
+    const owned = (playerData.ownedEnvironments || ['crystal_lake']).includes(environmentId);
+
+    if (!owned) {
+      setStatusMessage('Unlock this environment in the shop first.');
+      return;
+    }
+
+    if (playerData.currentEnvironment === environmentId) {
+      setStatusMessage(`${envConfig?.name || 'Environment'} already equipped.`);
+      return;
+    }
+
+    const updatedPlayerData = {
+      ...playerData,
+      currentEnvironment: environmentId
+    };
+
+    syncPlayerData(updatedPlayerData);
+    writePlayerData(updatedPlayerData);
+
+    if (isAuthenticated && user) {
+      persistProgress({
+        currentEnvironment: environmentId
+      });
+    }
+
+    setStatusMessage(`${envConfig?.name || 'Environment'} equipped!`);
+  }, [playerData, isAuthenticated, user, persistProgress, syncPlayerData]);
 
   const handleReel = useCallback(() => {
     if (phase !== PHASES.HOOKED || !currentFish) return;
 
     const baseReelPower = Math.max(8, 20 - currentFish.difficulty * 4);
     const reelMultiplier = getUpgradeMultiplier('reel_power');
-    const reelPower = baseReelPower * reelMultiplier;
+    const reelPower = Math.max(4, baseReelPower * reelMultiplier * levelDifficulty.reelPowerMod);
     
     setReelProgress((value) => Math.min(100, value + reelPower));
-  }, [phase, currentFish, getUpgradeMultiplier]);
+  }, [phase, currentFish, getUpgradeMultiplier, levelDifficulty]);
 
   const beginFishFight = useCallback(
     (fish) => {
       setCurrentFish(fish);
       setPhase(PHASES.HOOKED);
-      setReelProgress(randomBetween(20, 35));
+      const startPenalty = levelDifficulty.initialProgressPenalty;
+      const startMin = Math.max(6, 20 - startPenalty * 18);
+      const startMax = Math.max(startMin + 6, 35 - startPenalty * 20);
+      setReelProgress(randomBetween(startMin, startMax));
       setStatusMessage(`${fish.name} is on the line — keep reeling!`);
 
       clearReelDecay();
+      const decayInterval = Math.max(110, 150 / Math.max(1, levelDifficulty.decayMod));
       reelDecayRef.current = setInterval(() => {
         const escapeMultiplier = getUpgradeMultiplier('escape_reduction');
-        const escapeRate = (fish.escapeRate * 0.9 + 0.6) * escapeMultiplier;
+        const baseEscape = (fish.escapeRate * 0.9 + 0.6) * levelDifficulty.decayMod;
+        const escapeRate = baseEscape * escapeMultiplier;
         setReelProgress((value) => Math.max(0, value - escapeRate));
-      }, 150);
+      }, decayInterval);
     },
-    [clearReelDecay, getUpgradeMultiplier]
+    [clearReelDecay, getUpgradeMultiplier, levelDifficulty]
   );
 
   const castLine = useCallback(() => {
@@ -906,14 +1180,15 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
     setReelProgress(0);
 
     clearBiteTimeout();
+    const biteDelay = Math.max(450, randomBetween(600, 1600) * levelDifficulty.biteWindowMod);
     biteTimeoutRef.current = setTimeout(() => {
       if (phaseRef.current !== PHASES.WAITING || timeLeftRef.current <= 0) {
         return;
       }
-      const fish = pickRandomFish();
+      const fish = pickRandomFish(playerLevel);
       beginFishFight(fish);
-    }, randomBetween(600, 1600));
-  }, [phase, timeLeft, beginFishFight, clearBiteTimeout]);
+    }, biteDelay);
+  }, [phase, timeLeft, beginFishFight, clearBiteTimeout, levelDifficulty, playerLevel]);
 
   const startGame = useCallback(() => {
     cleanupAll();
@@ -1046,7 +1321,7 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
     return (
       <div 
         ref={gameRef}
-        className={`fishing-game home-screen ${isFullscreen ? 'fullscreen-game' : ''}`} 
+        className={`fishing-game home-screen ${environmentClassName}${isFullscreen ? ' fullscreen-game' : ''}`} 
         role="group" 
         aria-label="ReelQuest Fishing Game Home"
       >
@@ -1094,6 +1369,13 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
                   <span>Level {playerData.level}</span>
                   <span>💰 {playerData.currency}</span>
                   <span>🏆 {playerStats.bestScore}</span>
+                </div>
+                <div className="player-environment" title="Current environment">
+                  <span className="environment-emoji">{activeEnvironment.emoji || '🌊'}</span>
+                  <div className="environment-text">
+                    <span className="environment-label">Environment</span>
+                    <span className="environment-name">{activeEnvironment.name}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1209,37 +1491,83 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
                     <p>No fish in inventory. Go catch some!</p>
                   </div>
                 )}
+
+                <div className="shop-section environment-inventory-section">
+                  <h4>🌍 Environment Loadout</h4>
+                  <p className="environment-inventory-hint">Swap between unlocked locations.</p>
+                  <div className="environment-inventory-grid">
+                    {environmentInventory.map((env) => {
+                      const isActive = env.id === activeEnvironment.id;
+                      return (
+                        <div
+                          key={env.id}
+                          className={`environment-card ${isActive ? 'environment-card-active' : ''}`}
+                        >
+                          <span className="environment-card-emoji">{env.emoji}</span>
+                          <div className="environment-card-details">
+                            <div className="environment-card-name">{env.name}</div>
+                            <div className="environment-card-description">{env.description}</div>
+                          </div>
+                          <button
+                            className="environment-card-button"
+                            onClick={() => equipEnvironment(env.id)}
+                            disabled={isActive}
+                          >
+                            {isActive ? 'Equipped' : 'Equip'}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
                 
                 <div className="shop-section">
                   <h4>🏪 Shop - Environments</h4>
                   <div className="shop-grid">
-                    {SHOP_ITEMS.environments.map((env) => (
-                      <div key={env.id} className="shop-item">
-                        <span className="shop-item-emoji">{env.emoji}</span>
-                        <div className="shop-item-details">
-                          <div className="shop-item-name">{env.name}</div>
-                          <div className="shop-item-description">{env.description}</div>
-                          <div className="shop-item-requirements">
-                            Level {env.levelRequired} • {env.price} coins
+                    {SHOP_ITEMS.environments.map((env) => {
+                      const isOwned = ownedEnvironmentIds.includes(env.id);
+                      const isEquipped = activeEnvironment.id === env.id;
+                      const meetsLevel = (playerData.level || 1) >= env.levelRequired;
+                      const hasCurrency = (playerData.currency || 0) >= env.price;
+                      const buttonDisabled = isEquipped || (!isOwned && (!meetsLevel || !hasCurrency));
+                      const buttonLabel = isEquipped
+                        ? 'Equipped'
+                        : isOwned
+                        ? 'Equip'
+                        : !meetsLevel
+                        ? `Level ${env.levelRequired}`
+                        : 'Buy';
+                      const handleClick = isOwned
+                        ? () => equipEnvironment(env.id)
+                        : () => purchaseItem('environments', env.id);
+
+                      return (
+                        <div key={env.id} className="shop-item">
+                          <span className="shop-item-emoji">{env.emoji}</span>
+                          <div className="shop-item-details">
+                            <div className="shop-item-name">{env.name}</div>
+                            <div className="shop-item-description">{env.description}</div>
+                            <div className="shop-item-requirements">
+                              Level {env.levelRequired} • {env.price} coins
+                            </div>
+                            <div
+                              className={`shop-item-status ${
+                                isEquipped ? 'shop-item-status-equipped' : isOwned ? 'shop-item-status-owned' : 'shop-item-status-locked'
+                              }`}
+                            >
+                              {isEquipped ? 'Equipped' : isOwned ? 'Owned' : 'Locked'}
+                            </div>
                           </div>
+                          <button
+                            className="shop-purchase-button"
+                            onClick={handleClick}
+                            disabled={buttonDisabled}
+                          >
+                            {buttonLabel}
+                          </button>
                         </div>
-                        <button 
-                          className="shop-purchase-button" 
-                          onClick={() => purchaseItem('environments', env.id)}
-                          disabled={
-                            (playerData.ownedEnvironments || ['crystal_lake']).includes(env.id) ||
-                            playerData.currency < env.price ||
-                            playerData.level < env.levelRequired
-                          }
-                        >
-                          {(playerData.ownedEnvironments || ['crystal_lake']).includes(env.id) 
-                            ? 'Owned' 
-                            : playerData.level < env.levelRequired 
-                            ? `Level ${env.levelRequired}` 
-                            : 'Buy'}
-                        </button>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -1421,7 +1749,7 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
   return (
     <div 
       ref={gameRef}
-      className={`fishing-game ${isFullscreen ? 'fullscreen-game' : ''}`} 
+      className={`fishing-game ${environmentClassName}${isFullscreen ? ' fullscreen-game' : ''}`} 
       role="group" 
       aria-label="ReelQuest Fishing Mini Game"
     >
@@ -1486,6 +1814,13 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated }) {
           <div className="best-score-display">
             <span className="best-score-label">Best</span>
             <span className="best-score-value">{Math.max(bestScore, score)}</span>
+          </div>
+          <div className="environment-badge" title="Current environment">
+            <span className="environment-emoji">{activeEnvironment.emoji || '🌊'}</span>
+            <div className="environment-details">
+              <span className="environment-label">Environment</span>
+              <span className="environment-name">{activeEnvironment.name}</span>
+            </div>
           </div>
           <div className="header-buttons">
             <button 
@@ -1649,7 +1984,8 @@ FishingGame.propTypes = {
   onGameComplete: PropTypes.func,
   user: PropTypes.object,
   userProfile: PropTypes.object,
-  isAuthenticated: PropTypes.bool
+  isAuthenticated: PropTypes.bool,
+  onProfileCacheUpdate: PropTypes.func
 };
 
 export default FishingGame;

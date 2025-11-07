@@ -11,7 +11,7 @@ function AppContent() {
   const [currentScreen, setCurrentScreen] = useState('home');
   const [showAuth, setShowAuth] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const { user, userProfile, loading, isAuthenticated } = useUser();
+  const { user, userProfile, loading, isAuthenticated, updateUserProfileCache } = useUser();
 
   const handleSignOut = async () => {
     await signOutUser();
@@ -130,6 +130,7 @@ function AppContent() {
               user={user}
               userProfile={userProfile}
               isAuthenticated={isAuthenticated}
+              onProfileCacheUpdate={updateUserProfileCache}
             />
           </div>
         </div>
@@ -244,7 +245,10 @@ function AppContent() {
     <>
       {renderCurrentScreen()}
       {showAuth && (
-        <AuthForm onAuthSuccess={() => setShowAuth(false)} />
+        <AuthForm
+          onAuthSuccess={() => setShowAuth(false)}
+          onClose={() => setShowAuth(false)}
+        />
       )}
       {showProfile && (
         <UserProfile onClose={() => setShowProfile(false)} />

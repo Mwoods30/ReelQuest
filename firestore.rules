@@ -1,94 +1,129 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper functions for validation
-    function isAuthenticated() {
+    function isSignedIn() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+      return isSignedIn() && request.auth.uid == userId;
     }
-    
-    function isValidUserData(data) {
-      return data.keys().hasAll(['playerName', 'level', 'xp', 'currency', 'createdAt']) &&
-             data.playerName is string &&
-             data.playerName.size() <= 50 &&
-             data.level is int &&
-             data.level >= 1 &&
-             data.level <= 100 &&
-             data.xp is int &&
-             data.xp >= 0 &&
-             data.currency is int &&
-             data.currency >= 0;
+
+    function isNumber(value) {
+      return value is int || value is float;
     }
-    
+
+    function isString(value) {
+      return value is string;
+    }
+
+    function isList(value) {
+      return value is list;
+    }
+
+    function hasOnlyUserFields(data) {
+      return data.keys().hasOnly([
+        'level',
+        'xp',
+        'currency',
+        'inventory',
+        'achievements',
+        'totalCatches',
+        'totalFishSold',
+        'ownedEnvironments',
+        'ownedUpgrades',
+        'currentEnvironment',
+        'totalPurchases',
+        'playerName',
+        'gamesPlayed',
+        'totalPlayTime',
+        'createdAt',
+        'lastActive',
+        'email',
+        'bestScore'
+      ]);
+    }
+
+    function isValidUserProfile(data) {
+      return hasOnlyUserFields(data)
+        && (!('level' in data) || data.level is int)
+        && (!('xp' in data) || data.xp is int)
+        && (!('currency' in data) || isNumber(data.currency))
+        && (!('inventory' in data) || isList(data.inventory))
+        && (!('achievements' in data) || isList(data.achievements))
+        && (!('totalCatches' in data) || isNumber(data.totalCatches))
+        && (!('totalFishSold' in data) || isNumber(data.totalFishSold))
+        && (!('ownedEnvironments' in data) || isList(data.ownedEnvironments))
+        && (!('ownedUpgrades' in data) || isList(data.ownedUpgrades))
+        && (!('currentEnvironment' in data) || isString(data.currentEnvironment))
+        && (!('totalPurchases' in data) || isNumber(data.totalPurchases))
+        && (!('playerName' in data) || isString(data.playerName))
+        && (!('gamesPlayed' in data) || isNumber(data.gamesPlayed))
+        && (!('totalPlayTime' in data) || isNumber(data.totalPlayTime))
+        && (!('email' in data) || isString(data.email))
+        && (!('bestScore' in data) || isNumber(data.bestScore));
+    }
+
     function isValidLeaderboardEntry(data) {
-      return data.keys().hasAll(['userId', 'playerName', 'score', 'catches', 'timestamp']) &&
-             data.userId is string &&
-             data.playerName is string &&
-             data.playerName.size() <= 50 &&
-             data.score is int &&
-             data.score >= 0 &&
-             data.score <= 100000 &&
-             data.catches is int &&
-             data.catches >= 0 &&
-             data.catches <= 1000;
+      return data.keys().hasOnly([
+        'userId',
+        'playerName',
+        'score',
+        'catches',
+        'longestStreak',
+        'level',
+        'timestamp',
+        'date'
+      ])
+        && data.userId is string
+        && isString(data.playerName)
+        && isNumber(data.score)
+        && isNumber(data.catches)
+        && isNumber(data.longestStreak)
+        && isNumber(data.level)
+        && (!('date' in data) || isString(data.date));
     }
-    
+
     function isValidGameSession(data) {
-      return data.keys().hasAll(['userId', 'score', 'catches', 'timestamp']) &&
-             data.userId is string &&
-             data.score is int &&
-             data.score >= 0 &&
-             data.catches is int &&
-             data.catches >= 0;
+      return data.keys().hasOnly([
+        'userId',
+        'score',
+        'catches',
+        'longestStreak',
+        'playTime',
+        'timestamp'
+      ])
+        && data.userId is string
+        && isNumber(data.score)
+        && isNumber(data.catches)
+        && isNumber(data.longestStreak)
+        && isNumber(data.playTime);
     }
-    
-    // Users collection - users can only access their own data
+
     match /users/{userId} {
-      allow read, write: if isOwner(userId) && 
-        (resource == null || isValidUserData(resource.data)) &&
-        (request.resource == null || isValidUserData(request.resource.data));
-      
-      // Prevent users from modifying certain protected fields
-      allow update: if isOwner(userId) && 
-        request.resource.data.createdAt == resource.data.createdAt &&
-        request.resource.data.gamesPlayed >= resource.data.gamesPlayed &&
-        request.resource.data.totalPlayTime >= resource.data.totalPlayTime;
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUserProfile(request.resource.data);
+      allow update: if isOwner(userId)
+        && isValidUserProfile(request.resource.data);
+      allow delete: if false;
     }
-    
-    // Leaderboard collection - read public, write authenticated with validation
+
     match /leaderboard/{entryId} {
       allow read: if true;
-      
-      allow create: if isAuthenticated() && 
-        isValidLeaderboardEntry(request.resource.data) &&
-        request.resource.data.userId == request.auth.uid;
-      
-      // Prevent updates to leaderboard entries (immutable)
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && isValidLeaderboardEntry(request.resource.data);
       allow update, delete: if false;
     }
-    
-    // Game sessions - users can only access their own sessions
+
     match /gameSessions/{sessionId} {
-      allow read, create: if isAuthenticated() && 
-        request.resource.data.userId == request.auth.uid &&
-        isValidGameSession(request.resource.data);
-      
-      // Prevent updates to game sessions (immutable)
+      allow read: if isOwner(resource.data.userId);
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && isValidGameSession(request.resource.data);
       allow update, delete: if false;
     }
-    
-    // Admin collection (for future admin features)
-    match /admin/{document=**} {
-      // Only allow admin access (implement custom claims later)
-      allow read, write: if false;
-    }
-    
-    // Prevent access to any other collections
+
     match /{document=**} {
       allow read, write: if false;
     }

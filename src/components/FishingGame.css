@@ -1,16 +1,78 @@
+.fishing-game.environment-crystal_lake .water-background {
+  background:
+    radial-gradient(ellipse at 20% 18%, rgba(255, 255, 255, 0.1) 0%, transparent 45%),
+    radial-gradient(ellipse at 80% 82%, rgba(94, 234, 212, 0.15) 0%, transparent 55%),
+    linear-gradient(
+      180deg,
+      rgba(94, 234, 212, 0.3) 0%,
+      rgba(56, 189, 248, 0.45) 40%,
+      rgba(30, 64, 175, 0.85) 100%
+    );
+}
+
+.fishing-game.environment-mountain_lake .water-background {
+  background:
+    radial-gradient(ellipse at 15% 25%, rgba(255, 255, 255, 0.12) 0%, transparent 48%),
+    radial-gradient(ellipse at 90% 80%, rgba(165, 243, 252, 0.18) 0%, transparent 60%),
+    linear-gradient(
+      180deg,
+      rgba(191, 219, 254, 0.35) 0%,
+      rgba(96, 165, 250, 0.55) 50%,
+      rgba(30, 64, 175, 0.9) 100%
+    );
+}
+
+.fishing-game.environment-ocean_reef .water-background {
+  background:
+    radial-gradient(ellipse at 12% 30%, rgba(255, 255, 255, 0.14) 0%, transparent 50%),
+    radial-gradient(ellipse at 88% 70%, rgba(34, 211, 238, 0.22) 0%, transparent 62%),
+    linear-gradient(
+      190deg,
+      rgba(34, 211, 238, 0.38) 0%,
+      rgba(14, 165, 233, 0.55) 45%,
+      rgba(17, 94, 89, 0.92) 100%
+    );
+}
+
+.fishing-game.environment-deep_sea .water-background {
+  background:
+    radial-gradient(ellipse at 25% 20%, rgba(148, 163, 184, 0.12) 0%, transparent 40%),
+    radial-gradient(ellipse at 75% 85%, rgba(30, 64, 175, 0.2) 0%, transparent 55%),
+    linear-gradient(
+      195deg,
+      rgba(30, 41, 59, 0.75) 0%,
+      rgba(15, 23, 42, 0.9) 55%,
+      rgba(2, 6, 23, 0.98) 100%
+    );
+}
+:root {
+  --rq-bg-base: linear-gradient(145deg, #0b172a 0%, #10253f 45%, #132d4f 100%);
+  --rq-bg-card: rgba(12, 23, 42, 0.82);
+  --rq-border-soft: rgba(148, 163, 184, 0.25);
+  --rq-border-strong: rgba(148, 163, 184, 0.4);
+  --rq-shadow-strong: 0 32px 60px rgba(2, 8, 23, 0.55);
+  --rq-shadow-soft: 0 20px 40px rgba(15, 23, 42, 0.38);
+  --rq-glass-bg: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 41, 59, 0.86) 100%);
+  --rq-text-primary: #f8fafc;
+  --rq-text-secondary: #cbd5e1;
+  --rq-accent-green: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  --rq-accent-blue: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
+  --rq-accent-gold: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+}
+
 .fishing-game {
   width: 100%;
   height: 880px;
-  background: linear-gradient(135deg, #87CEEB 0%, #6BB6FF 30%, #4682B4 60%, #2E4B7A 90%, #191970 100%);
+  background: var(--rq-bg-base);
   border-radius: 24px;
   position: relative;
   overflow: hidden;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   box-shadow: 
-    0 25px 50px rgba(0, 0, 0, 0.35),
-    0 0 0 1px rgba(255, 255, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  border: 3px solid rgba(255, 255, 255, 0.15);
+    0 25px 60px rgba(2, 8, 23, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Fullscreen styles */
@@ -49,14 +111,12 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 48px;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);
   padding: 32px 40px;
-  border-radius: 24px;
-  backdrop-filter: blur(15px);
-  box-shadow: 
-    0 25px 50px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 28px;
+  background: linear-gradient(140deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 41, 59, 0.84) 100%);
+  border: 1px solid var(--rq-border-soft);
+  box-shadow: var(--rq-shadow-soft);
+  backdrop-filter: blur(20px);
 }
 
 .game-title h1 {
@@ -78,35 +138,73 @@
 }
 
 .player-info-card {
-  background: linear-gradient(135deg, rgba(51, 65, 85, 0.8) 0%, rgba(71, 85, 105, 0.6) 100%);
-  padding: 24px 32px;
-  border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.92) 0%, rgba(15, 23, 42, 0.9) 100%);
+  padding: 28px 36px;
+  border-radius: 22px;
+  border: 1px solid var(--rq-border-soft);
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.4);
 }
 
 .player-details h3 {
   margin: 0 0 12px 0;
-  font-size: 24px;
-  color: #f8fafc;
+  font-size: 26px;
+  color: var(--rq-text-primary);
+  letter-spacing: 0.04em;
 }
 
 .player-stats-summary {
   display: flex;
-  gap: 24px;
-  font-size: 16px;
+  gap: 20px;
+  font-size: 15px;
   font-weight: 600;
+  color: var(--rq-text-secondary);
 }
 
 .player-stats-summary span:first-child {
-  color: #34d399;
+  color: #5eead4;
 }
 
 .player-stats-summary span:nth-child(2) {
-  color: #fbbf24;
+  color: #fcd34d;
 }
 
 .player-stats-summary span:nth-child(3) {
-  color: #38bdf8;
+  color: #60a5fa;
+}
+
+.player-environment {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: rgba(15, 118, 110, 0.15);
+  border: 1px solid rgba(45, 212, 191, 0.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.environment-emoji {
+  font-size: 30px;
+}
+
+.environment-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.environment-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(94, 234, 212, 0.72);
+}
+
+.environment-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--rq-text-primary);
 }
 
 .home-content {
@@ -122,30 +220,27 @@
 }
 
 .play-game-button {
-  background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
-  color: white;
+  background: var(--rq-accent-green);
+  color: #052e16;
   border: none;
-  padding: 24px 48px;
-  border-radius: 20px;
+  padding: 24px 56px;
+  border-radius: 22px;
   font-size: 24px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
-    0 16px 32px rgba(16, 185, 129, 0.3),
-    0 8px 16px rgba(0, 0, 0, 0.15),
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
+  box-shadow:
+    0 18px 42px rgba(16, 185, 129, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.25);
   margin-bottom: 16px;
   min-width: 280px;
 }
 
 .play-game-button:hover {
-  transform: translateY(-2px) scale(1.02);
-  background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%);
-  box-shadow: 
-    0 20px 40px rgba(16, 185, 129, 0.4),
-    0 10px 20px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-3px) scale(1.03);
+  box-shadow:
+    0 26px 48px rgba(16, 185, 129, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 .game-description {
@@ -164,25 +259,24 @@
 }
 
 .menu-button {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.78) 100%);
+  border: 1px solid var(--rq-border-soft);
+  border-radius: 22px;
   padding: 24px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  color: #f8fafc;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  color: var(--rq-text-primary);
   display: flex;
   align-items: center;
-  gap: 16px;
-  backdrop-filter: blur(10px);
+  gap: 18px;
+  backdrop-filter: blur(14px);
   text-align: left;
 }
 
 .menu-button:hover {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(51, 65, 85, 0.8) 100%);
-  border-color: rgba(148, 163, 184, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+  border-color: var(--rq-border-strong);
+  transform: translateY(-4px);
+  box-shadow: 0 18px 36px rgba(8, 25, 56, 0.4);
 }
 
 .menu-icon {
@@ -204,13 +298,15 @@
 }
 
 .menu-badge {
-  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
-  color: white;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
+  background: rgba(56, 189, 248, 0.18);
+  color: #bae6fd;
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-size: 11px;
   font-weight: 600;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .close-overlay-button {
@@ -237,25 +333,25 @@
 }
 
 .home-button-game {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(51, 65, 85, 0.75) 100%);
+  border: 1px solid var(--rq-border-soft);
+  color: var(--rq-text-primary);
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  backdrop-filter: blur(14px);
 }
 
 .home-button-game:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: scale(1.05);
+  transform: translateY(-2px) scale(1.05);
+  border-color: var(--rq-border-strong);
+  box-shadow: 0 12px 22px rgba(9, 18, 32, 0.3);
 }
 
 .game-over-actions {
@@ -266,37 +362,37 @@
 }
 
 .home-button {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
+  background: var(--rq-accent-blue);
+  color: #0f172a;
   border: none;
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-size: 16px;
+  padding: 12px 26px;
+  border-radius: 999px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .home-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 18px 32px rgba(59, 130, 246, 0.45);
 }
 
 .shop-button-end {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
+  background: var(--rq-accent-green);
+  color: #064e3b;
   border: none;
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-size: 16px;
+  padding: 12px 26px;
+  border-radius: 999px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .shop-button-end:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 18px 32px rgba(16, 185, 129, 0.45);
 }
 
 @media (max-width: 768px) {
@@ -406,15 +502,14 @@
   position: absolute;
   width: 100%;
   height: 100%;
-  background: 
-    radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(ellipse at 70% 80%, rgba(135, 206, 235, 0.2) 0%, transparent 60%),
+  background:
+    radial-gradient(ellipse at 25% 18%, rgba(148, 163, 184, 0.18) 0%, transparent 45%),
+    radial-gradient(ellipse at 78% 78%, rgba(59, 130, 246, 0.18) 0%, transparent 55%),
     linear-gradient(
-      180deg,
-      rgba(135, 206, 235, 0.4) 0%,
-      rgba(70, 130, 180, 0.6) 30%,
-      rgba(25, 25, 112, 0.8) 70%,
-      rgba(0, 0, 139, 0.95) 100%
+      185deg,
+      rgba(30, 58, 138, 0.65) 0%,
+      rgba(15, 76, 129, 0.55) 45%,
+      rgba(8, 47, 73, 0.85) 100%
     );
   animation: water-shimmer 8s ease-in-out infinite;
 }
@@ -742,14 +837,12 @@
   top: 100px;
   left: 20px;
   right: 20px;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%);
-  border-radius: 16px;
-  padding: 24px;
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, rgba(10, 21, 39, 0.92) 0%, rgba(17, 31, 52, 0.88) 100%);
+  border-radius: 24px;
+  padding: 28px;
+  backdrop-filter: blur(22px);
+  border: 1px solid var(--rq-border-soft);
+  box-shadow: var(--rq-shadow-strong);
   z-index: 1000;
   max-height: 70vh;
   overflow-y: auto;
@@ -780,14 +873,15 @@
   display: flex;
   gap: 24px;
   margin-bottom: 24px;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  padding: 14px 18px;
+  background: rgba(148, 163, 184, 0.12);
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
 }
 
 .shop-stats span {
-  color: #f8fafc;
-  font-weight: 500;
+  color: var(--rq-text-primary);
+  font-weight: 600;
 }
 
 .inventory-actions {
@@ -795,19 +889,19 @@
 }
 
 .sell-all-button {
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  background: var(--rq-accent-green);
   border: none;
-  color: white;
-  padding: 12px 24px;
-  border-radius: 8px;
+  color: #064e3b;
+  padding: 12px 26px;
+  border-radius: 999px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .sell-all-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 30px rgba(34, 197, 94, 0.4);
 }
 
 .inventory-grid {
@@ -820,17 +914,18 @@
 .inventory-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
+  gap: 14px;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
+  border-radius: 16px;
+  border: 1px solid var(--rq-border-soft);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .inventory-item:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 28px rgba(2, 8, 23, 0.4);
+  border-color: var(--rq-border-strong);
 }
 
 .inventory-fish-emoji {
@@ -860,20 +955,20 @@
 }
 
 .sell-fish-button {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: var(--rq-accent-blue);
   border: none;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 6px;
+  color: #0f172a;
+  padding: 8px 18px;
+  border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .sell-fish-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 20px rgba(59, 130, 246, 0.35);
 }
 
 .empty-inventory {
@@ -892,6 +987,97 @@
   font-size: 18px;
 }
 
+.environment-inventory-section {
+  padding: 22px;
+  margin-bottom: 32px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.12) 0%, rgba(8, 47, 73, 0.22) 100%);
+  border: 1px solid rgba(94, 234, 212, 0.22);
+  box-shadow: 0 18px 32px rgba(8, 47, 73, 0.25);
+}
+
+.environment-inventory-hint {
+  margin: 8px 0 20px;
+  font-size: 13px;
+  color: rgba(148, 163, 184, 0.85);
+}
+
+.environment-inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.environment-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.88) 0%, rgba(30, 41, 59, 0.82) 100%);
+  border: 1px solid var(--rq-border-soft);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.environment-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--rq-border-strong);
+  box-shadow: 0 20px 34px rgba(2, 8, 23, 0.45);
+}
+
+.environment-card-active {
+  border-color: rgba(45, 212, 191, 0.45);
+  box-shadow: 0 24px 40px rgba(16, 185, 129, 0.35);
+}
+
+.environment-card-emoji {
+  font-size: 38px;
+}
+
+.environment-card-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.environment-card-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--rq-text-primary);
+}
+
+.environment-card-description {
+  font-size: 13px;
+  color: rgba(203, 213, 225, 0.82);
+  line-height: 1.4;
+}
+
+.environment-card-button {
+  min-width: 96px;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--rq-accent-green);
+  color: #022c22;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.environment-card-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 26px rgba(16, 185, 129, 0.4);
+}
+
+.environment-card-button:disabled {
+  background: rgba(45, 212, 191, 0.28);
+  color: rgba(5, 46, 22, 0.65);
+  cursor: default;
+  box-shadow: none;
+}
+
 .shop-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -901,17 +1087,18 @@
 .shop-item {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(24, 35, 58, 0.82) 100%);
+  border-radius: 18px;
+  border: 1px solid var(--rq-border-soft);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .shop-item:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-4px);
+  border-color: var(--rq-border-strong);
+  box-shadow: 0 18px 36px rgba(2, 8, 23, 0.5);
 }
 
 .shop-item-emoji {
@@ -920,6 +1107,39 @@
 
 .shop-item-details {
   flex: 1;
+}
+
+.shop-item-status {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  background: rgba(148, 163, 184, 0.12);
+  color: rgba(226, 232, 240, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.shop-item-status-owned {
+  background: rgba(96, 165, 250, 0.18);
+  color: #bfdbfe;
+  border-color: rgba(96, 165, 250, 0.35);
+}
+
+.shop-item-status-equipped {
+  background: rgba(45, 212, 191, 0.22);
+  color: #a7f3d0;
+  border-color: rgba(45, 212, 191, 0.4);
+}
+
+.shop-item-status-locked {
+  background: rgba(148, 163, 184, 0.16);
+  color: rgba(203, 213, 225, 0.9);
+  border-color: rgba(148, 163, 184, 0.28);
 }
 
 .shop-item-name {
@@ -943,26 +1163,26 @@
 }
 
 .shop-purchase-button {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: var(--rq-accent-green);
   border: none;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 8px;
+  color: #052e16;
+  padding: 10px 22px;
+  border-radius: 999px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 80px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  min-width: 96px;
 }
 
 .shop-purchase-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 18px 30px rgba(16, 185, 129, 0.4);
 }
 
 .shop-purchase-button:disabled {
-  background: rgba(156, 163, 175, 0.3);
-  color: #9ca3af;
+  background: rgba(148, 163, 184, 0.28);
+  color: rgba(226, 232, 240, 0.7);
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
@@ -978,6 +1198,36 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 12px;
+}
+
+.environment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.26) 0%, rgba(6, 78, 59, 0.35) 100%);
+  border: 1px solid rgba(45, 212, 191, 0.38);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.environment-details {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.environment-badge .environment-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(165, 243, 252, 0.7);
+}
+
+.environment-badge .environment-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--rq-text-primary);
 }
 
 .achievement-item {
