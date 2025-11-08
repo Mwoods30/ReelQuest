@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './App.css';
 import FishingGame from './components/FishingGame.jsx';
 import AuthForm from './components/AuthForm.jsx';
@@ -8,17 +8,105 @@ import { useUser } from './hooks/useUser.js';
 import { signOutUser } from './firebase/auth.js';
 
 function AppContent() {
-  const [currentScreen, setCurrentScreen] = useState('home');
+  const initialIsMobile = typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
+  const [isMobile, setIsMobile] = useState(initialIsMobile);
+  const [currentScreen, setCurrentScreen] = useState(() => (initialIsMobile ? 'game' : 'home'));
   const [showAuth, setShowAuth] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const hasForcedMobileScreen = useRef(initialIsMobile);
   const { user, userProfile, loading, isAuthenticated, updateUserProfileCache } = useUser();
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+
+    const handleChange = (event) => {
+      setIsMobile(event.matches);
+    };
+
+    handleChange(mediaQuery);
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+
+    mediaQuery.addListener(handleChange);
+    return () => mediaQuery.removeListener(handleChange);
+  }, []);
+
+  useEffect(() => {
+    if (isMobile && !hasForcedMobileScreen.current) {
+      setCurrentScreen('game');
+      hasForcedMobileScreen.current = true;
+    }
+  }, [isMobile, setCurrentScreen]);
 
   const handleSignOut = async () => {
     await signOutUser();
   };
 
+  const renderNavigationTabs = (variant = 'standard') => {
+    const classes = ['navigation-tabs', `navigation-tabs-${variant}`];
+    if (isMobile) {
+      classes.push('navigation-tabs-mobile');
+    }
+
+    const ariaLabel = variant === 'game' ? 'In-game navigation' : 'Main navigation';
+
+    return (
+      <nav className={classes.join(' ')} aria-label={ariaLabel}>
+        <button
+          type="button"
+          className={`navigation-tab ${currentScreen === 'home' ? 'navigation-tab-active' : ''}`}
+          onClick={() => {
+            setShowProfile(false);
+            setCurrentScreen('home');
+          }}
+        >
+          <span className="navigation-tab-icon" aria-hidden="true">🏚️</span>
+          <span className="navigation-tab-label">Home</span>
+        </button>
+        <button
+          type="button"
+          className={`navigation-tab ${currentScreen === 'game' ? 'navigation-tab-active' : ''}`}
+          onClick={() => {
+            setShowProfile(false);
+            setCurrentScreen('game');
+          }}
+        >
+          <span className="navigation-tab-icon" aria-hidden="true">🕹️</span>
+          <span className="navigation-tab-label">Play</span>
+        </button>
+        <button
+          type="button"
+          className={`navigation-tab ${currentScreen === 'about' ? 'navigation-tab-active' : ''}`}
+          onClick={() => {
+            setShowProfile(false);
+            setCurrentScreen('about');
+          }}
+        >
+          <span className="navigation-tab-icon" aria-hidden="true">ℹ️</span>
+          <span className="navigation-tab-label">About</span>
+        </button>
+        <button
+          type="button"
+          className={`navigation-tab navigation-tab-action ${showProfile ? 'navigation-tab-active' : ''}`}
+          onClick={() => setShowProfile((prev) => !prev)}
+          aria-pressed={showProfile}
+        >
+          <span className="navigation-tab-icon" aria-hidden="true">👤</span>
+          <span className="navigation-tab-label">Profile</span>
+        </button>
+      </nav>
+    );
+  };
+
   const HomeScreen = () => (
-    <div className="container">
+    <div className={`container${isMobile ? ' container-mobile-home' : ''}`}>
       <div className="scroll-content">
         <div className="logo-section">
           <div className="logo-container">
@@ -100,7 +188,7 @@ function AppContent() {
           </button>
         )}
       </div>
-      {renderBottomTabs()}
+      {renderNavigationTabs('standard')}
     </div>
   );
 
@@ -111,8 +199,7 @@ function AppContent() {
     };
 
     return (
-      <div className="container play-container">
-        {renderTopTabs()}
+      <div className={`container play-container${isMobile ? ' play-container-mobile' : ''}`}>
         <div className="play-content">
           <div className="play-header">
             <h1 className="title">Play ReelQuest</h1>
@@ -124,13 +211,15 @@ function AppContent() {
               </div>
             )}
           </div>
-          <div className="game-container">
+          <div className={`game-container${isMobile ? ' game-container-mobile' : ''}`}>
             <FishingGame 
               onGameComplete={handleGameComplete}
               user={user}
               userProfile={userProfile}
               isAuthenticated={isAuthenticated}
               onProfileCacheUpdate={updateUserProfileCache}
+              renderNavigationTabs={renderNavigationTabs}
+              isMobile={isMobile}
             />
           </div>
         </div>
@@ -141,7 +230,7 @@ function AppContent() {
 
 
   const AboutScreen = () => (
-    <div className="container">
+    <div className={`container${isMobile ? ' container-mobile-about' : ''}`}>
       <div className="scroll-content">
         <h1 className="title">About</h1>
         <div className="about-container">
@@ -156,67 +245,10 @@ function AppContent() {
           </p>
         </div>
       </div>
-      {renderBottomTabs()}
+      {renderNavigationTabs('standard')}
     </div>
   );
 
-  const renderBottomTabs = () => (
-    <div className="tab-bar">
-      <button 
-        className={`tab ${currentScreen === 'home' ? 'active-tab' : ''}`}
-        onClick={() => setCurrentScreen('home')}
-      >
-        <span className={`tab-icon ${currentScreen === 'home' ? 'active-tab-icon' : ''}`}>🏚️</span>
-        <span className={`tab-label ${currentScreen === 'home' ? 'active-tab-label' : ''}`}>Home</span>
-      </button>
-      
-      <button 
-        className={`tab ${currentScreen === 'game' ? 'active-tab' : ''}`}
-        onClick={() => setCurrentScreen('game')}
-      >
-        <span className={`tab-icon ${currentScreen === 'game' ? 'active-tab-icon' : ''}`}>🕹️</span>
-        <span className={`tab-label ${currentScreen === 'game' ? 'active-tab-label' : ''}`}>Play</span>
-      </button>
-      
-      
-      <button 
-        className={`tab ${currentScreen === 'about' ? 'active-tab' : ''}`}
-        onClick={() => setCurrentScreen('about')}
-      >
-        <span className={`tab-icon ${currentScreen === 'about' ? 'active-tab-icon' : ''}`}>𝍕</span>
-        <span className={`tab-label ${currentScreen === 'about' ? 'active-tab-label' : ''}`}>About</span>
-      </button>
-    </div>
-  );
-
-  const renderTopTabs = () => (
-    <div className="tab-bar tab-bar-top">
-      <button 
-        className={`tab ${currentScreen === 'home' ? 'active-tab' : ''}`}
-        onClick={() => setCurrentScreen('home')}
-      >
-        <span className={`tab-icon ${currentScreen === 'home' ? 'active-tab-icon' : ''}`}>🏚️</span>
-        <span className={`tab-label ${currentScreen === 'home' ? 'active-tab-label' : ''}`}>Home</span>
-      </button>
-      
-      <button 
-        className={`tab ${currentScreen === 'game' ? 'active-tab' : ''}`}
-        onClick={() => setCurrentScreen('game')}
-      >
-        <span className={`tab-icon ${currentScreen === 'game' ? 'active-tab-icon' : ''}`}>🕹️</span>
-        <span className={`tab-label ${currentScreen === 'game' ? 'active-tab-label' : ''}`}>Play</span>
-      </button>
-      
-      
-      <button 
-        className={`tab ${currentScreen === 'about' ? 'active-tab' : ''}`}
-        onClick={() => setCurrentScreen('about')}
-      >
-        <span className={`tab-icon ${currentScreen === 'about' ? 'active-tab-icon' : ''}`}>𝍕</span>
-        <span className={`tab-label ${currentScreen === 'about' ? 'active-tab-label' : ''}`}>About</span>
-      </button>
-    </div>
-  );
 
   const renderCurrentScreen = () => {
     switch (currentScreen) {

@@ -46,7 +46,7 @@ Required keys:
 - `VITE_FIREBASE_APP_ID`
 - `VITE_FIREBASE_MEASUREMENT_ID` (optional for Analytics)
 
-## � Firebase Deployment
+## 🚀 Firebase Deployment
 
 1. **Authenticate & select project**
    ```bash
@@ -69,7 +69,9 @@ Required keys:
    curl -I https://<your-domain>
    ```
 
-5. **Rotate credentials if leaked** – If any `.env` values or build artifacts were exposed, generate new Firebase API keys and update secrets before redeploying.
+5. **Smoke test mobile web** – Open the site on mobile Safari/Chrome, verify scrolling, touch controls, and fullscreen toggle.
+
+6. **Rotate credentials if leaked** – If any `.env` values or build artifacts were exposed, generate new Firebase API keys and update secrets before redeploying.
 
 ### Firestore Rules
 

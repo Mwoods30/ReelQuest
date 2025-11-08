@@ -524,7 +524,15 @@ const createSwimField = () =>
     delay: randomBetween(0, 2)
   }));
 
-function FishingGame({ onGameComplete, user, userProfile, isAuthenticated, onProfileCacheUpdate }) {
+function FishingGame({
+  onGameComplete,
+  user,
+  userProfile,
+  isAuthenticated,
+  onProfileCacheUpdate,
+  renderNavigationTabs,
+  isMobile = false
+}) {
   const [phase, setPhase] = useState(PHASES.IDLE);
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState(readStoredBestScore);
@@ -554,7 +562,7 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated, onPro
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [gameStartTime, setGameStartTime] = useState(null);
   const [playerStats, setPlayerStats] = useState(readPlayerStats());
-  const [gameMode, setGameMode] = useState('home'); // 'home' | 'playing'
+  const [gameMode, setGameMode] = useState(() => (isMobile ? 'playing' : 'home')); // 'home' | 'playing'
   const [globalLeaderboard, setGlobalLeaderboard] = useState([]);
   const ownedEnvironmentIds = playerData?.ownedEnvironments?.length
     ? playerData.ownedEnvironments
@@ -609,6 +617,7 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated, onPro
   const celebrationTimeoutRef = useRef(null);
   const phaseRef = useRef(PHASES.IDLE);
   const timeLeftRef = useRef(GAME_DURATION);
+  const mobileAutoStartRef = useRef(false);
 
   const bubbles = useMemo(createBubbleField, []);
   const swimmers = useMemo(createSwimField, []);
@@ -1207,6 +1216,21 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated, onPro
     setPhase(PHASES.READY);
   }, [cleanupAll]);
 
+  useEffect(() => {
+    if (!isMobile) {
+      return;
+    }
+
+    if (mobileAutoStartRef.current) {
+      return;
+    }
+
+    if (phase === PHASES.IDLE) {
+      mobileAutoStartRef.current = true;
+      startGame();
+    }
+  }, [isMobile, phase, startGame]);
+
   const returnToHome = useCallback(() => {
     cleanupAll();
     setPhase(PHASES.IDLE);
@@ -1321,7 +1345,7 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated, onPro
     return (
       <div 
         ref={gameRef}
-        className={`fishing-game home-screen ${environmentClassName}${isFullscreen ? ' fullscreen-game' : ''}`} 
+        className={`fishing-game home-screen ${environmentClassName}${isFullscreen ? ' fullscreen-game' : ''}${isMobile ? ' mobile-layout' : ''}`} 
         role="group" 
         aria-label="ReelQuest Fishing Game Home"
       >
@@ -1439,6 +1463,12 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated, onPro
               </button>
             </div>
           </div>
+
+          {typeof renderNavigationTabs === 'function' ? (
+            <div className="game-bottom-nav home-nav">
+              {renderNavigationTabs('game')}
+            </div>
+          ) : null}
 
           {/* Overlays for home screen */}
           {showShop && (
@@ -1749,7 +1779,7 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated, onPro
   return (
     <div 
       ref={gameRef}
-      className={`fishing-game ${environmentClassName}${isFullscreen ? ' fullscreen-game' : ''}`} 
+      className={`fishing-game ${environmentClassName}${isFullscreen ? ' fullscreen-game' : ''}${isMobile ? ' mobile-layout' : ''}`} 
       role="group" 
       aria-label="ReelQuest Fishing Mini Game"
     >
@@ -1974,6 +2004,12 @@ function FishingGame({ onGameComplete, user, userProfile, isAuthenticated, onPro
           ) : null}
 
           {statusMessage ? <p className="status-message">{statusMessage}</p> : null}
+
+          {typeof renderNavigationTabs === 'function' ? (
+            <div className="game-bottom-nav">
+              {renderNavigationTabs('game')}
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
@@ -1985,7 +2021,9 @@ FishingGame.propTypes = {
   user: PropTypes.object,
   userProfile: PropTypes.object,
   isAuthenticated: PropTypes.bool,
-  onProfileCacheUpdate: PropTypes.func
+  onProfileCacheUpdate: PropTypes.func,
+  renderNavigationTabs: PropTypes.func,
+  isMobile: PropTypes.bool
 };
 
 export default FishingGame;
