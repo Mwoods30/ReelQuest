@@ -16,9 +16,15 @@ const GLOBAL_SCORES_KEY = 'reelquest:global:leaderboard';
 const PLAYER_STATS_KEY = 'reelquest:player:stats';
 
 // Progression System Constants
-const LEVEL_XP_REQUIREMENTS = [
-  0, 100, 250, 450, 700, 1000, 1350, 1750, 2200, 2700, 3250, 3850, 4500, 5200, 5950
-];
+const generateXPTable = (maxLevel = 50, base = 100, exponent = 1.4) => {
+  const xpTable = [0]; // Level 1 starts at 0 XP
+  for (let level = 1; level < maxLevel; level++) {
+    xpTable.push(Math.floor(base * Math.pow(level, exponent)));
+  }
+  return xpTable;
+};
+
+const LEVEL_XP_REQUIREMENTS = generateXPTable(50);
 
 const XP_PER_CATCH = {
   'Common': 15,
@@ -37,6 +43,17 @@ const ENVIRONMENT_LIBRARY = Object.freeze({
     price: 0,
     purchasable: false
   },
+
+  swamp_marsh: {
+    id: 'swamp_marsh',
+    name: 'Swamp Marsh',
+    description: 'Murky wetlands filled with resilient, quirky fish',
+    emoji: '🪵',
+    price: 150,
+    levelRequired: 2,
+    purchasable: true
+  },
+
   mountain_lake: {
     id: 'mountain_lake',
     name: 'Mountain Lake',
@@ -46,6 +63,17 @@ const ENVIRONMENT_LIBRARY = Object.freeze({
     levelRequired: 3,
     purchasable: true
   },
+
+  sunset_pier: {
+    id: 'sunset_pier',
+    name: 'Sunset Pier',
+    description: 'A gentle coastline with dusk-loving species',
+    emoji: '🌅',
+    price: 300,
+    levelRequired: 4,
+    purchasable: true
+  },
+
   ocean_reef: {
     id: 'ocean_reef',
     name: 'Ocean Reef',
@@ -55,6 +83,27 @@ const ENVIRONMENT_LIBRARY = Object.freeze({
     levelRequired: 5,
     purchasable: true
   },
+
+  volcanic_springs: {
+    id: 'volcanic_springs',
+    name: 'Volcanic Springs',
+    description: 'Boiling geothermal pools hiding heat-forged fish',
+    emoji: '🌋',
+    price: 650,
+    levelRequired: 6,
+    purchasable: true
+  },
+
+  frozen_tundra: {
+    id: 'frozen_tundra',
+    name: 'Frozen Tundra',
+    description: 'Frigid waters with hardy, powerful cold-water fish',
+    emoji: '❄️',
+    price: 800,
+    levelRequired: 7,
+    purchasable: true
+  },
+
   deep_sea: {
     id: 'deep_sea',
     name: 'Deep Sea',
@@ -62,6 +111,66 @@ const ENVIRONMENT_LIBRARY = Object.freeze({
     emoji: '🌀',
     price: 1000,
     levelRequired: 8,
+    purchasable: true
+  },
+
+  jungle_river: {
+    id: 'jungle_river',
+    name: 'Jungle River',
+    description: 'Dense rainforest river teeming with aggressive species',
+    emoji: '🌴',
+    price: 950,
+    levelRequired: 9,
+    purchasable: true
+  },
+
+  stormy_coast: {
+    id: 'stormy_coast',
+    name: 'Stormy Coast',
+    description: 'Raging waters holding dangerous but valuable fish',
+    emoji: '🌩️',
+    price: 1200,
+    levelRequired: 10,
+    purchasable: true
+  },
+
+  enchanted_pond: {
+    id: 'enchanted_pond',
+    name: 'Enchanted Pond',
+    description: 'A magical oasis where impossible species appear',
+    emoji: '✨',
+    price: 1500,
+    levelRequired: 11,
+    purchasable: true
+  },
+
+  abyssal_trench: {
+    id: 'abyssal_trench',
+    name: 'Abyssal Trench',
+    description: 'Lightless depths hiding colossal abyssal creatures',
+    emoji: '⚫',
+    price: 2200,
+    levelRequired: 13,
+    purchasable: true
+  },
+
+  sky_islands: {
+    id: 'sky_islands',
+    name: 'Sky Islands',
+    description: 'Floating lakes with gravity-defying fish species',
+    emoji: '☁️',
+    price: 2600,
+    levelRequired: 14,
+    purchasable: true
+  },
+
+  astral_rift: {
+    id: 'astral_rift',
+    name: 'Astral Rift',
+    description: 'A cosmic fracture where star-born fish drift freely',
+    emoji: '🌌',
+    price: 3500,
+    levelRequired: 15,
     purchasable: true
   }
 });
@@ -164,6 +273,70 @@ const ACHIEVEMENTS = [
     emoji: '🛒',
     requirement: { type: 'shop_purchase', value: 1 },
     reward: 100
+  },
+    {
+    id: 'pro_collector',
+    name: 'Pro Collector',
+    description: 'Catch 50 fish',
+    emoji: '🎣',
+    requirement: { type: 'catches', value: 50 },
+    reward: 200
+  },
+  {
+    id: 'grand_master_collector',
+    name: 'Grand Master Collector',
+    description: 'Catch 250 fish',
+    emoji: '🐟',
+    requirement: { type: 'catches', value: 250 },
+    reward: 500
+  },
+  {
+    id: 'level_10',
+    name: 'Veteran Fisher',
+    description: 'Reach level 10',
+    emoji: '🪙',
+    requirement: { type: 'level', value: 10 },
+    reward: 300
+  },
+  {
+    id: 'level_20',
+    name: 'Fishing Legend',
+    description: 'Reach level 20',
+    emoji: '👑',
+    requirement: { type: 'level', value: 20 },
+    reward: 600
+  },
+  {
+    id: 'moneybags',
+    name: 'Moneybags',
+    description: 'Accumulate 5,000 coins',
+    emoji: '💵',
+    requirement: { type: 'currency', value: 5000 },
+    reward: 450
+  },
+  {
+    id: 'big_baller',
+    name: 'Big Baller',
+    description: 'Accumulate 10,000 coins',
+    emoji: '💎',
+    requirement: { type: 'currency', value: 10000 },
+    reward: 800
+  },
+  {
+    id: 'shopping_spree',
+    name: 'Shopping Spree',
+    description: 'Make 5 shop purchases',
+    emoji: '🧺',
+    requirement: { type: 'shop_purchase', value: 5 },
+    reward: 175
+  },
+  {
+    id: 'shopping_addict',
+    name: 'Shopping Addict',
+    description: 'Make 20 shop purchases',
+    emoji: '🛍️',
+    requirement: { type: 'shop_purchase', value: 20 },
+    reward: 350
   }
 ];
 
@@ -194,6 +367,9 @@ const getLevelDifficultyProfile = (level = 1) => {
 };
 
 const FISH_TYPES = [
+  // -----------------------------
+  // COMMON
+  // -----------------------------
   {
     name: 'Bluegill',
     emoji: '🐟',
@@ -217,6 +393,32 @@ const FISH_TYPES = [
     value: 8
   },
   {
+    name: 'Sunfish',
+    emoji: '🌞',
+    rarity: 'Common',
+    points: 12,
+    difficulty: 1.1,
+    escapeRate: 1.1,
+    minSize: 5,
+    maxSize: 9,
+    value: 6
+  },
+  {
+    name: 'Crappie',
+    emoji: '🐚',
+    rarity: 'Common',
+    points: 13,
+    difficulty: 1.15,
+    escapeRate: 1.1,
+    minSize: 6,
+    maxSize: 11,
+    value: 7
+  },
+
+  // -----------------------------
+  // UNCOMMON
+  // -----------------------------
+  {
     name: 'Rainbow Trout',
     emoji: '🐡',
     rarity: 'Uncommon',
@@ -227,6 +429,32 @@ const FISH_TYPES = [
     maxSize: 14,
     value: 12
   },
+  {
+    name: 'Smallmouth Bass',
+    emoji: '🐳',
+    rarity: 'Uncommon',
+    points: 22,
+    difficulty: 1.7,
+    escapeRate: 1.5,
+    minSize: 9,
+    maxSize: 15,
+    value: 15
+  },
+  {
+    name: 'Koi Carp',
+    emoji: '🎏',
+    rarity: 'Uncommon',
+    points: 25,
+    difficulty: 1.8,
+    escapeRate: 1.6,
+    minSize: 10,
+    maxSize: 16,
+    value: 18
+  },
+
+  // -----------------------------
+  // RARE
+  // -----------------------------
   {
     name: 'Striped Bass',
     emoji: '🐬',
@@ -239,6 +467,32 @@ const FISH_TYPES = [
     value: 25
   },
   {
+    name: 'Electric Eel',
+    emoji: '⚡',
+    rarity: 'Rare',
+    points: 35,
+    difficulty: 2.0,
+    escapeRate: 1.7,
+    minSize: 14,
+    maxSize: 22,
+    value: 32
+  },
+  {
+    name: 'Tiger Shark',
+    emoji: '🦈',
+    rarity: 'Rare',
+    points: 40,
+    difficulty: 2.2,
+    escapeRate: 1.8,
+    minSize: 18,
+    maxSize: 26,
+    value: 40
+  },
+
+  // -----------------------------
+  // LEGENDARY
+  // -----------------------------
+  {
     name: 'Golden Marlin',
     emoji: '🐋',
     rarity: 'Legendary',
@@ -248,8 +502,31 @@ const FISH_TYPES = [
     minSize: 16,
     maxSize: 28,
     value: 60
+  },
+  {
+    name: 'Crystal Salmon',
+    emoji: '💠',
+    rarity: 'Legendary',
+    points: 55,
+    difficulty: 2.6,
+    escapeRate: 2.1,
+    minSize: 16,
+    maxSize: 30,
+    value: 70
+  },
+  {
+    name: 'Abyss Leviathan',
+    emoji: '🐙',
+    rarity: 'Legendary',
+    points: 65,
+    difficulty: 2.9,
+    escapeRate: 2.3,
+    minSize: 20,
+    maxSize: 34,
+    value: 90
   }
 ];
+
 
 const rarityWeight = (rarity) => {
   switch (rarity.toLowerCase()) {
