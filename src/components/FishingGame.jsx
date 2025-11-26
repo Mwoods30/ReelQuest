@@ -248,6 +248,28 @@ const FISH_TYPES = [
     minSize: 16,
     maxSize: 28,
     value: 60
+  },
+  {
+    name: 'Trout',
+    emoji: '🐋',
+    rarity: 'Common',
+    points: 12,
+    difficulty: 1.2,
+    escapeRate: 1.3,
+    minSize: 6,
+    maxSize: 16,
+    value: 12
+  },
+  {
+    name: 'Obama Fish',
+    emoji: '🐋',
+    rarity: 'Legendary',
+    points: 80,
+    difficulty: 3.5,
+    escapeRate: 3.0,
+    minSize: 24,
+    maxSize: 48,
+    value: 90
   }
 ];
 
