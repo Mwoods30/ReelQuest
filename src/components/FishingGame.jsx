@@ -534,17 +534,24 @@ function FishingGame({
         writePlayerData(updatedPlayerData);
 
         if (isAuthenticated && user && !OFFLINE_MODE) {
-          await persistProgress({
-            xp: updatedPlayerData.xp,
-            level: updatedPlayerData.level,
-            totalCatches: updatedPlayerData.totalCatches,
-            achievements: updatedPlayerData.achievements,
-            currency: updatedPlayerData.currency,
-            inventory: newInventory,
-            ownedEnvironments: updatedPlayerData.ownedEnvironments,
-            ownedUpgrades: updatedPlayerData.ownedUpgrades,
-            totalPurchases: updatedPlayerData.totalPurchases
-          });
+          try {
+            await persistProgress({
+              xp: updatedPlayerData.xp,
+              level: updatedPlayerData.level,
+              totalCatches: updatedPlayerData.totalCatches,
+              achievements: updatedPlayerData.achievements,
+              currency: updatedPlayerData.currency,
+              inventory: newInventory,
+              ownedEnvironments: updatedPlayerData.ownedEnvironments,
+              ownedUpgrades: updatedPlayerData.ownedUpgrades,
+              totalPurchases: updatedPlayerData.totalPurchases
+            });
+          } catch (err) {
+            console.warn('Progress sync failed, continuing locally:', err);
+          }
+        } else {
+          // Always persist locally so UI stays in sync when offline/unauthenticated
+          writePlayerData(updatedPlayerData);
         }
 
         setScore((value) => value + pointsEarned);
