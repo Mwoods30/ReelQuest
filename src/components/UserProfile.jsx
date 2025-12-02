@@ -59,8 +59,8 @@ const formatPlayTime = (minutes) => {
 
 function UserProfile({ onClose }) {
   const { user, userProfile } = useUser();
-  const localPlayerData = useMemo(readPlayerData, []);
-  const localPlayerStats = useMemo(readPlayerStats, []);
+  const localPlayerData = useMemo(readPlayerData, [userProfile]);
+  const localPlayerStats = useMemo(readPlayerStats, [userProfile]);
   const profileSource = userProfile ?? localPlayerData;
   const [isEditing, setIsEditing] = useState(false);
   const [playerName, setPlayerName] = useState(userProfile?.playerName || '');
