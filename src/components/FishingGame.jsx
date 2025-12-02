@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import './FishingGame.css';
 import {
@@ -29,10 +29,9 @@ import GameHeader from './fishing/GameHeader.jsx';
 import GameStatsBar from './fishing/GameStatsBar.jsx';
 import GameControls from './fishing/GameControls.jsx';
 import useInventory from './fishing/useInventory.js';
-
-const ShopOverlay = lazy(() => import('./fishing/ShopOverlay.jsx'));
-const LeaderboardOverlay = lazy(() => import('./fishing/LeaderboardOverlay.jsx'));
-const InstructionsOverlay = lazy(() => import('./fishing/InstructionsOverlay.jsx'));
+import ShopOverlay from './fishing/ShopOverlay.jsx';
+import LeaderboardOverlay from './fishing/LeaderboardOverlay.jsx';
+import InstructionsOverlay from './fishing/InstructionsOverlay.jsx';
 
 const getLevelDifficultyProfile = (level = 1) => {
   const progress = Math.max(0, level - 1);
@@ -771,7 +770,7 @@ function FishingGame({
   const isPlaying = phase !== PHASES.IDLE && phase !== PHASES.ENDED;
 
   const overlays = (showShop || showLeaderboard || showInstructions) ? (
-    <Suspense fallback={<div className="overlay-loading">Loading…</div>}>
+    <>
       {showShop && (
         <ShopOverlay
           inventory={inventory}
@@ -804,7 +803,7 @@ function FishingGame({
           fishTypes={FISH_TYPES}
         />
       )}
-    </Suspense>
+    </>
   ) : null;
 
   // Home Screen Render
