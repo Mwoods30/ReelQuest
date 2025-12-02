@@ -750,7 +750,7 @@
 .current-fish,
 .caught-fish {
   position: absolute;
-  top: 102%;
+  top: 62%;
   left: 50%;
   transform: translate(-50%, -50%);
   min-width: 340px;
@@ -1926,7 +1926,7 @@
 
   .current-fish,
   .caught-fish {
-    top: 62%;
+    top: 64%;
     width: calc(100% - 32px);
     min-width: 0;
   }
@@ -2081,6 +2081,7 @@
     grid-area: main;
     align-self: center;
     justify-self: center;
+    top: 58%;
   }
 
   .game-controls {
