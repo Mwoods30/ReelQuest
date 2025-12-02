@@ -251,14 +251,16 @@ function FishingGame({
   const syncPlayerData = useCallback((nextData, { skipCacheUpdate = false } = {}) => {
     if (!nextData) return;
 
-    const merged = { ...getDefaultPlayerData(), ...playerData, ...nextData };
-    setPlayerData(merged);
+    setPlayerData((prev) => {
+      const merged = { ...getDefaultPlayerData(), ...prev, ...nextData };
 
-    if (skipCacheUpdate) return;
-    if (!OFFLINE_MODE && isAuthenticated && onProfileCacheUpdate) {
-      onProfileCacheUpdate(merged);
-    }
-  }, [isAuthenticated, onProfileCacheUpdate, playerData]);
+      if (!skipCacheUpdate && !OFFLINE_MODE && isAuthenticated && onProfileCacheUpdate) {
+        onProfileCacheUpdate(merged);
+      }
+
+      return merged;
+    });
+  }, [isAuthenticated, onProfileCacheUpdate]);
   const playerLevel = playerData?.level || 1;
   const levelDifficulty = useMemo(() => getLevelDifficultyProfile(playerLevel), [playerLevel]);
   const persistProgress = useCallback(async (updates) => {
