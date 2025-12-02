@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { signOutUser, resetPassword } from '../firebase/auth.js';
 import { useUser } from '../hooks/useUser.js';
+import { readPlayerData, readPlayerStats } from './fishing/storage.js';
 import './UserProfile.css';
 
 const ALL_ACHIEVEMENTS = [
@@ -58,6 +59,9 @@ const formatPlayTime = (minutes) => {
 
 function UserProfile({ onClose }) {
   const { user, userProfile } = useUser();
+  const localPlayerData = useMemo(readPlayerData, []);
+  const localPlayerStats = useMemo(readPlayerStats, []);
+  const profileSource = userProfile ?? localPlayerData;
   const [isEditing, setIsEditing] = useState(false);
   const [playerName, setPlayerName] = useState(userProfile?.playerName || '');
   const [loading, setLoading] = useState(false);
@@ -67,20 +71,20 @@ function UserProfile({ onClose }) {
   const heroStats = useMemo(() => ([
     {
       label: 'Level',
-      value: userProfile?.level ?? 1,
+      value: profileSource?.level ?? 1,
       accent: 'emerald'
     },
     {
       label: 'XP',
-      value: userProfile?.xp ?? 0,
+      value: profileSource?.xp ?? 0,
       accent: 'sky'
     },
     {
       label: 'Currency',
-      value: `💰 ${userProfile?.currency ?? 0}`,
+      value: `💰 ${profileSource?.currency ?? 0}`,
       accent: 'amber'
     }
-  ]), [userProfile]);
+  ]), [profileSource]);
 
   const achievementsWithStatus = useMemo(() => {
     const unlockedSet = new Set(userProfile?.achievements ?? []);
@@ -110,13 +114,13 @@ function UserProfile({ onClose }) {
   );
 
   const profileStats = useMemo(() => ([
-    { label: 'Games Played', value: userProfile?.gamesPlayed ?? 0 },
-    { label: 'Total Catches', value: userProfile?.totalCatches ?? 0 },
-    { label: 'Fish Sold', value: userProfile?.totalFishSold ?? 0 },
-    { label: 'Play Time', value: formatPlayTime(userProfile?.totalPlayTime ?? 0) },
+    { label: 'Games Played', value: (userProfile?.gamesPlayed ?? localPlayerStats.gamesPlayed ?? 0) },
+    { label: 'Total Catches', value: (userProfile?.totalCatches ?? localPlayerStats.totalCatches ?? 0) },
+    { label: 'Fish Sold', value: (userProfile?.totalFishSold ?? localPlayerStats.totalFishSold ?? 0) },
+    { label: 'Play Time', value: formatPlayTime(userProfile?.totalPlayTime ?? localPlayerStats.totalPlayTime ?? 0) },
     { label: 'Achievements', value: unlockedAchievementsCount },
-    { label: 'Last Active', value: formatDate(userProfile?.lastActive) },
-  ]), [unlockedAchievementsCount, userProfile]);
+    { label: 'Last Active', value: formatDate(userProfile?.lastActive ?? localPlayerStats.lastPlayed) },
+  ]), [unlockedAchievementsCount, userProfile, localPlayerStats]);
 
   const getPlayerInitials = (name, email) => {
     const source = name || email || 'P';
