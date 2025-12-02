@@ -770,6 +770,43 @@ function FishingGame({
   const timeDisplay = formatTime(timeLeft);
   const isPlaying = phase !== PHASES.IDLE && phase !== PHASES.ENDED;
 
+  const overlays = (showShop || showLeaderboard || showInstructions) ? (
+    <Suspense fallback={<div className="overlay-loading">Loading…</div>}>
+      {showShop && (
+        <ShopOverlay
+          inventory={inventory}
+          sellAllFish={sellAllFish}
+          sellFish={sellFish}
+          environmentInventory={environmentInventory}
+          activeEnvironment={activeEnvironment}
+          equipEnvironment={equipEnvironment}
+          shopItems={SHOP_ITEMS}
+          ownedEnvironmentIds={ownedEnvironmentIds}
+          playerData={playerData}
+          purchaseItem={purchaseItem}
+          achievements={ACHIEVEMENTS}
+          onClose={() => setShowShop(false)}
+        />
+      )}
+
+      {showLeaderboard && (
+        <LeaderboardOverlay
+          onClose={() => setShowLeaderboard(false)}
+          playerStats={playerStats}
+          globalLeaderboard={globalLeaderboard}
+          playerData={playerData}
+        />
+      )}
+
+      {showInstructions && (
+        <InstructionsOverlay
+          onClose={() => setShowInstructions(false)}
+          fishTypes={FISH_TYPES}
+        />
+      )}
+    </Suspense>
+  ) : null;
+
   // Home Screen Render
   if (gameMode === 'home') {
     return (
@@ -900,43 +937,7 @@ function FishingGame({
             </div>
           ) : null}
 
-          {/* Overlays for home screen */}
-          {(showShop || showLeaderboard || showInstructions) ? (
-            <Suspense fallback={<div className="overlay-loading">Loading…</div>}>
-              {showShop && (
-                <ShopOverlay
-                  inventory={inventory}
-                  sellAllFish={sellAllFish}
-                  sellFish={sellFish}
-                  environmentInventory={environmentInventory}
-                  activeEnvironment={activeEnvironment}
-                  equipEnvironment={equipEnvironment}
-                  shopItems={SHOP_ITEMS}
-                  ownedEnvironmentIds={ownedEnvironmentIds}
-                  playerData={playerData}
-                  purchaseItem={purchaseItem}
-                  achievements={ACHIEVEMENTS}
-                  onClose={() => setShowShop(false)}
-                />
-              )}
-
-              {showLeaderboard && (
-                <LeaderboardOverlay
-                  onClose={() => setShowLeaderboard(false)}
-                  playerStats={playerStats}
-                  globalLeaderboard={globalLeaderboard}
-                  playerData={playerData}
-                />
-              )}
-
-              {showInstructions && (
-                <InstructionsOverlay
-                  onClose={() => setShowInstructions(false)}
-                  fishTypes={FISH_TYPES}
-                />
-              )}
-            </Suspense>
-          ) : null}
+          {overlays}
         </div>
       </div>
     );
@@ -1092,6 +1093,7 @@ function FishingGame({
           renderNavigationTabs={null}
         />
       </div>
+      {overlays}
     </div>
   )
 }
