@@ -51,7 +51,8 @@ export const useInventory = ({
       const updatedPlayerData = {
         ...playerData,
         currency: (playerData.currency || 0) + saleValue,
-        totalFishSold: (playerData.totalFishSold || 0) + 1
+        totalFishSold: (playerData.totalFishSold || 0) + 1,
+        inventory: updatedInventory
       };
 
       setInventory(updatedInventory);
@@ -91,7 +92,8 @@ export const useInventory = ({
       const updatedPlayerData = {
         ...playerData,
         currency: (playerData.currency || 0) + totalValue,
-        totalFishSold: (playerData.totalFishSold || 0) + inventory.length
+        totalFishSold: (playerData.totalFishSold || 0) + inventory.length,
+        inventory: []
       };
 
       setInventory([]);

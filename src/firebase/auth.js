@@ -16,6 +16,16 @@ const disabledResponse = (operation) => ({
   error: `${operation} unavailable: Firebase disabled or missing config`
 });
 
+const clearLocalProgress = () => {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  [
+    'reelquest:fishing:best-score',
+    'reelquest:player:data',
+    'reelquest:global:leaderboard',
+    'reelquest:player:stats'
+  ].forEach((key) => window.localStorage.removeItem(key));
+};
+
 // Google Auth Provider
 const googleProvider = new GoogleAuthProvider();
 
@@ -61,6 +71,7 @@ export const signOutUser = async () => {
   if (!firebaseEnabled || !auth) return disabledResponse('Sign out');
   try {
     await signOut(auth);
+    clearLocalProgress();
     return { success: true };
   } catch (error) {
     return { success: false, error: error.message };
