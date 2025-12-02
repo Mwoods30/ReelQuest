@@ -251,15 +251,15 @@ function FishingGame({
   const syncPlayerData = useCallback((nextData, { skipCacheUpdate = false } = {}) => {
     if (!nextData) return;
 
+    let mergedSnapshot = null;
     setPlayerData((prev) => {
-      const merged = { ...getDefaultPlayerData(), ...prev, ...nextData };
-
-      if (!skipCacheUpdate && !OFFLINE_MODE && isAuthenticated && onProfileCacheUpdate) {
-        onProfileCacheUpdate(merged);
-      }
-
-      return merged;
+      mergedSnapshot = { ...getDefaultPlayerData(), ...prev, ...nextData };
+      return mergedSnapshot;
     });
+
+    if (!skipCacheUpdate && !OFFLINE_MODE && isAuthenticated && onProfileCacheUpdate && mergedSnapshot) {
+      Promise.resolve().then(() => onProfileCacheUpdate(mergedSnapshot));
+    }
   }, [isAuthenticated, onProfileCacheUpdate]);
   const playerLevel = playerData?.level || 1;
   const levelDifficulty = useMemo(() => getLevelDifficultyProfile(playerLevel), [playerLevel]);
