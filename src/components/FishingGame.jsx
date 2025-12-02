@@ -1,180 +1,38 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
 import PropTypes from 'prop-types';
 import './FishingGame.css';
 import {
-  sellFishFromInventory,
-  addToLeaderboard,
-  subscribeToLeaderboard,
-  logGameSession,
-  saveGameProgress
-} from '../firebase/database.js';
+  OFFLINE_MODE,
+  GAME_DURATION,
+  LEVEL_XP_REQUIREMENTS,
+  XP_PER_CATCH,
+  ENVIRONMENT_LIBRARY,
+  SHOP_ITEMS,
+  ACHIEVEMENTS,
+  PHASES,
+  FISH_TYPES
+} from './fishing/constants.js';
+import { getDefaultPlayerData } from './fishing/defaults.js';
+import {
+  readStoredBestScore,
+  writeStoredBestScore,
+  readPlayerData,
+  writePlayerData,
+  readGlobalScores,
+  dedupeLeaderboardEntries,
+  addToGlobalLeaderboard,
+  readPlayerStats,
+  writePlayerStats
+} from './fishing/storage.js';
+import { useLeaderboard, useGameTimer } from './fishing/hooks.js';
+import GameHeader from './fishing/GameHeader.jsx';
+import GameStatsBar from './fishing/GameStatsBar.jsx';
+import GameControls from './fishing/GameControls.jsx';
+import useInventory from './fishing/useInventory.js';
 
-const GAME_DURATION = 60;
-const STORAGE_KEY = 'reelquest:fishing:best-score';
-const PLAYER_DATA_KEY = 'reelquest:player:data';
-const GLOBAL_SCORES_KEY = 'reelquest:global:leaderboard';
-const PLAYER_STATS_KEY = 'reelquest:player:stats';
-
-// Progression System Constants
-const LEVEL_XP_REQUIREMENTS = [
-  0, 100, 250, 450, 700, 1000, 1350, 1750, 2200, 2700, 3250, 3850, 4500, 5200, 5950
-];
-
-const XP_PER_CATCH = {
-  'Common': 15,
-  'Uncommon': 25,
-  'Rare': 40,
-  'Legendary': 75
-};
-
-const ENVIRONMENT_LIBRARY = Object.freeze({
-  crystal_lake: {
-    id: 'crystal_lake',
-    name: 'Crystal Lake',
-    description: 'Peaceful freshwater retreat with balanced fish spawns',
-    emoji: '🏞️',
-    levelRequired: 1,
-    price: 0,
-    purchasable: false
-  },
-  mountain_lake: {
-    id: 'mountain_lake',
-    name: 'Mountain Lake',
-    description: 'Crystal clear waters with alpine fish species',
-    emoji: '🏔️',
-    price: 200,
-    levelRequired: 3,
-    purchasable: true
-  },
-  ocean_reef: {
-    id: 'ocean_reef',
-    name: 'Ocean Reef',
-    description: 'Tropical waters teeming with exotic fish',
-    emoji: '🌊',
-    price: 500,
-    levelRequired: 5,
-    purchasable: true
-  },
-  deep_sea: {
-    id: 'deep_sea',
-    name: 'Deep Sea',
-    description: 'Mysterious depths with legendary creatures',
-    emoji: '🌀',
-    price: 1000,
-    levelRequired: 8,
-    purchasable: true
-  }
-});
-
-// Shop System Constants
-const SHOP_ITEMS = {
-  environments: Object.values(ENVIRONMENT_LIBRARY)
-    .filter((env) => env.purchasable)
-    .map((env) => ({ ...env })),
-  upgrades: [
-    {
-      id: 'better_rod',
-      name: 'Carbon Fiber Rod',
-      description: 'Increases reel power by 25%',
-      emoji: '🎣',
-      price: 150,
-      levelRequired: 2,
-      owned: false,
-      effect: { type: 'reel_power', value: 1.25 }
-    },
-    {
-      id: 'lucky_lure',
-      name: 'Lucky Lure',
-      description: 'Increases rare fish spawn rate by 20%',
-      emoji: '✨',
-      price: 300,
-      levelRequired: 4,
-      owned: false,
-      effect: { type: 'rare_chance', value: 1.2 }
-    },
-    {
-      id: 'master_hooks',
-      name: 'Master Hooks',
-      description: 'Reduces fish escape chance by 30%',
-      emoji: '🪝',
-      price: 400,
-      levelRequired: 6,
-      owned: false,
-      effect: { type: 'escape_reduction', value: 0.7 }
-    },
-    {
-      id: 'xp_booster',
-      name: 'Experience Booster',
-      description: 'Gain 50% more XP from catches',
-      emoji: '⚡',
-      price: 600,
-      levelRequired: 7,
-      owned: false,
-      effect: { type: 'xp_multiplier', value: 1.5 }
-    }
-  ]
-};
-
-// Achievement System
-const ACHIEVEMENTS = [
-  {
-    id: 'first_catch',
-    name: 'First Catch',
-    description: 'Catch your first fish',
-    emoji: '🎣',
-    requirement: { type: 'catches', value: 1 },
-    reward: 50
-  },
-  {
-    id: 'collector',
-    name: 'Collector',
-    description: 'Catch 10 fish',
-    emoji: '🐠',
-    requirement: { type: 'catches', value: 10 },
-    reward: 100
-  },
-  {
-    id: 'rare_hunter',
-    name: 'Rare Hunter',
-    description: 'Catch a rare or legendary fish',
-    emoji: '🏆',
-    requirement: { type: 'rarity', value: 'Rare' },
-    reward: 150
-  },
-  {
-    id: 'level_up',
-    name: 'Level Up',
-    description: 'Reach level 2',
-    emoji: '⭐',
-    requirement: { type: 'level', value: 2 },
-    reward: 75
-  },
-  {
-    id: 'millionaire',
-    name: 'Rich Fisher',
-    description: 'Accumulate 500 coins',
-    emoji: '💰',
-    requirement: { type: 'currency', value: 500 },
-    reward: 200
-  },
-  {
-    id: 'shopper',
-    name: 'First Purchase',
-    description: 'Buy your first shop item',
-    emoji: '🛒',
-    requirement: { type: 'shop_purchase', value: 1 },
-    reward: 100
-  }
-];
-
-const PHASES = Object.freeze({
-  IDLE: 'idle',
-  READY: 'ready',
-  WAITING: 'waiting',
-  HOOKED: 'hooked',
-  CELEBRATE: 'celebrate',
-  ENDED: 'ended'
-});
+const ShopOverlay = lazy(() => import('./fishing/ShopOverlay.jsx'));
+const LeaderboardOverlay = lazy(() => import('./fishing/LeaderboardOverlay.jsx'));
+const InstructionsOverlay = lazy(() => import('./fishing/InstructionsOverlay.jsx'));
 
 const getLevelDifficultyProfile = (level = 1) => {
   const progress = Math.max(0, level - 1);
@@ -192,64 +50,6 @@ const getLevelDifficultyProfile = (level = 1) => {
     biteWindowMod
   };
 };
-
-const FISH_TYPES = [
-  {
-    name: 'Bluegill',
-    emoji: '🐟',
-    rarity: 'Common',
-    points: 10,
-    difficulty: 1.0,
-    escapeRate: 1.0,
-    minSize: 4,
-    maxSize: 8,
-    value: 5
-  },
-  {
-    name: 'Yellow Perch',
-    emoji: '🐠',
-    rarity: 'Common',
-    points: 14,
-    difficulty: 1.2,
-    escapeRate: 1.2,
-    minSize: 6,
-    maxSize: 10,
-    value: 8
-  },
-  {
-    name: 'Rainbow Trout',
-    emoji: '🐡',
-    rarity: 'Uncommon',
-    points: 20,
-    difficulty: 1.6,
-    escapeRate: 1.4,
-    minSize: 8,
-    maxSize: 14,
-    value: 12
-  },
-  {
-    name: 'Striped Bass',
-    emoji: '🐬',
-    rarity: 'Rare',
-    points: 28,
-    difficulty: 1.9,
-    escapeRate: 1.6,
-    minSize: 12,
-    maxSize: 20,
-    value: 25
-  },
-  {
-    name: 'Golden Marlin',
-    emoji: '🐋',
-    rarity: 'Legendary',
-    points: 50,
-    difficulty: 2.5,
-    escapeRate: 2.0,
-    minSize: 16,
-    maxSize: 28,
-    value: 60
-  }
-];
 
 const rarityWeight = (rarity) => {
   switch (rarity.toLowerCase()) {
@@ -307,135 +107,6 @@ const cryptoRandomId = () => {
   }
   return `fish-${Math.random().toString(36).slice(2, 11)}`;
 };
-
-const safeLocalStorage =
-  typeof window !== 'undefined' && window.localStorage ? window.localStorage : undefined;
-
-const readStoredBestScore = () => {
-  if (!safeLocalStorage) return 0;
-  const stored = safeLocalStorage.getItem(STORAGE_KEY);
-  return stored ? Number(stored) || 0 : 0;
-};
-
-const writeStoredBestScore = (value) => {
-  if (!safeLocalStorage) return;
-  safeLocalStorage.setItem(STORAGE_KEY, String(value));
-};
-
-// Player Data Storage Functions
-const readPlayerData = () => {
-  if (!safeLocalStorage) return getDefaultPlayerData();
-  const stored = safeLocalStorage.getItem(PLAYER_DATA_KEY);
-  return stored ? { ...getDefaultPlayerData(), ...JSON.parse(stored) } : getDefaultPlayerData();
-};
-
-const writePlayerData = (playerData) => {
-  if (!safeLocalStorage) return;
-  safeLocalStorage.setItem(PLAYER_DATA_KEY, JSON.stringify(playerData));
-};
-
-const getDefaultPlayerData = () => ({
-  level: 1,
-  xp: 0,
-  currency: 0,
-  inventory: [],
-  achievements: [],
-  totalCatches: 0,
-  totalFishSold: 0,
-  ownedEnvironments: ['crystal_lake'],
-  ownedUpgrades: [],
-  currentEnvironment: 'crystal_lake',
-  totalPurchases: 0,
-  playerName: `Fisher${Math.floor(Math.random() * 10000)}`,
-  gamesPlayed: 0,
-  totalPlayTime: 0
-});
-
-// Global Leaderboard Functions
-const readGlobalScores = () => {
-  if (!safeLocalStorage) return [];
-  const stored = safeLocalStorage.getItem(GLOBAL_SCORES_KEY);
-  return stored ? JSON.parse(stored) : [];
-};
-
-const writeGlobalScores = (scores) => {
-  if (!safeLocalStorage) return;
-  safeLocalStorage.setItem(GLOBAL_SCORES_KEY, JSON.stringify(scores));
-};
-
-const dedupeLeaderboardEntries = (entries) => {
-  if (!Array.isArray(entries)) return [];
-
-  const seen = new Set();
-  const sorted = entries
-    .filter(Boolean)
-    .slice()
-    .sort((a, b) => (b?.score || 0) - (a?.score || 0));
-
-  const unique = [];
-  for (const entry of sorted) {
-    const key = entry.userId || entry.playerName || entry.id;
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
-    unique.push(entry);
-  }
-  return unique;
-};
-
-const addToGlobalLeaderboard = (playerData, gameResult) => {
-  const globalScores = readGlobalScores();
-  
-  const newEntry = {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-    playerName: playerData.playerName || `Fisher${Math.floor(Math.random() * 10000)}`,
-    score: gameResult.score,
-    catches: gameResult.catches,
-    longestStreak: gameResult.longestStreak,
-    level: playerData.level,
-    timestamp: new Date().toISOString(),
-    date: new Date().toLocaleDateString()
-  };
-  
-  globalScores.push(newEntry);
-  
-  const dedupedScores = dedupeLeaderboardEntries(globalScores);
-  const topScores = dedupedScores.slice(0, 100);
-  
-  writeGlobalScores(topScores);
-  const savedEntry = topScores.find((entry) => {
-    if (entry.userId && playerData?.uid) {
-      return entry.userId === playerData.uid;
-    }
-    return entry.playerName === newEntry.playerName;
-  });
-
-  return savedEntry || newEntry;
-};
-
-// Player Statistics Functions
-const readPlayerStats = () => {
-  if (!safeLocalStorage) return getDefaultPlayerStats();
-  const stored = safeLocalStorage.getItem(PLAYER_STATS_KEY);
-  return stored ? { ...getDefaultPlayerStats(), ...JSON.parse(stored) } : getDefaultPlayerStats();
-};
-
-const writePlayerStats = (stats) => {
-  if (!safeLocalStorage) return;
-  safeLocalStorage.setItem(PLAYER_STATS_KEY, JSON.stringify(stats));
-};
-
-const getDefaultPlayerStats = () => ({
-  gamesPlayed: 0,
-  totalScore: 0,
-  totalCatches: 0,
-  totalPlayTime: 0,
-  bestScore: 0,
-  bestStreak: 0,
-  avgScore: 0,
-  favoriteFish: null,
-  fishCaught: {},
-  lastPlayed: null
-});
 
 const updatePlayerStats = (gameResult, playTime) => {
   const stats = readPlayerStats();
@@ -536,7 +207,11 @@ function FishingGame({
   const [phase, setPhase] = useState(PHASES.IDLE);
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState(readStoredBestScore);
-  const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
+  const { timeLeft, setTimeLeft, timeLeftRef, clearTimer } = useGameTimer(
+    phase,
+    null,
+    GAME_DURATION
+  );
   const [currentFish, setCurrentFish] = useState(null);
   const [reelProgress, setReelProgress] = useState(0);
   const [totalCatches, setTotalCatches] = useState(0);
@@ -563,7 +238,7 @@ function FishingGame({
   const [gameStartTime, setGameStartTime] = useState(null);
   const [playerStats, setPlayerStats] = useState(readPlayerStats());
   const [gameMode, setGameMode] = useState(() => (isMobile ? 'playing' : 'home')); // 'home' | 'playing'
-  const [globalLeaderboard, setGlobalLeaderboard] = useState([]);
+  const [globalLeaderboard, setGlobalLeaderboard] = useLeaderboard(isAuthenticated);
   const ownedEnvironmentIds = playerData?.ownedEnvironments?.length
     ? playerData.ownedEnvironments
     : ['crystal_lake'];
@@ -575,59 +250,45 @@ function FishingGame({
     .map((envId) => ENVIRONMENT_LIBRARY[envId])
     .filter(Boolean);
   const syncPlayerData = useCallback((nextData, { skipCacheUpdate = false } = {}) => {
-    if (!nextData) {
-      return;
-    }
+    if (!nextData) return;
 
-    setPlayerData(nextData);
+    const merged = { ...getDefaultPlayerData(), ...playerData, ...nextData };
+    setPlayerData(merged);
 
-    if (skipCacheUpdate) {
-      return;
+    if (skipCacheUpdate) return;
+    if (!OFFLINE_MODE && isAuthenticated && onProfileCacheUpdate) {
+      onProfileCacheUpdate(merged);
     }
-
-    if (isAuthenticated && onProfileCacheUpdate) {
-      onProfileCacheUpdate(nextData);
-    }
-  }, [isAuthenticated, onProfileCacheUpdate]);
+  }, [isAuthenticated, onProfileCacheUpdate, playerData]);
   const playerLevel = playerData?.level || 1;
   const levelDifficulty = useMemo(() => getLevelDifficultyProfile(playerLevel), [playerLevel]);
-  const persistProgress = useCallback((updates) => {
-    if (!isAuthenticated || !user) {
-      return;
-    }
+  const persistProgress = useCallback(async (updates) => {
+    if (OFFLINE_MODE) return;
+    if (!isAuthenticated || !user) return;
 
     const sanitized = Object.fromEntries(
       Object.entries(updates).filter(([, value]) => value !== undefined)
     );
+    if (Object.keys(sanitized).length === 0) return;
 
-    if (Object.keys(sanitized).length === 0) {
-      return;
-    }
-
-    saveGameProgress(user.uid, sanitized).catch((error) => {
+    try {
+      const { saveGameProgress } = await import('../firebase/database.js');
+      await saveGameProgress(user.uid, sanitized);
+    } catch (error) {
       console.error('Failed to sync progress to Firebase:', error);
-    });
+    }
   }, [isAuthenticated, user]);
 
 
   const streakRef = useRef(0);
-  const timerRef = useRef(null);
   const biteTimeoutRef = useRef(null);
   const reelDecayRef = useRef(null);
   const celebrationTimeoutRef = useRef(null);
   const phaseRef = useRef(PHASES.IDLE);
-  const timeLeftRef = useRef(GAME_DURATION);
   const mobileAutoStartRef = useRef(false);
 
   const bubbles = useMemo(createBubbleField, []);
   const swimmers = useMemo(createSwimField, []);
-
-  const clearTimer = useCallback(() => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  }, []);
 
   const clearBiteTimeout = useCallback(() => {
     if (biteTimeoutRef.current) {
@@ -656,36 +317,11 @@ function FishingGame({
       syncPlayerData(userProfile, { skipCacheUpdate: true });
       setInventory(userProfile.inventory || []);
     } else {
-      syncPlayerData(readPlayerData());
-      setInventory([]);
+      const localData = readPlayerData();
+      syncPlayerData(localData);
+      setInventory(localData.inventory || []);
     }
   }, [isAuthenticated, userProfile, syncPlayerData]);
-
-  // Load global leaderboard
-  useEffect(() => {
-    let unsubscribe;
-
-    const loadLeaderboard = async () => {
-      if (isAuthenticated) {
-        // Use Firebase real-time leaderboard for authenticated users
-        unsubscribe = subscribeToLeaderboard((scores) => {
-          setGlobalLeaderboard(dedupeLeaderboardEntries(scores));
-        });
-      } else {
-        // Use localStorage leaderboard for guests
-        const localScores = readGlobalScores();
-        setGlobalLeaderboard(dedupeLeaderboardEntries(localScores));
-      }
-    };
-
-    loadLeaderboard();
-
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
-    };
-  }, [isAuthenticated]);
 
   const cleanupAll = useCallback(() => {
     clearTimer();
@@ -742,12 +378,14 @@ function FishingGame({
 
     // Add to global leaderboard and save progress
     if (score > 0) {
-      if (isAuthenticated && user) {
+      if (!OFFLINE_MODE && isAuthenticated && user) {
         // Firebase operations for authenticated users
         try {
+          const { addToLeaderboard, logGameSession } = await import('../firebase/database.js');
+
           // Add to Firebase leaderboard
           const leaderboardResult = await addToLeaderboard(user.uid, gameResult, playerData);
-          
+
           // Log game session
           await logGameSession(user.uid, {
             score: gameResult.score,
@@ -831,321 +469,136 @@ function FishingGame({
 
   const handleCatch = useCallback(
     (fish) => {
-      if (!fish) return;
-      clearReelDecay();
-      const nextStreak = streakRef.current + 1;
-      streakRef.current = nextStreak;
-      setStreak(nextStreak);
-      setLongestStreak((value) => Math.max(value, nextStreak));
+      try {
+        if (!fish) return;
+        clearReelDecay();
+        const nextStreak = streakRef.current + 1;
+        streakRef.current = nextStreak;
+        setStreak(nextStreak);
+        setLongestStreak((value) => Math.max(value, nextStreak));
 
-      const streakBonus = nextStreak > 1 ? nextStreak * 5 : 0;
-      const pointsEarned = fish.points + streakBonus;
+        const streakBonus = nextStreak > 1 ? nextStreak * 5 : 0;
+        const pointsEarned = fish.points + streakBonus;
 
-      // XP and Level Progression
-      const baseXP = XP_PER_CATCH[fish.rarity] || 10;
-      const xpMultiplier = getUpgradeMultiplier('xp_multiplier');
-      const xpGained = Math.floor(baseXP * xpMultiplier);
-      const newXP = playerData.xp + xpGained;
-      const newLevel = calculateLevelFromXP(newXP);
-      const leveledUp = newLevel > playerData.level;
+        // XP and Level Progression
+        const baseXP = XP_PER_CATCH[fish.rarity] || 10;
+        const xpMultiplier = getUpgradeMultiplier('xp_multiplier');
+        const xpGained = Math.floor(baseXP * xpMultiplier);
+        const newXP = (playerData?.xp || 0) + xpGained;
+        const newLevel = calculateLevelFromXP(newXP);
+        const leveledUp = newLevel > (playerData?.level || 1);
 
-      // Add fish to inventory
-      const caughtFish = {
-        ...fish,
-        id: `catch-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        caughtAt: new Date().toISOString(),
-        size: fish.sizeInches,
-        value: fish.value
-      };
+        // Add fish to inventory
+        const caughtFish = {
+          ...fish,
+          id: `catch-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          caughtAt: new Date().toISOString(),
+          size: fish.sizeInches,
+          value: fish.value
+        };
 
-      const newInventory = [...inventory, caughtFish];
-      setInventory(newInventory);
+        const newInventory = [...(inventory || []), caughtFish];
+        setInventory(newInventory);
 
-      // Update player data
-      const updatedPlayerData = {
-        ...playerData,
-        xp: newXP,
-        level: newLevel,
-        totalCatches: (playerData.totalCatches || 0) + 1,
-        inventory: newInventory
-      };
+        // Update player data
+        const updatedPlayerData = {
+          ...getDefaultPlayerData(),
+          ...playerData,
+          xp: newXP,
+          level: newLevel,
+          totalCatches: (playerData?.totalCatches || 0) + 1,
+          inventory: newInventory
+        };
 
-      // Check for achievements
-      const newStats = {
-        ...updatedPlayerData,
-        lastCaughtRarity: fish.rarity
-      };
-      const newAchievements = checkAchievements(playerData, newStats);
-      let nextCurrency = playerData.currency || 0;
+        // Check for achievements
+        const newStats = {
+          ...updatedPlayerData,
+          lastCaughtRarity: fish.rarity
+        };
+        const newAchievements = checkAchievements(playerData, newStats);
+        let nextCurrency = playerData?.currency || 0;
 
-      if (newAchievements.length > 0) {
-        updatedPlayerData.achievements = [
-          ...(playerData.achievements || []),
-          ...newAchievements.map((achievement) => achievement.id)
-        ];
-        
-        // Add achievement rewards to currency
-        const achievementReward = newAchievements.reduce((sum, achievement) => sum + achievement.reward, 0);
-        nextCurrency += achievementReward;
-      }
+        if (newAchievements.length > 0) {
+          updatedPlayerData.achievements = [
+            ...(playerData?.achievements || []),
+            ...newAchievements.map((achievement) => achievement.id)
+          ];
+          
+          const achievementReward = newAchievements.reduce((sum, achievement) => sum + achievement.reward, 0);
+          nextCurrency += achievementReward;
+        }
 
-      updatedPlayerData.currency = nextCurrency;
-  syncPlayerData(updatedPlayerData);
-      writePlayerData(updatedPlayerData);
+        updatedPlayerData.currency = nextCurrency;
+        syncPlayerData(updatedPlayerData);
+        writePlayerData(updatedPlayerData);
 
-      if (isAuthenticated && user) {
-        persistProgress({
-          xp: updatedPlayerData.xp,
-          level: updatedPlayerData.level,
-          totalCatches: updatedPlayerData.totalCatches,
-          achievements: updatedPlayerData.achievements,
-          currency: updatedPlayerData.currency,
-          inventory: newInventory,
-          ownedEnvironments: updatedPlayerData.ownedEnvironments,
-          ownedUpgrades: updatedPlayerData.ownedUpgrades,
-          totalPurchases: updatedPlayerData.totalPurchases
+        if (isAuthenticated && user && !OFFLINE_MODE) {
+          persistProgress({
+            xp: updatedPlayerData.xp,
+            level: updatedPlayerData.level,
+            totalCatches: updatedPlayerData.totalCatches,
+            achievements: updatedPlayerData.achievements,
+            currency: updatedPlayerData.currency,
+            inventory: newInventory,
+            ownedEnvironments: updatedPlayerData.ownedEnvironments,
+            ownedUpgrades: updatedPlayerData.ownedUpgrades,
+            totalPurchases: updatedPlayerData.totalPurchases
+          });
+        }
+
+        setScore((value) => value + pointsEarned);
+        setTotalCatches((value) => value + 1);
+        setLastCatch({ 
+          ...fish, 
+          pointsEarned, 
+          streak: nextStreak, 
+          streakBonus,
+          xpGained,
+          leveledUp,
+          newLevel,
+          achievements: newAchievements
         });
-      }
+        setPhase(PHASES.CELEBRATE);
+        
+        let statusMsg = `You landed a ${fish.name}! +${xpGained} XP`;
+        if (leveledUp) statusMsg += ` | Level Up! Now Level ${newLevel}`;
+        if (newAchievements.length > 0) statusMsg += ` | Achievement Unlocked!`;
+        setStatusMessage(statusMsg);
+        
+        setCurrentFish(null);
+        setReelProgress(100);
 
-      setScore((value) => value + pointsEarned);
-      setTotalCatches((value) => value + 1);
-      setLastCatch({ 
-        ...fish, 
-        pointsEarned, 
-        streak: nextStreak, 
-        streakBonus,
-        xpGained,
-        leveledUp,
-        newLevel,
-        achievements: newAchievements
-      });
-      setPhase(PHASES.CELEBRATE);
-      
-      let statusMsg = `You landed a ${fish.name}! +${xpGained} XP`;
-      if (leveledUp) statusMsg += ` | Level Up! Now Level ${newLevel}`;
-      if (newAchievements.length > 0) statusMsg += ` | Achievement Unlocked!`;
-      setStatusMessage(statusMsg);
-      
-      setCurrentFish(null);
-      setReelProgress(100);
-
-      clearCelebration();
-      celebrationTimeoutRef.current = setTimeout(() => {
+        clearCelebration();
+        celebrationTimeoutRef.current = setTimeout(() => {
+          setPhase(PHASES.READY);
+          setReelProgress(0);
+        }, 1800);
+      } catch (error) {
+        console.error('Catch handling failed:', error);
+        setStatusMessage('Catch processed locally.');
         setPhase(PHASES.READY);
-        setReelProgress(0);
-      }, 1800);
+        setCurrentFish(null);
+      }
     },
     [clearReelDecay, clearCelebration, playerData, getUpgradeMultiplier, inventory, isAuthenticated, persistProgress, user, syncPlayerData]
   );
 
-  const sellFish = useCallback(async (fishId) => {
-    const fishToSell = inventory.find(fish => fish.id === fishId);
-    if (!fishToSell) return;
-
-    const saleValue = fishToSell.value;
-    const updatedInventory = inventory.filter(fish => fish.id !== fishId);
-
-    if (isAuthenticated && user) {
-      // Use Firebase for authenticated users
-      const result = await sellFishFromInventory(user.uid, fishId, saleValue, updatedInventory);
-      if (result.success) {
-        setInventory(updatedInventory);
-        const updatedPlayerData = {
-          ...playerData,
-          currency: (playerData.currency || 0) + saleValue,
-          totalFishSold: (playerData.totalFishSold || 0) + 1,
-          inventory: updatedInventory
-        };
-  syncPlayerData(updatedPlayerData);
-        persistProgress({
-          currency: updatedPlayerData.currency,
-          totalFishSold: updatedPlayerData.totalFishSold,
-          inventory: updatedInventory
-        });
-        setStatusMessage(`Sold ${fishToSell.name} for ${saleValue} coins!`);
-      } else {
-        setStatusMessage('Failed to sell fish. Please try again.');
-      }
-    } else {
-      // Use localStorage for guests
-      const updatedPlayerData = {
-        ...playerData,
-        currency: playerData.currency + saleValue,
-        totalFishSold: (playerData.totalFishSold || 0) + 1
-      };
-
-      setInventory(updatedInventory);
-  syncPlayerData(updatedPlayerData);
-      writePlayerData(updatedPlayerData);
-      setStatusMessage(`Sold ${fishToSell.name} for ${saleValue} coins!`);
-    }
-  }, [inventory, playerData, isAuthenticated, user, persistProgress, syncPlayerData]);
-
-  const sellAllFish = useCallback(async () => {
-    if (inventory.length === 0) return;
-
-    const totalValue = inventory.reduce((sum, fish) => sum + fish.value, 0);
-
-    if (isAuthenticated && user) {
-      // Use Firebase for authenticated users
-      const result = await sellFishFromInventory(user.uid, 'all', totalValue, []);
-      if (result.success) {
-        setInventory([]);
-        const updatedPlayerData = {
-          ...playerData,
-          currency: (playerData.currency || 0) + totalValue,
-          totalFishSold: (playerData.totalFishSold || 0) + inventory.length,
-          inventory: []
-        };
-  syncPlayerData(updatedPlayerData);
-        persistProgress({
-          currency: updatedPlayerData.currency,
-          totalFishSold: updatedPlayerData.totalFishSold,
-          inventory: []
-        });
-        setStatusMessage(`Sold all fish for ${totalValue} coins!`);
-      } else {
-        setStatusMessage('Failed to sell fish. Please try again.');
-      }
-    } else {
-      // Use localStorage for guests
-      const updatedPlayerData = {
-        ...playerData,
-        currency: playerData.currency + totalValue,
-        totalFishSold: (playerData.totalFishSold || 0) + inventory.length
-      };
-
-      setInventory([]);
-  syncPlayerData(updatedPlayerData);
-      writePlayerData(updatedPlayerData);
-      setStatusMessage(`Sold all fish for ${totalValue} coins!`);
-    }
-  }, [inventory, playerData, isAuthenticated, user, persistProgress, syncPlayerData]);
-
-  const purchaseItem = useCallback((itemType, itemId) => {
-    const items = SHOP_ITEMS[itemType];
-    const item = items?.find((i) => i.id === itemId);
-
-    if (!item) {
-      setStatusMessage('Item not found.');
-      return;
-    }
-
-    if (itemType === 'environments') {
-      const alreadyOwned = (playerData.ownedEnvironments || ['crystal_lake']).includes(itemId);
-      if (alreadyOwned) {
-        setStatusMessage('Environment already unlocked. Equip it from your inventory.');
-        return;
-      }
-    }
-
-    if (playerData.currency < item.price) {
-      setStatusMessage('Not enough coins for this purchase.');
-      return;
-    }
-
-    if (playerData.level < item.levelRequired) {
-      setStatusMessage(`Reach level ${item.levelRequired} to unlock this item.`);
-      return;
-    }
-
-    const updatedPlayerData = {
-      ...playerData,
-      currency: (playerData.currency || 0) - item.price,
-      totalPurchases: (playerData.totalPurchases || 0) + 1
-    };
-
-    if (itemType === 'environments') {
-      const nextOwned = new Set(playerData.ownedEnvironments || ['crystal_lake']);
-      nextOwned.add(itemId);
-      updatedPlayerData.ownedEnvironments = Array.from(nextOwned);
-      updatedPlayerData.currentEnvironment = itemId;
-    } else if (itemType === 'upgrades') {
-      updatedPlayerData.ownedUpgrades = [...(playerData.ownedUpgrades || []), itemId];
-    }
-
-    // Check for achievements
-    const newStats = {
-      ...updatedPlayerData
-    };
-    const newAchievements = checkAchievements(playerData, newStats);
-
-    if (newAchievements.length > 0) {
-      updatedPlayerData.achievements = [
-        ...playerData.achievements,
-        ...newAchievements.map((a) => a.id)
-      ];
-      const achievementReward = newAchievements.reduce(
-        (sum, achievement) => sum + achievement.reward,
-        0
-      );
-      updatedPlayerData.currency += achievementReward;
-    }
-
-    syncPlayerData(updatedPlayerData);
-    writePlayerData(updatedPlayerData);
-    if (isAuthenticated && user) {
-      const persistPayload = {
-        currency: updatedPlayerData.currency,
-        totalPurchases: updatedPlayerData.totalPurchases,
-        achievements: updatedPlayerData.achievements
-      };
-
-      if (itemType === 'environments') {
-        persistPayload.ownedEnvironments = updatedPlayerData.ownedEnvironments;
-        persistPayload.currentEnvironment = updatedPlayerData.currentEnvironment;
-      } else if (itemType === 'upgrades') {
-        persistPayload.ownedUpgrades = updatedPlayerData.ownedUpgrades;
-      }
-
-      persistProgress(persistPayload);
-    }
-
-    const itemName = ENVIRONMENT_LIBRARY[itemId]?.name || item.name;
-    let purchaseMsg = `Purchased ${itemName}!`;
-    if (itemType === 'environments') {
-      purchaseMsg = `Unlocked ${itemName}! Equipped automatically.`;
-    }
-    if (newAchievements.length > 0) {
-      purchaseMsg += ' Achievement unlocked!';
-    }
-    setStatusMessage(purchaseMsg);
-  }, [playerData, isAuthenticated, user, persistProgress, syncPlayerData]);
-
-  const equipEnvironment = useCallback((environmentId) => {
-    const envConfig = ENVIRONMENT_LIBRARY[environmentId];
-    if (!envConfig) {
-      setStatusMessage('Environment not available.');
-      return;
-    }
-    const owned = (playerData.ownedEnvironments || ['crystal_lake']).includes(environmentId);
-
-    if (!owned) {
-      setStatusMessage('Unlock this environment in the shop first.');
-      return;
-    }
-
-    if (playerData.currentEnvironment === environmentId) {
-      setStatusMessage(`${envConfig?.name || 'Environment'} already equipped.`);
-      return;
-    }
-
-    const updatedPlayerData = {
-      ...playerData,
-      currentEnvironment: environmentId
-    };
-
-    syncPlayerData(updatedPlayerData);
-    writePlayerData(updatedPlayerData);
-
-    if (isAuthenticated && user) {
-      persistProgress({
-        currentEnvironment: environmentId
-      });
-    }
-
-    setStatusMessage(`${envConfig?.name || 'Environment'} equipped!`);
-  }, [playerData, isAuthenticated, user, persistProgress, syncPlayerData]);
+  const { sellFish, sellAllFish, purchaseItem, equipEnvironment } = useInventory({
+    inventory,
+    playerData,
+    setInventory,
+    syncPlayerData,
+    persistProgress,
+    isAuthenticated,
+    user,
+    setStatusMessage,
+    checkAchievements,
+    writePlayerData,
+    ENVIRONMENT_LIBRARY,
+    SHOP_ITEMS,
+    ACHIEVEMENTS,
+    OFFLINE_MODE
+  });
 
   const handleReel = useCallback(() => {
     if (phase !== PHASES.HOOKED || !currentFish) return;
@@ -1241,37 +694,14 @@ function FishingGame({
   }, [cleanupAll]);
 
   useEffect(() => {
-    if (phase === PHASES.IDLE || phase === PHASES.ENDED) {
-      return undefined;
-    }
-
-    clearTimer();
-    timerRef.current = setInterval(() => {
-      setTimeLeft((value) => {
-        if (value <= 1) {
-          clearTimer();
-          return 0;
-        }
-        return value - 1;
-      });
-    }, 1000);
-
-    return () => clearTimer();
-  }, [phase, clearTimer]);
-
-  useEffect(() => {
-    if (phase !== PHASES.IDLE && timeLeft === 0) {
-      endGame();
-    }
-  }, [timeLeft, phase, endGame]);
-
-  useEffect(() => {
     phaseRef.current = phase;
   }, [phase]);
 
   useEffect(() => {
-    timeLeftRef.current = timeLeft;
-  }, [timeLeft]);
+    if (phase !== PHASES.IDLE && phase !== PHASES.ENDED && timeLeft === 0) {
+      endGame();
+    }
+  }, [timeLeft, phase, endGame]);
 
   useEffect(() => {
     if (phase === PHASES.HOOKED && currentFish) {
@@ -1471,305 +901,42 @@ function FishingGame({
           ) : null}
 
           {/* Overlays for home screen */}
-          {showShop && (
-            <div className="shop-overlay">
-              <div className="shop-content">
-                <div className="shop-header">
-                  <h3>🎒 Your Inventory</h3>
-                  <p>Sell your fish to earn coins!</p>
-                  <button className="close-overlay-button" onClick={() => setShowShop(false)}>✕</button>
-                  <div className="shop-stats">
-                    <span>Fish: {inventory.length}</span>
-                    <span>Value: {inventory.reduce((sum, fish) => sum + fish.value, 0)} coins</span>
-                  </div>
-                </div>
-                
-                {inventory.length > 0 ? (
-                  <div className="inventory-section">
-                    <div className="inventory-actions">
-                      <button 
-                        className="sell-all-button" 
-                        onClick={sellAllFish}
-                      >
-                        Sell All ({inventory.reduce((sum, fish) => sum + fish.value, 0)} coins)
-                      </button>
-                    </div>
-                    
-                    <div className="inventory-grid">
-                      {inventory.map((fish) => (
-                        <div key={fish.id} className="inventory-item">
-                          <span className="inventory-fish-emoji">{fish.emoji}</span>
-                          <div className="inventory-fish-details">
-                            <div className="inventory-fish-name">{fish.name}</div>
-                            <div className="inventory-fish-meta">
-                              {fish.size?.toFixed(1)}&quot; • {fish.rarity}
-                            </div>
-                            <div className="inventory-fish-value">{fish.value} coins</div>
-                          </div>
-                          <button 
-                            className="sell-fish-button" 
-                            onClick={() => sellFish(fish.id)}
-                          >
-                            Sell
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="empty-inventory">
-                    <p>No fish in inventory. Go catch some!</p>
-                  </div>
-                )}
+          {(showShop || showLeaderboard || showInstructions) ? (
+            <Suspense fallback={<div className="overlay-loading">Loading…</div>}>
+              {showShop && (
+                <ShopOverlay
+                  inventory={inventory}
+                  sellAllFish={sellAllFish}
+                  sellFish={sellFish}
+                  environmentInventory={environmentInventory}
+                  activeEnvironment={activeEnvironment}
+                  equipEnvironment={equipEnvironment}
+                  shopItems={SHOP_ITEMS}
+                  ownedEnvironmentIds={ownedEnvironmentIds}
+                  playerData={playerData}
+                  purchaseItem={purchaseItem}
+                  achievements={ACHIEVEMENTS}
+                  onClose={() => setShowShop(false)}
+                />
+              )}
 
-                <div className="shop-section environment-inventory-section">
-                  <h4>🌍 Environment Loadout</h4>
-                  <p className="environment-inventory-hint">Swap between unlocked locations.</p>
-                  <div className="environment-inventory-grid">
-                    {environmentInventory.map((env) => {
-                      const isActive = env.id === activeEnvironment.id;
-                      return (
-                        <div
-                          key={env.id}
-                          className={`environment-card ${isActive ? 'environment-card-active' : ''}`}
-                        >
-                          <span className="environment-card-emoji">{env.emoji}</span>
-                          <div className="environment-card-details">
-                            <div className="environment-card-name">{env.name}</div>
-                            <div className="environment-card-description">{env.description}</div>
-                          </div>
-                          <button
-                            className="environment-card-button"
-                            onClick={() => equipEnvironment(env.id)}
-                            disabled={isActive}
-                          >
-                            {isActive ? 'Equipped' : 'Equip'}
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-                
-                <div className="shop-section">
-                  <h4>🏪 Shop - Environments</h4>
-                  <div className="shop-grid">
-                    {SHOP_ITEMS.environments.map((env) => {
-                      const isOwned = ownedEnvironmentIds.includes(env.id);
-                      const isEquipped = activeEnvironment.id === env.id;
-                      const meetsLevel = (playerData.level || 1) >= env.levelRequired;
-                      const hasCurrency = (playerData.currency || 0) >= env.price;
-                      const buttonDisabled = isEquipped || (!isOwned && (!meetsLevel || !hasCurrency));
-                      const buttonLabel = isEquipped
-                        ? 'Equipped'
-                        : isOwned
-                        ? 'Equip'
-                        : !meetsLevel
-                        ? `Level ${env.levelRequired}`
-                        : 'Buy';
-                      const handleClick = isOwned
-                        ? () => equipEnvironment(env.id)
-                        : () => purchaseItem('environments', env.id);
+              {showLeaderboard && (
+                <LeaderboardOverlay
+                  onClose={() => setShowLeaderboard(false)}
+                  playerStats={playerStats}
+                  globalLeaderboard={globalLeaderboard}
+                  playerData={playerData}
+                />
+              )}
 
-                      return (
-                        <div key={env.id} className="shop-item">
-                          <span className="shop-item-emoji">{env.emoji}</span>
-                          <div className="shop-item-details">
-                            <div className="shop-item-name">{env.name}</div>
-                            <div className="shop-item-description">{env.description}</div>
-                            <div className="shop-item-requirements">
-                              Level {env.levelRequired} • {env.price} coins
-                            </div>
-                            <div
-                              className={`shop-item-status ${
-                                isEquipped ? 'shop-item-status-equipped' : isOwned ? 'shop-item-status-owned' : 'shop-item-status-locked'
-                              }`}
-                            >
-                              {isEquipped ? 'Equipped' : isOwned ? 'Owned' : 'Locked'}
-                            </div>
-                          </div>
-                          <button
-                            className="shop-purchase-button"
-                            onClick={handleClick}
-                            disabled={buttonDisabled}
-                          >
-                            {buttonLabel}
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="shop-section">
-                  <h4>⚙️ Shop - Upgrades</h4>
-                  <div className="shop-grid">
-                    {SHOP_ITEMS.upgrades.map((upgrade) => (
-                      <div key={upgrade.id} className="shop-item">
-                        <span className="shop-item-emoji">{upgrade.emoji}</span>
-                        <div className="shop-item-details">
-                          <div className="shop-item-name">{upgrade.name}</div>
-                          <div className="shop-item-description">{upgrade.description}</div>
-                          <div className="shop-item-requirements">
-                            Level {upgrade.levelRequired} • {upgrade.price} coins
-                          </div>
-                        </div>
-                        <button 
-                          className="shop-purchase-button" 
-                          onClick={() => purchaseItem('upgrades', upgrade.id)}
-                          disabled={
-                            (playerData.ownedUpgrades || []).includes(upgrade.id) ||
-                            playerData.currency < upgrade.price ||
-                            playerData.level < upgrade.levelRequired
-                          }
-                        >
-                          {(playerData.ownedUpgrades || []).includes(upgrade.id) 
-                            ? 'Owned' 
-                            : playerData.level < upgrade.levelRequired 
-                            ? `Level ${upgrade.levelRequired}` 
-                            : 'Buy'}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="achievements-section">
-                  <h4>🏆 Achievements</h4>
-                  <div className="achievements-grid">
-                    {ACHIEVEMENTS.map((achievement) => (
-                      <div 
-                        key={achievement.id} 
-                        className={`achievement-item ${
-                          playerData.achievements?.includes(achievement.id) ? 'unlocked' : 'locked'
-                        }`}
-                      >
-                        <span className="achievement-emoji">{achievement.emoji}</span>
-                        <div className="achievement-details">
-                          <div className="achievement-name">{achievement.name}</div>
-                          <div className="achievement-description">{achievement.description}</div>
-                          {playerData.achievements?.includes(achievement.id) && (
-                            <div className="achievement-reward">+{achievement.reward} coins</div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {showLeaderboard && (
-            <div className="leaderboard-overlay">
-              <div className="leaderboard-content">
-                <div className="leaderboard-header">
-                  <h3>🏆 Global Leaderboard</h3>
-                  <p>Top fishers from around the world</p>
-                  <button className="close-overlay-button" onClick={() => setShowLeaderboard(false)}>✕</button>
-                </div>
-                
-                <div className="stats-section">
-                  <h4>📊 Your Statistics</h4>
-                  <div className="stats-grid">
-                    <div className="stat-card">
-                      <span className="stat-number">{playerStats.gamesPlayed}</span>
-                      <span className="stat-label">Games Played</span>
-                    </div>
-                    <div className="stat-card">
-                      <span className="stat-number">{playerStats.bestScore}</span>
-                      <span className="stat-label">Best Score</span>
-                    </div>
-                    <div className="stat-card">
-                      <span className="stat-number">{playerStats.avgScore}</span>
-                      <span className="stat-label">Avg Score</span>
-                    </div>
-                    <div className="stat-card">
-                      <span className="stat-number">{playerStats.bestStreak}</span>
-                      <span className="stat-label">Best Streak</span>
-                    </div>
-                    <div className="stat-card">
-                      <span className="stat-number">{playerStats.totalCatches}</span>
-                      <span className="stat-label">Total Catches</span>
-                    </div>
-                    <div className="stat-card">
-                      <span className="stat-number">{Math.floor(playerStats.totalPlayTime / 60)}m</span>
-                      <span className="stat-label">Play Time</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="leaderboard-section">
-                  <h4>🥇 Top Scores</h4>
-                  <div className="leaderboard-list">
-                    {globalLeaderboard.slice(0, 20).map((entry, index) => (
-                      <div 
-                        key={entry.id} 
-                        className={`leaderboard-entry ${
-                          entry.playerName === playerData.playerName ? 'current-player' : ''
-                        }`}
-                      >
-                        <div className="rank">
-                          {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
-                        </div>
-                        <div className="player-info">
-                          <div className="player-name">{entry.playerName}</div>
-                          <div className="player-meta">
-                            Level {entry.level} • {entry.date}
-                          </div>
-                        </div>
-                        <div className="score-info">
-                          <div className="score">{entry.score} pts</div>
-                          <div className="catches">{entry.catches} catches</div>
-                        </div>
-                        <div className="streak">
-                          {entry.longestStreak} streak
-                        </div>
-                      </div>
-                    ))}
-                    {globalLeaderboard.length === 0 && (
-                      <div className="empty-leaderboard">
-                        <p>No scores yet. Be the first to set a record!</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {showInstructions && (
-            <div className="instructions-overlay">
-              <div className="instructions-content">
-                <h3>How to Play</h3>
-                <button className="close-overlay-button" onClick={() => setShowInstructions(false)}>✕</button>
-                <ul>
-                  <li>Hit &quot;Start Fishing&quot; then cast your line to begin the 60 second run.</li>
-                  <li>When a fish bites, click &quot;Reel&quot; repeatedly to fill the meter.</li>
-                  <li>Keep your streak alive to earn bonus points on every catch.</li>
-                  <li>Legendary fish are rare, but worth big points when you land them.</li>
-                </ul>
-                <div className="fish-guide">
-                  <h4>Species Guide</h4>
-                  <div className="fish-list">
-                    {FISH_TYPES.map((fish) => (
-                      <div key={fish.name} className="fish-item">
-                        <span className="fish-emoji" aria-hidden="true">
-                          {fish.emoji}
-                        </span>
-                        <div className="fish-details">
-                          <div>{fish.name}</div>
-                          <div>
-                            {fish.points} pts • {fish.rarity}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+              {showInstructions && (
+                <InstructionsOverlay
+                  onClose={() => setShowInstructions(false)}
+                  fishTypes={FISH_TYPES}
+                />
+              )}
+            </Suspense>
+          ) : null}
         </div>
       </div>
     );
@@ -1814,72 +981,20 @@ function FishingGame({
       </div>
 
       <div className="game-ui">
-        <header className="game-header">
-          <div className="score-display">
-            <span className="score-label">Score</span>
-            <span className="score-value">{score}</span>
-          </div>
-          <div className="level-display">
-            <span className="level-label">Level {playerData?.level || 1}</span>
-            <div className="xp-bar">
-              <div 
-                className="xp-fill" 
-                style={{ 
-                  width: `${Math.min(100, ((playerData?.xp || 0) / (LEVEL_XP_REQUIREMENTS[playerData?.level || 1] || (playerData?.xp || 0) + 1)) * 100)}%` 
-                }}
-              />
-            </div>
-            <span className="xp-text">
-              {playerData?.xp || 0}/{LEVEL_XP_REQUIREMENTS[playerData?.level || 1] || 'Max'}
-            </span>
-          </div>
-          <div className="currency-display">
-            <span className="currency-label">💰</span>
-            <span className="currency-value">{playerData.currency || 0}</span>
-          </div>
-          <div className="timer-display">
-            <span className="timer-label">Time</span>
-            <span className="timer-value">{timeDisplay}</span>
-          </div>
-          <div className="best-score-display">
-            <span className="best-score-label">Best</span>
-            <span className="best-score-value">{Math.max(bestScore, score)}</span>
-          </div>
-          <div className="environment-badge" title="Current environment">
-            <span className="environment-emoji">{activeEnvironment.emoji || '🌊'}</span>
-            <div className="environment-details">
-              <span className="environment-label">Environment</span>
-              <span className="environment-name">{activeEnvironment.name}</span>
-            </div>
-          </div>
-          <div className="header-buttons">
-            <button 
-              className="home-button-game" 
-              onClick={returnToHome}
-              aria-label="Return to home"
-              title="Return to home"
-            >
-              🏠
-            </button>
-          </div>
-        </header>
+        <GameHeader
+          score={score}
+          playerData={playerData}
+          timeDisplay={timeDisplay}
+          bestScore={bestScore}
+          activeEnvironment={activeEnvironment}
+          returnToHome={returnToHome}
+        />
 
-
-
-        <div className="game-stats">
-          <div className="stat-item">
-            <span className="stat-label">Catches</span>
-            <span className="stat-value">{totalCatches}</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-label">Streak</span>
-            <span className="stat-value">{streak}</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-label">Longest</span>
-            <span className="stat-value">{longestStreak}</span>
-          </div>
-        </div>
+        <GameStatsBar
+          totalCatches={totalCatches}
+          streak={streak}
+          longestStreak={longestStreak}
+        />
 
         {isPlaying ? <div className="fishing-line" aria-hidden="true" /> : null}
 
@@ -1966,51 +1081,16 @@ function FishingGame({
           </div>
         ) : null}
 
-        <div className="game-controls">
-          {phase === PHASES.READY ? (
-            <button className="cast-button" type="button" onClick={castLine}>
-              Cast Line
-            </button>
-          ) : null}
-
-          {phase === PHASES.WAITING ? (
-            <button className="cast-button casting" type="button" disabled>
-              Waiting for a bite…
-            </button>
-          ) : null}
-
-          {phase === PHASES.HOOKED ? (
-            <button className="cast-button" type="button" onClick={handleReel}>
-              Reel!
-            </button>
-          ) : null}
-
-          {phase === PHASES.CELEBRATE ? (
-            <button className="cast-button" type="button" onClick={castLine}>
-              Cast Again
-            </button>
-          ) : null}
-
-          {isPlaying ? (
-            <button className="end-game-button" type="button" onClick={endGame}>
-              End Run
-            </button>
-          ) : null}
-
-          {phase === PHASES.ENDED ? (
-            <button className="play-again-button" type="button" onClick={startGame}>
-              Fish Again
-            </button>
-          ) : null}
-
-          {statusMessage ? <p className="status-message">{statusMessage}</p> : null}
-
-          {typeof renderNavigationTabs === 'function' ? (
-            <div className="game-bottom-nav">
-              {renderNavigationTabs('game')}
-            </div>
-          ) : null}
-        </div>
+        <GameControls
+          phase={phase}
+          castLine={castLine}
+          handleReel={handleReel}
+          endGame={endGame}
+          startGame={startGame}
+          isPlaying={isPlaying}
+          statusMessage={statusMessage}
+          renderNavigationTabs={null}
+        />
       </div>
     </div>
   )

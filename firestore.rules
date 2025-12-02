@@ -21,8 +21,8 @@ service cloud.firestore {
       return value is list;
     }
 
-    function hasOnlyUserFields(data) {
-      return data.keys().hasOnly([
+    function allowedUserFields() {
+      return [
         'level',
         'xp',
         'currency',
@@ -40,13 +40,28 @@ service cloud.firestore {
         'createdAt',
         'lastActive',
         'email',
-        'bestScore'
-      ]);
+        'bestScore',
+        'skillPoints',
+        'skills',
+        'prestigeLevel',
+        'cosmeticSkin'
+      ];
+    }
+
+    function hasOnlyUserFields(data) {
+      return data.keys().hasOnly(allowedUserFields());
+    }
+
+    function addedUserKeys() {
+      return request.resource.data.diff(resource.data).addedKeys();
+    }
+
+    function changedUserKeys() {
+      return request.resource.data.diff(resource.data).changedKeys();
     }
 
     function isValidUserProfile(data) {
-      return hasOnlyUserFields(data)
-        && (!('level' in data) || data.level is int)
+      return (!('level' in data) || data.level is int)
         && (!('xp' in data) || data.xp is int)
         && (!('currency' in data) || isNumber(data.currency))
         && (!('inventory' in data) || isList(data.inventory))
@@ -61,7 +76,11 @@ service cloud.firestore {
         && (!('gamesPlayed' in data) || isNumber(data.gamesPlayed))
         && (!('totalPlayTime' in data) || isNumber(data.totalPlayTime))
         && (!('email' in data) || isString(data.email))
-        && (!('bestScore' in data) || isNumber(data.bestScore));
+        && (!('bestScore' in data) || isNumber(data.bestScore))
+        && (!('skillPoints' in data) || data.skillPoints is int)
+        && (!('skills' in data) || isList(data.skills))
+        && (!('prestigeLevel' in data) || data.prestigeLevel is int)
+        && (!('cosmeticSkin' in data) || isString(data.cosmeticSkin));
     }
 
     function isValidLeaderboardEntry(data) {
@@ -102,9 +121,13 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidUserProfile(request.resource.data);
-      allow update: if isOwner(userId)
+      allow create: if isOwner(userId)
+        && hasOnlyUserFields(request.resource.data)
         && isValidUserProfile(request.resource.data);
+      allow update: if isOwner(userId)
+        && isValidUserProfile(request.resource.data)
+        && addedUserKeys().hasOnly(allowedUserFields())
+        && changedUserKeys().hasOnly(allowedUserFields());
       allow delete: if false;
     }
 

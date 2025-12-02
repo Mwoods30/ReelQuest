@@ -139,7 +139,7 @@ function AuthForm({ onAuthSuccess, onClose }) {
         <div className="auth-form-wrapper">
           <div className="auth-form-container">
             <div className="auth-header">
-              <h2>{isLogin ? 'Welcome Back, Angler!' : 'Join the Crew'}</h2>
+              <h2>{isLogin ? 'Welcome Back!' : 'Join the Crew'}</h2>
               <p>{isLogin ? 'Sign in to keep every catch and upgrade.' : 'Create an account to track achievements anywhere.'}</p>
             </div>
 

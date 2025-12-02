@@ -1,9 +1,47 @@
 import { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { signOutUser, resetPassword } from '../firebase/auth.js';
-import { updateUserProfile } from '../firebase/database.js';
 import { useUser } from '../hooks/useUser.js';
 import './UserProfile.css';
+
+const ALL_ACHIEVEMENTS = [
+  {
+    id: 'first_catch',
+    title: 'First Catch',
+    description: 'Reel in your very first fish.',
+    icon: '🎣'
+  },
+  {
+    id: 'streak_master',
+    title: 'Streak Master',
+    description: 'Hit a streak of 5 catches without a miss.',
+    icon: '⚡'
+  },
+  {
+    id: 'silver_monger',
+    title: 'Silver Monger',
+    description: 'Sell 10 fish back-to-back.',
+    icon: '💰'
+  },
+  {
+    id: 'voyager',
+    title: 'Voyager',
+    description: 'Play in two different environments.',
+    icon: '🧭'
+  },
+  {
+    id: 'marathoner',
+    title: 'Marathoner',
+    description: 'Complete 10 game sessions.',
+    icon: '🏁'
+  },
+  {
+    id: 'wealth_builder',
+    title: 'Wealth Builder',
+    description: 'Accumulate 1,000 coins across runs.',
+    icon: '💎'
+  }
+];
 
 const formatDate = (timestamp) => {
   if (!timestamp) return 'Never';
@@ -44,14 +82,41 @@ function UserProfile({ onClose }) {
     }
   ]), [userProfile]);
 
+  const achievementsWithStatus = useMemo(() => {
+    const unlockedSet = new Set(userProfile?.achievements ?? []);
+
+    const baseAchievements = ALL_ACHIEVEMENTS.map((achievement) => ({
+      ...achievement,
+      unlocked: unlockedSet.has(achievement.id)
+    }));
+
+    const legacyAchievements = (userProfile?.achievements ?? [])
+      .filter((achievementId) => !ALL_ACHIEVEMENTS.some((achievement) => achievement.id === achievementId))
+      .map((achievementId) => ({
+        id: achievementId,
+        title: achievementId,
+        description: 'Unlocked during a special event.',
+        icon: '🏅',
+        unlocked: true,
+        isLegacy: true
+      }));
+
+    return [...baseAchievements, ...legacyAchievements];
+  }, [userProfile]);
+
+  const unlockedAchievementsCount = useMemo(
+    () => achievementsWithStatus.filter((achievement) => achievement.unlocked).length,
+    [achievementsWithStatus]
+  );
+
   const profileStats = useMemo(() => ([
     { label: 'Games Played', value: userProfile?.gamesPlayed ?? 0 },
     { label: 'Total Catches', value: userProfile?.totalCatches ?? 0 },
     { label: 'Fish Sold', value: userProfile?.totalFishSold ?? 0 },
     { label: 'Play Time', value: formatPlayTime(userProfile?.totalPlayTime ?? 0) },
-    { label: 'Achievements', value: userProfile?.achievements?.length ?? 0 },
+    { label: 'Achievements', value: unlockedAchievementsCount },
     { label: 'Last Active', value: formatDate(userProfile?.lastActive) },
-  ]), [userProfile]);
+  ]), [unlockedAchievementsCount, userProfile]);
 
   const getPlayerInitials = (name, email) => {
     const source = name || email || 'P';
@@ -73,6 +138,7 @@ function UserProfile({ onClose }) {
     setError('');
 
     try {
+      const { updateUserProfile } = await import('../firebase/database.js');
       const result = await updateUserProfile(user.uid, {
         playerName: playerName.trim()
       });
@@ -174,11 +240,6 @@ function UserProfile({ onClose }) {
               </div>
             ))}
           </div>
-          <div className="profile-hero-actions">
-            <button className="return-home-button" type="button" onClick={onClose}>
-              ⬅️ Back to Home
-            </button>
-          </div>
         </div>
 
         <div className="profile-content">
@@ -240,7 +301,7 @@ function UserProfile({ onClose }) {
                 <span className="field-value">{user.email}</span>
               </div>
               <div className="profile-field">
-                <label>Member since</label>
+                <label>Fisherman since</label>
                 <span className="field-value">{formatDate(userProfile.createdAt)}</span>
               </div>
             </div>
@@ -248,7 +309,7 @@ function UserProfile({ onClose }) {
 
           <section className="profile-card">
             <header className="profile-card-header">
-              <h3>Progress Overview</h3>
+              <h3>Stats Overview</h3>
             </header>
             <div className="stats-grid">
               {profileStats.map(({ label, value }) => (
@@ -287,16 +348,29 @@ function UserProfile({ onClose }) {
           <section className="profile-card">
             <header className="profile-card-header achievements-header">
               <h3>Achievements</h3>
-              <span className="chip">{userProfile.achievements?.length ?? 0} unlocked</span>
+              <span className="chip">
+                {unlockedAchievementsCount}/{achievementsWithStatus.length} unlocked
+              </span>
             </header>
-            {userProfile.achievements?.length ? (
+            {achievementsWithStatus.length ? (
               <div className="achievements-grid">
-                {userProfile.achievements.map((achievementId) => (
-                  <div key={achievementId} className="achievement-item unlocked">
-                    <span className="achievement-icon">🏆</span>
+                {achievementsWithStatus.map((achievement) => (
+                  <div
+                    key={achievement.id}
+                    className={`achievement-item ${achievement.unlocked ? 'unlocked' : 'locked'}`}
+                  >
+                    <span className="achievement-icon" aria-hidden="true">
+                      {achievement.unlocked ? achievement.icon : '🔒'}
+                    </span>
                     <div className="achievement-meta">
-                      <span className="achievement-title">{achievementId}</span>
-                      <span className="achievement-description">This badge is yours forever.</span>
+                      <span className="achievement-title">
+                        {achievement.title}
+                        {achievement.isLegacy ? ' (Legacy)' : ''}
+                      </span>
+                      <span className="achievement-description">{achievement.description}</span>
+                      <span className="achievement-status">
+                        {achievement.unlocked ? 'Unlocked' : 'Locked'}
+                      </span>
                     </div>
                   </div>
                 ))}

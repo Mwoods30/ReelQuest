@@ -76,6 +76,10 @@ export const getUserProfile = async (userId) => {
 
 export const updateUserProfile = async (userId, updates) => {
   try {
+    if (!userId) {
+      return { success: false, error: 'No user id provided', errorCode: 'missing-user' };
+    }
+
     const docRef = doc(db, USERS_COLLECTION, userId);
     await updateDoc(docRef, {
       ...updates,
@@ -83,8 +87,12 @@ export const updateUserProfile = async (userId, updates) => {
     });
     return { success: true };
   } catch (error) {
-    console.error('Error updating user profile:', error);
-    return { success: false, error: error.message };
+    if (error?.code === 'permission-denied') {
+      console.warn('Firestore permission denied while updating user profile.');
+    } else {
+      console.error('Error updating user profile:', error);
+    }
+    return { success: false, error: error.message, errorCode: error.code };
   }
 };
 
@@ -95,12 +103,19 @@ export const saveGameProgress = async (userId, progressData) => {
       ...progressData,
       lastActive: serverTimestamp()
     };
-    
-    await updateUserProfile(userId, updates);
+
+    const result = await updateUserProfile(userId, updates);
+    if (!result.success) {
+      return result;
+    }
     return { success: true };
   } catch (error) {
-    console.error('Error saving game progress:', error);
-    return { success: false, error: error.message };
+    if (error?.code === 'permission-denied') {
+      console.warn('Firestore permission denied while saving game progress.');
+    } else {
+      console.error('Error saving game progress:', error);
+    }
+    return { success: false, error: error.message, errorCode: error.code };
   }
 };
 

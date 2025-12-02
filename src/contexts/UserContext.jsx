@@ -3,11 +3,6 @@ import { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { UserContext } from './UserContext.js';
 import { onAuthChange } from '../firebase/auth.js';
-import {
-  getUserProfile,
-  createUserProfile,
-  subscribeToUserProfile
-} from '../firebase/database.js';
 
 const buildFallbackProfile = (firebaseUser) => ({
   level: 1,
@@ -69,6 +64,8 @@ export function UserProvider({ children }) {
             setUserProfile((prev) => prev ?? fallbackProfile);
           };
           
+          const { getUserProfile, createUserProfile, subscribeToUserProfile } = await import('../firebase/database.js');
+
           // Get or create user profile
           const profileResult = await getUserProfile(firebaseUser.uid);
           

@@ -1,78 +1,70 @@
-.fishing-game.environment-crystal_lake .water-background {
-  background:
-    radial-gradient(ellipse at 20% 18%, rgba(255, 255, 255, 0.1) 0%, transparent 45%),
-    radial-gradient(ellipse at 80% 82%, rgba(94, 234, 212, 0.15) 0%, transparent 55%),
-    linear-gradient(
-      180deg,
-      rgba(94, 234, 212, 0.3) 0%,
-      rgba(56, 189, 248, 0.45) 40%,
-      rgba(30, 64, 175, 0.85) 100%
-    );
-}
+/* -------------------------------------------------------
+   ReelQuest Premium Theme
+   - Consolidated tokens
+   - Premium glassmorphism
+   - Shared components
+-------------------------------------------------------- */
 
-.fishing-game.environment-mountain_lake .water-background {
-  background:
-    radial-gradient(ellipse at 15% 25%, rgba(255, 255, 255, 0.12) 0%, transparent 48%),
-    radial-gradient(ellipse at 90% 80%, rgba(165, 243, 252, 0.18) 0%, transparent 60%),
-    linear-gradient(
-      180deg,
-      rgba(191, 219, 254, 0.35) 0%,
-      rgba(96, 165, 250, 0.55) 50%,
-      rgba(30, 64, 175, 0.9) 100%
-    );
-}
-
-.fishing-game.environment-ocean_reef .water-background {
-  background:
-    radial-gradient(ellipse at 12% 30%, rgba(255, 255, 255, 0.14) 0%, transparent 50%),
-    radial-gradient(ellipse at 88% 70%, rgba(34, 211, 238, 0.22) 0%, transparent 62%),
-    linear-gradient(
-      190deg,
-      rgba(34, 211, 238, 0.38) 0%,
-      rgba(14, 165, 233, 0.55) 45%,
-      rgba(17, 94, 89, 0.92) 100%
-    );
-}
-
-.fishing-game.environment-deep_sea .water-background {
-  background:
-    radial-gradient(ellipse at 25% 20%, rgba(148, 163, 184, 0.12) 0%, transparent 40%),
-    radial-gradient(ellipse at 75% 85%, rgba(30, 64, 175, 0.2) 0%, transparent 55%),
-    linear-gradient(
-      195deg,
-      rgba(30, 41, 59, 0.75) 0%,
-      rgba(15, 23, 42, 0.9) 55%,
-      rgba(2, 6, 23, 0.98) 100%
-    );
-}
 :root {
-  --rq-bg-base: linear-gradient(145deg, #0b172a 0%, #10253f 45%, #132d4f 100%);
-  --rq-bg-card: rgba(12, 23, 42, 0.82);
+  /* Core surfaces */
+  --rq-bg-base: radial-gradient(circle at top, #1e293b 0%, #020617 55%, #020617 100%);
+  --rq-bg-card: rgba(15, 23, 42, 0.9);
+  --rq-bg-card-soft: rgba(15, 23, 42, 0.85);
+  --rq-glass-bg: linear-gradient(135deg, rgba(15, 23, 42, 0.94) 0%, rgba(30, 41, 59, 0.9) 100%);
+  --rq-glass-soft: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.85));
+
+  /* Borders & shadows */
   --rq-border-soft: rgba(148, 163, 184, 0.25);
-  --rq-border-strong: rgba(148, 163, 184, 0.4);
-  --rq-shadow-strong: 0 32px 60px rgba(2, 8, 23, 0.55);
-  --rq-shadow-soft: 0 20px 40px rgba(15, 23, 42, 0.38);
-  --rq-glass-bg: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 41, 59, 0.86) 100%);
-  --rq-text-primary: #f8fafc;
+  --rq-border-strong: rgba(148, 163, 184, 0.45);
+  --rq-border-accent: rgba(45, 212, 191, 0.45);
+  --rq-shadow-strong: 0 32px 60px rgba(2, 8, 23, 0.7);
+  --rq-shadow-soft: 0 20px 40px rgba(15, 23, 42, 0.5);
+  --rq-shadow-subtle: 0 10px 25px rgba(15, 23, 42, 0.4);
+
+  /* Text */
+  --rq-text-primary: #f9fafb;
   --rq-text-secondary: #cbd5e1;
-  --rq-accent-green: linear-gradient(135deg, #34d399 0%, #10b981 100%);
-  --rq-accent-blue: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
-  --rq-accent-gold: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  --rq-text-muted: #94a3b8;
+
+  /* Accents */
+  --rq-accent-green: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #15803d 100%);
+  --rq-accent-green-soft: linear-gradient(135deg, rgba(34, 197, 94, 0.18), rgba(22, 163, 74, 0.32));
+  --rq-accent-blue: linear-gradient(135deg, #38bdf8 0%, #2563eb 50%, #1d4ed8 100%);
+  --rq-accent-gold: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  --rq-accent-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
+
+  /* Radii */
+  --rq-radius-lg: 24px;
+  --rq-radius-md: 18px;
+  --rq-radius-sm: 12px;
+  --rq-radius-pill: 999px;
+
+  /* Transitions */
+  --rq-transition-fast: 0.2s ease;
+  --rq-transition-med: 0.3s ease;
+
+  /* Layout */
+  --rq-max-width: 1280px;
 }
+
+/* -------------------------------------------------------
+   Base Container / Layout
+-------------------------------------------------------- */
 
 .fishing-game {
   width: 100%;
   min-height: 600px;
-  background: var(--rq-bg-base);
-  border-radius: 24px;
   position: relative;
   overflow: hidden;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  box-shadow: 
-    0 25px 60px rgba(2, 8, 23, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border-radius: var(--rq-radius-lg);
+  background: var(--rq-bg-base);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--rq-text-primary);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 25px 60px rgba(2, 8, 23, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .fishing-game.mobile-layout {
@@ -82,460 +74,108 @@
   box-shadow: none;
 }
 
-/* Fullscreen styles */
 .fishing-game.fullscreen-game {
+  position: fixed;
+  inset: 0;
   width: 100vw;
   height: 100vh;
-  border-radius: 0;
-  position: fixed;
-  top: 0;
-  left: 0;
   z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Home Screen Styles */
-.fishing-game.home-screen {
-  display: flex;
-  flex-direction: column;
-}
-
-.home-ui {
-  position: relative;
-  z-index: 10;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  color: #f8fafc;
-  padding: 32px;
-}
-
-.home-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 48px;
-  padding: 32px 40px;
-  border-radius: 28px;
-  background: linear-gradient(140deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 41, 59, 0.84) 100%);
-  border: 1px solid var(--rq-border-soft);
-  box-shadow: var(--rq-shadow-soft);
-  backdrop-filter: blur(20px);
-}
-
-.game-title h1 {
-  font-size: 48px;
-  margin: 0 0 8px 0;
-  background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 800;
-  text-shadow: 0 4px 8px rgba(52, 211, 153, 0.3);
-}
-
-.game-title p {
-  font-size: 18px;
-  color: #94a3b8;
-  margin: 0;
-  font-weight: 500;
-}
-
-.player-info-card {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.92) 0%, rgba(15, 23, 42, 0.9) 100%);
-  padding: 28px 36px;
-  border-radius: 22px;
-  border: 1px solid var(--rq-border-soft);
-  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.4);
-}
-
-.player-details h3 {
-  margin: 0 0 12px 0;
-  font-size: 26px;
-  color: var(--rq-text-primary);
-  letter-spacing: 0.04em;
-}
-
-.player-stats-summary {
-  display: flex;
-  gap: 20px;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--rq-text-secondary);
-}
-
-.player-stats-summary span:first-child {
-  color: #5eead4;
-}
-
-.player-stats-summary span:nth-child(2) {
-  color: #fcd34d;
-}
-
-.player-stats-summary span:nth-child(3) {
-  color: #60a5fa;
-}
-
-.player-environment {
-  margin-top: 20px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 18px;
-  border-radius: 16px;
-  background: rgba(15, 118, 110, 0.15);
-  border: 1px solid rgba(45, 212, 191, 0.25);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.environment-emoji {
-  font-size: 30px;
-}
-
-.environment-text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.environment-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: rgba(94, 234, 212, 0.72);
-}
-
-.environment-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--rq-text-primary);
-}
-
-.home-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 48px;
-}
-
-.main-actions {
-  text-align: center;
-}
-
-.play-game-button {
-  background: var(--rq-accent-green);
-  color: #052e16;
-  border: none;
-  padding: 24px 56px;
-  border-radius: 22px;
-  font-size: 24px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
-  box-shadow:
-    0 18px 42px rgba(16, 185, 129, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  margin-bottom: 16px;
-  min-width: 280px;
-}
-
-.play-game-button:hover {
-  transform: translateY(-3px) scale(1.03);
-  box-shadow:
-    0 26px 48px rgba(16, 185, 129, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
-}
-
-.game-description {
-  color: #94a3b8;
-  font-size: 16px;
-  margin: 0;
-  max-width: 400px;
-}
-
-.menu-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-  max-width: 600px;
-  width: 100%;
-}
-
-.menu-button {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.78) 100%);
-  border: 1px solid var(--rq-border-soft);
-  border-radius: 22px;
-  padding: 24px;
-  cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-  color: var(--rq-text-primary);
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  backdrop-filter: blur(14px);
-  text-align: left;
-}
-
-.menu-button:hover {
-  border-color: var(--rq-border-strong);
-  transform: translateY(-4px);
-  box-shadow: 0 18px 36px rgba(8, 25, 56, 0.4);
-}
-
-.menu-icon {
-  font-size: 32px;
-  min-width: 48px;
-  text-align: center;
-}
-
-.menu-text h4 {
-  margin: 0 0 6px 0;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.menu-text p {
-  margin: 0 0 8px 0;
-  font-size: 14px;
-  color: #94a3b8;
-}
-
-.menu-badge {
-  background: rgba(56, 189, 248, 0.18);
-  color: #bae6fd;
-  padding: 4px 14px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.close-overlay-button {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background: rgba(239, 68, 68, 0.2);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #f87171;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.close-overlay-button:hover {
-  background: rgba(239, 68, 68, 0.3);
-  border-color: rgba(239, 68, 68, 0.4);
-}
-
-.home-button-game {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(51, 65, 85, 0.75) 100%);
-  border: 1px solid var(--rq-border-soft);
-  color: var(--rq-text-primary);
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-  backdrop-filter: blur(14px);
-}
-
-.home-button-game:hover {
-  transform: translateY(-2px) scale(1.05);
-  border-color: var(--rq-border-strong);
-  box-shadow: 0 12px 22px rgba(9, 18, 32, 0.3);
-}
-
-.game-over-actions {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  margin-top: 24px;
-}
-
-.home-button {
-  background: var(--rq-accent-blue);
-  color: #0f172a;
-  border: none;
-  padding: 12px 26px;
-  border-radius: 999px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.home-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 18px 32px rgba(59, 130, 246, 0.45);
-}
-
-.shop-button-end {
-  background: var(--rq-accent-green);
-  color: #064e3b;
-  border: none;
-  padding: 12px 26px;
-  border-radius: 999px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.shop-button-end:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 18px 32px rgba(16, 185, 129, 0.45);
-}
-
-@media (max-width: 768px) {
-  .home-header {
-    flex-direction: column;
-    gap: 24px;
-    text-align: center;
-  }
-  
-  .game-title h1 {
-    font-size: 36px;
-  }
-  
-  .menu-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .home-ui {
-    padding: 20px;
-  }
-  
-  .home-content {
-    gap: 32px;
-  }
-}
-
-.fishing-game.fullscreen-game .game-ui {
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  display: grid;
-  grid-template-areas: 
-    "header header header"
-    "stats main collection"
-    "stats main collection";
-  grid-template-columns: 300px 1fr 350px;
-  grid-template-rows: auto 1fr 1fr;
-  gap: 20px;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-.fishing-game.fullscreen-game .game-header {
-  grid-area: header;
   border-radius: 0;
-  width: 100%;
-  justify-content: center;
-}
-
-.fishing-game.fullscreen-game .game-stats {
-  grid-area: stats;
-  flex-direction: column;
-  align-items: stretch;
-  height: fit-content;
-}
-
-.fishing-game.fullscreen-game .collection-panel {
-  grid-area: collection;
-  position: static;
-  width: auto;
-  height: auto;
-  max-height: 70vh;
-  overflow-y: auto;
-}
-
-.fishing-game.fullscreen-game .instructions-overlay {
-  position: fixed;
-  top: 120px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 800px;
-  z-index: 1001;
-}
-
-.fishing-game.fullscreen-game .game-controls {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  margin: 0;
-  border-radius: 0;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%);
-  z-index: 100;
-  padding: 20px;
-  box-sizing: border-box;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
 }
 
-.fishing-game.fullscreen-game .current-fish,
-.fishing-game.fullscreen-game .caught-fish,
-.fishing-game.fullscreen-game .game-over {
-  grid-area: main;
-  align-self: center;
-  justify-self: center;
-}
-
-.fishing-game.fullscreen-game .fishing-line {
-  left: 50%;
-  transform: translateX(-50%);
-}
+/* -------------------------------------------------------
+   Water Background & Environments
+-------------------------------------------------------- */
 
 .water-background {
   position: absolute;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background:
     radial-gradient(ellipse at 25% 18%, rgba(148, 163, 184, 0.18) 0%, transparent 45%),
     radial-gradient(ellipse at 78% 78%, rgba(59, 130, 246, 0.18) 0%, transparent 55%),
     linear-gradient(
       185deg,
-      rgba(30, 58, 138, 0.65) 0%,
-      rgba(15, 76, 129, 0.55) 45%,
-      rgba(8, 47, 73, 0.85) 100%
+      rgba(30, 58, 138, 0.7) 0%,
+      rgba(15, 76, 129, 0.6) 45%,
+      rgba(8, 47, 73, 0.9) 100%
     );
-  animation: water-shimmer 8s ease-in-out infinite;
+  animation: water-shimmer 9s ease-in-out infinite;
+  z-index: 1;
 }
 
+/* Environment variants */
+.fishing-game.environment-crystal_lake .water-background {
+  background:
+    radial-gradient(ellipse at 20% 18%, rgba(255, 255, 255, 0.14) 0%, transparent 45%),
+    radial-gradient(ellipse at 80% 82%, rgba(94, 234, 212, 0.2) 0%, transparent 55%),
+    linear-gradient(
+      180deg,
+      rgba(94, 234, 212, 0.35) 0%,
+      rgba(56, 189, 248, 0.5) 40%,
+      rgba(30, 64, 175, 0.9) 100%
+    );
+}
+
+.fishing-game.environment-mountain_lake .water-background {
+  background:
+    radial-gradient(ellipse at 15% 25%, rgba(255, 255, 255, 0.16) 0%, transparent 48%),
+    radial-gradient(ellipse at 90% 80%, rgba(165, 243, 252, 0.22) 0%, transparent 60%),
+    linear-gradient(
+      180deg,
+      rgba(191, 219, 254, 0.4) 0%,
+      rgba(96, 165, 250, 0.6) 50%,
+      rgba(30, 64, 175, 0.95) 100%
+    );
+}
+
+.fishing-game.environment-ocean_reef .water-background {
+  background:
+    radial-gradient(ellipse at 12% 30%, rgba(255, 255, 255, 0.18) 0%, transparent 50%),
+    radial-gradient(ellipse at 88% 70%, rgba(34, 211, 238, 0.26) 0%, transparent 62%),
+    linear-gradient(
+      190deg,
+      rgba(34, 211, 238, 0.4) 0%,
+      rgba(14, 165, 233, 0.6) 45%,
+      rgba(17, 94, 89, 0.95) 100%
+    );
+}
+
+.fishing-game.environment-deep_sea .water-background {
+  background:
+    radial-gradient(ellipse at 25% 20%, rgba(148, 163, 184, 0.16) 0%, transparent 40%),
+    radial-gradient(ellipse at 75% 85%, rgba(30, 64, 175, 0.24) 0%, transparent 55%),
+    linear-gradient(
+      195deg,
+      rgba(30, 41, 59, 0.8) 0%,
+      rgba(15, 23, 42, 0.95) 55%,
+      rgba(2, 6, 23, 1) 100%
+    );
+}
+
+/* Water FX */
+
 @keyframes water-shimmer {
-  0%, 100% { filter: brightness(1) saturate(1); }
-  50% { filter: brightness(1.1) saturate(1.2); }
+  0%, 100% {
+    filter: brightness(1) saturate(1);
+  }
+  50% {
+    filter: brightness(1.08) saturate(1.2);
+  }
 }
 
 .bubble {
   position: absolute;
-  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.1));
-  border-radius: 50%;
   width: 8px;
   height: 8px;
-  animation: bubble-rise linear infinite;
-  box-shadow: 
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.1));
+  box-shadow:
     inset -2px -2px 4px rgba(255, 255, 255, 0.3),
-    0 2px 4px rgba(0, 0, 0, 0.1);
+    0 2px 4px rgba(0, 0, 0, 0.12);
+  animation: bubble-rise linear infinite;
 }
 
 @keyframes bubble-rise {
@@ -557,793 +197,451 @@
 .swimming-fish {
   position: absolute;
   font-size: 24px;
-  animation: swim 3.2s ease-in-out infinite alternate;
   pointer-events: none;
   filter: drop-shadow(0 4px 8px rgba(3, 7, 18, 0.35));
-  transition: all 0.3s ease;
+  animation: swim 3.2s ease-in-out infinite alternate;
 }
 
 @keyframes swim {
-  0% { transform: translateY(0px) rotate(-3deg); }
-  100% { transform: translateY(-10px) rotate(3deg); }
+  0% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  100% {
+    transform: translateY(-10px) rotate(3deg);
+  }
 }
 
-.game-ui {
-  position: relative;
-  z-index: 10;
-  min-height: 100%;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  display: flex;
-  flex-direction: column;
-  color: #f8fafc;
-  grid-column: 1;
+/* -------------------------------------------------------
+   Shared Components
+-------------------------------------------------------- */
+
+.rq-card,
+.player-info-card,
+.home-header,
+.game-header,
+.game-stats,
+.shop-item,
+.inventory-item,
+.environment-card,
+.achievement-item,
+.instructions,
+.collection-panel {
+  background: var(--rq-glass-bg);
+  border-radius: var(--rq-radius-lg);
+  border: 1px solid var(--rq-border-soft);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--rq-shadow-soft);
 }
 
-.fishing-game.mobile-layout .game-ui {
-  padding-bottom: clamp(5rem, 12vh, 7rem);
+.rq-overlay,
+.instructions-overlay,
+.shop-overlay,
+.leaderboard-overlay {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--rq-glass-bg);
+  border-radius: var(--rq-radius-lg);
+  padding: 24px;
+  border: 1px solid var(--rq-border-soft);
+  box-shadow: var(--rq-shadow-strong);
+  backdrop-filter: blur(20px);
+  max-height: 78vh;
+  overflow: hidden;
+  z-index: 1000;
+  width: min(92vw, 1100px);
 }
 
-.game-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);
-  padding: 24px 36px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-  backdrop-filter: blur(15px);
-  box-shadow: 
-    0 6px 25px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  border-radius: 24px 24px 0 0;
-}
-
-.fullscreen-button {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+.rq-icon-btn,
+.fullscreen-button,
+.instructions-button,
+.shop-button,
+.leaderboard-button,
+.home-button-game,
+.close-overlay-button {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--rq-radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(15, 23, 42, 0.7);
+  color: #e5e7eb;
   font-size: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
   backdrop-filter: blur(10px);
+  transition: transform var(--rq-transition-med), box-shadow var(--rq-transition-med), background var(--rq-transition-med), border-color var(--rq-transition-med);
 }
 
-.fullscreen-button:hover {
-  background: rgba(255, 255, 255, 0.2);
+.rq-icon-btn:hover,
+.fullscreen-button:hover,
+.instructions-button:hover,
+.shop-button:hover,
+.leaderboard-button:hover,
+.home-button-game:hover,
+.close-overlay-button:hover {
+  background: rgba(15, 23, 42, 0.9);
   border-color: rgba(255, 255, 255, 0.3);
-  transform: scale(1.05);
+  box-shadow: var(--rq-shadow-subtle);
+  transform: translateY(-1px) scale(1.04);
 }
 
-.fullscreen-button:active {
-  transform: scale(0.95);
+.rq-icon-btn:active,
+.fullscreen-button:active,
+.instructions-button:active,
+.shop-button:active,
+.leaderboard-button:active,
+.home-button-game:active,
+.close-overlay-button:active {
+  transform: scale(0.96);
+}
+
+/* Pill badges / tags */
+
+.menu-badge,
+.shop-item-status,
+.environment-badge,
+.shop-stats span,
+.currency-display,
+.level-display,
+.sell-all-button,
+.shop-purchase-button,
+.environment-card-button,
+.home-button,
+.shop-button-end {
+  border-radius: var(--rq-radius-pill);
+}
+
+/* -------------------------------------------------------
+   Game UI Frame
+-------------------------------------------------------- */
+
+.game-ui {
+  position: relative;
+  z-index: 5;
+  min-height: 100%;
+  max-width: var(--rq-max-width);
+  margin: 0 auto;
+  padding: 0 20px 140px;
+  display: flex;
+  flex-direction: column;
+}
+
+.fishing-game.mobile-layout .game-ui {
+  padding: 0 14px clamp(6rem, 14vh, 9rem);
+}
+
+/* Header */
+
+.game-header,
+.home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 32px;
+  margin-top: 20px;
+  background: var(--rq-glass-bg);
+  border-radius: var(--rq-radius-lg) var(--rq-radius-lg) 18px 18px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow:
+    0 6px 25px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.game-title h1,
+.home-header .game-title h1 {
+  margin: 0 0 6px;
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  background: linear-gradient(135deg, #34d399 0%, #10b981 40%, #22c55e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 4px 10px rgba(22, 163, 74, 0.35);
+}
+
+.game-title p,
+.home-header .game-title p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--rq-text-muted);
+}
+
+/* Header side controls */
+
+.header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .fishing-game.fullscreen-game .fullscreen-button {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 10000;
-}
-
-/* Header buttons */
-.header-buttons {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.instructions-button {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-}
-
-.instructions-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: scale(1.05);
-}
-
-.instructions-button:active {
-  transform: scale(0.95);
-}
-
-/* Instructions overlay */
-.instructions-overlay {
-  position: absolute;
-  top: 100px;
-  left: 20px;
-  right: 20px;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%);
-  border-radius: 16px;
-  padding: 24px;
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  z-index: 1000;
-  max-height: 70vh;
-  overflow-y: auto;
-}
-
-.instructions-content h3 {
-  color: #f8fafc;
-  margin-bottom: 16px;
-  font-size: 20px;
-}
-
-.instructions-content ul {
-  color: #cbd5e1;
-  margin-bottom: 24px;
-  padding-left: 20px;
-}
-
-.instructions-content li {
-  margin-bottom: 8px;
-  line-height: 1.5;
-}
-
-.fish-guide h4 {
-  color: #f8fafc;
-  margin-bottom: 12px;
-  font-size: 16px;
-}
-
-.fish-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
-}
-
-.fish-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-}
-
-.fish-emoji {
-  font-size: 24px;
-}
-
-.fish-details {
-  color: #cbd5e1;
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-/* Progression System Styles */
-.level-display {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.3) 100%);
-  border-radius: 12px;
-  border: 1px solid rgba(34, 197, 94, 0.3);
-}
-
-.level-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #f0fdf4;
-}
-
-.xp-bar {
-  width: 80px;
-  height: 6px;
-  background: rgba(34, 197, 94, 0.2);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.xp-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
-  border-radius: 3px;
-  transition: width 0.5s ease;
-}
-
-.xp-text {
-  font-size: 10px;
-  color: #bbf7d0;
-}
-
-.currency-display {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.3) 100%);
-  border-radius: 12px;
-  border: 1px solid rgba(251, 191, 36, 0.3);
-}
-
-.currency-label {
-  font-size: 16px;
-}
-
-.currency-value {
-  font-size: 16px;
-  font-weight: 600;
-  color: #fef3c7;
-}
-
-/* Shop Button */
-.shop-button {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  height: 48px;
-  padding: 0 16px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-  white-space: nowrap;
-}
-
-.shop-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: scale(1.05);
-}
-
-.shop-button:active {
-  transform: scale(0.95);
-}
-
-/* Leaderboard Button */
-.leaderboard-button {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-}
-
-.leaderboard-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: scale(1.05);
-}
-
-.leaderboard-button:active {
-  transform: scale(0.95);
-}
-
-/* Shop Overlay */
-.shop-overlay {
-  position: absolute;
-  top: 100px;
-  left: 20px;
-  right: 20px;
-  background: linear-gradient(135deg, rgba(10, 21, 39, 0.92) 0%, rgba(17, 31, 52, 0.88) 100%);
-  border-radius: 24px;
-  padding: 28px;
-  backdrop-filter: blur(22px);
-  border: 1px solid var(--rq-border-soft);
-  box-shadow: var(--rq-shadow-strong);
-  z-index: 1000;
-  max-height: 70vh;
-  overflow-y: auto;
-}
-
-.fishing-game.fullscreen-game .shop-overlay {
-  position: fixed;
-  top: 120px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 900px;
+  top: 18px;
+  right: 18px;
   z-index: 1001;
 }
 
-.shop-content h3 {
-  color: #f8fafc;
-  margin-bottom: 16px;
-  font-size: 20px;
-}
+/* -------------------------------------------------------
+   Home Screen
+-------------------------------------------------------- */
 
-.shop-header p {
-  color: #cbd5e1;
-  margin-bottom: 16px;
-}
-
-.shop-stats {
+.fishing-game.home-screen {
   display: flex;
-  gap: 24px;
-  margin-bottom: 24px;
-  padding: 14px 18px;
-  background: rgba(148, 163, 184, 0.12);
-  border-radius: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  flex-direction: column;
 }
 
-.shop-stats span {
+.home-ui {
+  position: relative;
+  z-index: 5;
+  height: 100%;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   color: var(--rq-text-primary);
+}
+
+.player-info-card {
+  padding: 22px 28px;
+}
+
+.player-details h3 {
+  margin: 0 0 10px;
+  font-size: 1.5rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.player-stats-summary {
+  display: flex;
+  gap: 18px;
+  font-size: 0.9rem;
   font-weight: 600;
+  color: var(--rq-text-secondary);
 }
 
-.inventory-actions {
-  margin-bottom: 20px;
+.player-stats-summary span:first-child {
+  color: #5eead4;
 }
 
-.sell-all-button {
-  background: var(--rq-accent-green);
-  border: none;
-  color: #064e3b;
-  padding: 12px 26px;
-  border-radius: 999px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+.player-stats-summary span:nth-child(2) {
+  color: #facc15;
 }
 
-.sell-all-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 16px 30px rgba(34, 197, 94, 0.4);
+.player-stats-summary span:nth-child(3) {
+  color: #60a5fa;
 }
 
-.inventory-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+.player-environment {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
   gap: 12px;
-  margin-bottom: 32px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: rgba(15, 118, 110, 0.2);
+  border: 1px solid rgba(45, 212, 191, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-.inventory-item {
+.environment-emoji {
+  font-size: 1.8rem;
+}
+
+.environment-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.environment-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(94, 234, 212, 0.75);
+}
+
+.environment-name {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Home content */
+
+.home-content {
+  flex: 1;
+  max-width: 1080px;
+  margin: 32px auto 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 42px;
+  align-items: center;
+}
+
+.main-actions {
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.play-game-button {
+  background: var(--rq-accent-green);
+  color: #022c22;
+  border: none;
+  padding: 20px 52px;
+  border-radius: 22px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  min-width: 260px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 18px 42px rgba(16, 185, 129, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, filter 0.35s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.play-game-button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+  transform: translateX(-120%);
+  transition: transform 0.6s ease;
+}
+
+.play-game-button:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow:
+    0 24px 50px rgba(16, 185, 129, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  filter: drop-shadow(0 12px 30px rgba(5, 46, 22, 0.45));
+}
+
+.play-game-button:hover::before {
+  transform: translateX(120%);
+}
+
+.game-description {
+  margin: 0;
+  max-width: 520px;
+  font-size: 0.95rem;
+  color: var(--rq-text-muted);
+}
+
+.menu-grid {
+  width: 100%;
+  max-width: 960px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.menu-button {
+  width: 100%;
+  padding: 18px 18px;
+  border-radius: 20px;
+  border: 1px solid var(--rq-border-soft);
+  background: var(--rq-glass-soft);
+  color: var(--rq-text-primary);
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 16px 18px;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
-  border-radius: 16px;
-  border: 1px solid var(--rq-border-soft);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  cursor: pointer;
+  text-align: left;
+  backdrop-filter: blur(14px);
+  transition: transform var(--rq-transition-fast), box-shadow var(--rq-transition-fast), border-color var(--rq-transition-fast), background var(--rq-transition-fast);
 }
 
-.inventory-item:hover {
+.menu-button:hover {
+  border-color: var(--rq-border-strong);
   transform: translateY(-3px);
-  box-shadow: 0 16px 28px rgba(2, 8, 23, 0.4);
-  border-color: var(--rq-border-strong);
+  box-shadow: 0 18px 36px rgba(8, 25, 56, 0.5);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.9));
 }
 
-.inventory-fish-emoji {
-  font-size: 32px;
-}
-
-.inventory-fish-details {
-  flex: 1;
-}
-
-.inventory-fish-name {
-  color: #f8fafc;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.inventory-fish-meta {
-  color: #cbd5e1;
-  font-size: 12px;
-  margin-bottom: 4px;
-}
-
-.inventory-fish-value {
-  color: #fbbf24;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.sell-fish-button {
-  background: var(--rq-accent-blue);
-  border: none;
-  color: #0f172a;
-  padding: 8px 18px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.sell-fish-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 20px rgba(59, 130, 246, 0.35);
-}
-
-.empty-inventory {
+.menu-icon {
+  font-size: 1.8rem;
+  min-width: 44px;
   text-align: center;
-  padding: 40px 20px;
-  color: #94a3b8;
 }
 
-.shop-section {
-  margin-bottom: 32px;
-}
-
-.shop-section h4 {
-  color: #f8fafc;
-  margin-bottom: 16px;
-  font-size: 18px;
-}
-
-.environment-inventory-section {
-  padding: 22px;
-  margin-bottom: 32px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, rgba(15, 118, 110, 0.12) 0%, rgba(8, 47, 73, 0.22) 100%);
-  border: 1px solid rgba(94, 234, 212, 0.22);
-  box-shadow: 0 18px 32px rgba(8, 47, 73, 0.25);
-}
-
-.environment-inventory-hint {
-  margin: 8px 0 20px;
-  font-size: 13px;
-  color: rgba(148, 163, 184, 0.85);
-}
-
-.environment-inventory-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 18px;
-}
-
-.environment-card {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 18px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.88) 0%, rgba(30, 41, 59, 0.82) 100%);
-  border: 1px solid var(--rq-border-soft);
-  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-.environment-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--rq-border-strong);
-  box-shadow: 0 20px 34px rgba(2, 8, 23, 0.45);
-}
-
-.environment-card-active {
-  border-color: rgba(45, 212, 191, 0.45);
-  box-shadow: 0 24px 40px rgba(16, 185, 129, 0.35);
-}
-
-.environment-card-emoji {
-  font-size: 38px;
-}
-
-.environment-card-details {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.environment-card-name {
-  font-size: 16px;
+.menu-text h4 {
+  margin: 0 0 4px;
+  font-size: 1rem;
   font-weight: 600;
-  color: var(--rq-text-primary);
 }
 
-.environment-card-description {
-  font-size: 13px;
-  color: rgba(203, 213, 225, 0.82);
-  line-height: 1.4;
+.menu-text p {
+  margin: 0 0 6px;
+  font-size: 0.87rem;
+  color: var(--rq-text-muted);
 }
 
-.environment-card-button {
-  min-width: 96px;
-  border: none;
-  border-radius: 999px;
-  padding: 8px 18px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  background: var(--rq-accent-green);
-  color: #022c22;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.environment-card-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 26px rgba(16, 185, 129, 0.4);
-}
-
-.environment-card-button:disabled {
-  background: rgba(45, 212, 191, 0.28);
-  color: rgba(5, 46, 22, 0.65);
-  cursor: default;
-  box-shadow: none;
-}
-
-.shop-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
-}
-
-.shop-item {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 20px;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(24, 35, 58, 0.82) 100%);
-  border-radius: 18px;
-  border: 1px solid var(--rq-border-soft);
-  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-.shop-item:hover {
-  transform: translateY(-4px);
-  border-color: var(--rq-border-strong);
-  box-shadow: 0 18px 36px rgba(2, 8, 23, 0.5);
-}
-
-.shop-item-emoji {
-  font-size: 40px;
-}
-
-.shop-item-details {
-  flex: 1;
-}
-
-.shop-item-status {
-  margin-top: 10px;
+.menu-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  border-radius: 999px;
-  font-size: 11px;
+  font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  background: rgba(148, 163, 184, 0.12);
-  color: rgba(226, 232, 240, 0.78);
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(56, 189, 248, 0.18);
+  color: #bae6fd;
 }
 
-.shop-item-status-owned {
-  background: rgba(96, 165, 250, 0.18);
-  color: #bfdbfe;
-  border-color: rgba(96, 165, 250, 0.35);
-}
+/* -------------------------------------------------------
+   Game Stats / Progress
+-------------------------------------------------------- */
 
-.shop-item-status-equipped {
-  background: rgba(45, 212, 191, 0.22);
-  color: #a7f3d0;
-  border-color: rgba(45, 212, 191, 0.4);
-}
-
-.shop-item-status-locked {
-  background: rgba(148, 163, 184, 0.16);
-  color: rgba(203, 213, 225, 0.9);
-  border-color: rgba(148, 163, 184, 0.28);
-}
-
-.shop-item-name {
-  color: #f8fafc;
-  font-weight: 600;
-  font-size: 16px;
-  margin-bottom: 6px;
-}
-
-.shop-item-description {
-  color: #cbd5e1;
-  font-size: 13px;
-  margin-bottom: 8px;
-  line-height: 1.4;
-}
-
-.shop-item-requirements {
-  color: #94a3b8;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.shop-purchase-button {
-  background: var(--rq-accent-green);
-  border: none;
-  color: #052e16;
-  padding: 10px 22px;
-  border-radius: 999px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  min-width: 96px;
-}
-
-.shop-purchase-button:hover:not(:disabled) {
-  transform: translateY(-3px);
-  box-shadow: 0 18px 30px rgba(16, 185, 129, 0.4);
-}
-
-.shop-purchase-button:disabled {
-  background: rgba(148, 163, 184, 0.28);
-  color: rgba(226, 232, 240, 0.7);
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.achievements-section h4 {
-  color: #f8fafc;
-  margin-bottom: 16px;
-  font-size: 18px;
-}
-
-.achievements-grid {
+.game-stats {
+  margin: 18px auto 0;
+  width: 100%;
+  padding: 18px 24px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: var(--rq-glass-bg);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-.environment-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 18px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(15, 118, 110, 0.26) 0%, rgba(6, 78, 59, 0.35) 100%);
-  border: 1px solid rgba(45, 212, 191, 0.38);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+.stat-item {
+  text-align: center;
+  color: rgba(226, 232, 240, 0.9);
 }
 
-.environment-details {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-}
-
-.environment-badge .environment-label {
-  font-size: 10px;
-  text-transform: uppercase;
+.stat-label,
+.score-label,
+.timer-label,
+.best-score-label {
+  font-size: 0.72rem;
   letter-spacing: 0.18em;
-  color: rgba(165, 243, 252, 0.7);
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.8);
+  top: 78%;
 }
 
-.environment-badge .environment-name {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--rq-text-primary);
-}
-
-.achievement-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-}
-
-.achievement-item.unlocked {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.3) 100%);
-  border-color: rgba(251, 191, 36, 0.3);
-}
-
-.achievement-item.locked {
-  background: rgba(255, 255, 255, 0.05);
-  opacity: 0.6;
-}
-
-.achievement-emoji {
-  font-size: 24px;
-}
-
-.achievement-details {
-  flex: 1;
-}
-
-.achievement-name {
-  color: #f8fafc;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.achievement-description {
-  color: #cbd5e1;
-  font-size: 12px;
-  margin-bottom: 4px;
-}
-
-.achievement-reward {
-  color: #fbbf24;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-/* Enhanced Caught Fish Display */
-.caught-rewards {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.caught-xp {
-  color: #22c55e;
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.level-up {
-  color: #fbbf24;
+.stat-value {
+  display: block;
+  margin-top: 4px;
+  font-size: 1.1rem;
   font-weight: 700;
-  font-size: 18px;
-  animation: bounce 0.6s ease-in-out;
-}
-
-.new-achievements {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.achievement-unlock {
-  color: #f59e0b;
-  font-weight: 600;
-  font-size: 14px;
-  animation: slideIn 0.5s ease-out;
-}
-
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-10px);
-  }
-  60% {
-    transform: translateY(-5px);
-  }
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  color: #38bdf8;
 }
 
 .score-display,
@@ -1352,72 +650,87 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   min-width: 120px;
-}
-
-.score-label,
-.timer-label,
-.best-score-label {
-  font-size: 14px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgba(226, 232, 240, 0.7);
-  font-weight: 600;
+  top: 82%;
 }
 
 .score-value,
 .timer-value,
 .best-score-value {
-  font-size: 26px;
+  font-size: 1.6rem;
   font-weight: 800;
   color: #34d399;
-  text-shadow: 0 2px 4px rgba(52, 211, 153, 0.3);
+  text-shadow: 0 2px 4px rgba(34, 197, 94, 0.4);
 }
 
-.game-stats {
-  margin: 20px 32px 0;
+/* Level & currency */
+
+.level-display {
   display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.85) 100%);
-  padding: 20px 28px;
-  border-radius: 22px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  backdrop-filter: blur(12px);
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 14px;
+  background: var(--rq-accent-green-soft);
+  border-radius: var(--rq-radius-md);
+  border: 1px solid rgba(34, 197, 94, 0.4);
 }
 
-.stat-item {
-  flex: 1;
-  text-align: center;
-  color: rgba(226, 232, 240, 0.9);
+.level-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #bbf7d0;
 }
 
-.stat-label {
-  font-size: 12px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(148, 163, 184, 0.75);
+.xp-bar {
+  width: 90px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(34, 197, 94, 0.18);
+  overflow: hidden;
 }
 
-.stat-value {
-  display: block;
-  font-size: 18px;
-  font-weight: 700;
-  margin-top: 6px;
-  color: #38bdf8;
+.xp-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+  transition: width 0.4s ease;
 }
+
+.xp-text {
+  font-size: 0.65rem;
+  color: #bbf7d0;
+}
+
+.currency-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.32));
+  border-radius: var(--rq-radius-md);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+}
+
+.currency-label,
+.currency-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fef3c7;
+}
+
+/* -------------------------------------------------------
+   Fishing Area / Current Fish
+-------------------------------------------------------- */
 
 .fishing-line {
   position: absolute;
-  top: 50%;
+  top:  150%;
   left: 50%;
   width: 2px;
   height: 220px;
-  background: linear-gradient(to bottom, rgba(234, 179, 8, 0.85), transparent);
+  background: linear-gradient(to bottom, rgba(234, 179, 8, 0.9), transparent);
   transform: translate(-50%, -50%);
   animation: line-cast 1.1s ease-out;
   z-index: 5;
@@ -1437,213 +750,271 @@
 .current-fish,
 .caught-fish {
   position: absolute;
-  top: 50%;
+  top: 102%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%);
-  padding: 36px 44px;
-  border-radius: 28px;
+  min-width: 340px;
+  padding: 30px 38px;
+  border-radius: 24px;
+  background: var(--rq-glass-bg);
+  border: 2px solid rgba(34, 197, 94, 0.75);
+  color: var(--rq-text-primary);
   text-align: center;
-  color: #f8fafc;
-  border: 2px solid rgba(34, 197, 94, 0.7);
-  backdrop-filter: blur(24px);
-  min-width: 360px;
+  backdrop-filter: blur(22px);
+  box-shadow:
+    0 28px 56px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
   z-index: 20;
-  box-shadow: 
-    0 30px 60px rgba(0, 0, 0, 0.35),
-    0 0 0 1px rgba(255, 255, 255, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.caught-fish {
+  border-color: rgba(251, 191, 36, 0.65);
 }
 
 .fish-info {
-  margin-bottom: 22px;
+  margin-bottom: 18px;
   display: grid;
-  gap: 10px;
+  place-items: center;
+  gap: 8px;
 }
 
 .fish-emoji {
-  font-size: 42px;
+  font-size: 2.4rem;
 }
 
 .fish-name {
-  font-size: 22px;
+  font-size: 1.3rem;
   font-weight: 700;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2px 4px rgba(15, 23, 42, 0.8);
 }
 
 .fish-points {
-  color: #fbbf24;
+  font-size: 1.1rem;
   font-weight: 800;
-  font-size: 18px;
-  text-shadow: 0 2px 4px rgba(251, 191, 36, 0.4);
+  color: #fbbf24;
+  text-shadow: 0 2px 4px rgba(251, 191, 36, 0.5);
 }
+
+/* Reel progress */
 
 .reel-progress-container {
   text-align: center;
+  top: 68%
 }
 
 .reel-progress-label {
-  font-size: 17px;
-  margin-bottom: 14px;
-  color: #38bdf8;
+  margin-bottom: 10px;
+  font-size: 1rem;
   font-weight: 600;
-  text-shadow: 0 2px 4px rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+  text-shadow: 0 2px 4px rgba(56, 189, 248, 0.4);
 }
 
 .reel-progress-bar {
   width: 100%;
   height: 16px;
-  background: rgba(148, 163, 184, 0.25);
   border-radius: 8px;
-  overflow: hidden;
   border: 1px solid rgba(148, 163, 184, 0.3);
-  box-shadow: inset 0 2px 4px rgba(15, 23, 42, 0.2);
+  background: rgba(15, 23, 42, 0.9);
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(15, 23, 42, 0.3);
 }
 
 .reel-progress-fill {
   height: 100%;
+  border-radius: 7px;
   background: linear-gradient(90deg, #38bdf8 0%, #34d399 100%);
   transition: width 0.1s ease;
-  animation: progress-glow 0.5s ease-in-out infinite alternate;
-  border-radius: 7px;
+  animation: progress-glow 0.6s ease-in-out infinite alternate;
 }
 
 @keyframes progress-glow {
-  0% { box-shadow: 0 0 6px rgba(56, 189, 248, 0.45); }
-  100% { box-shadow: 0 0 18px rgba(52, 211, 153, 0.55); }
+  0% {
+    box-shadow: 0 0 6px rgba(56, 189, 248, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 16px rgba(52, 211, 153, 0.6);
+  }
 }
 
-.caught-fish {
-  border: 1px solid rgba(251, 191, 36, 0.45);
+/* Caught rewards / achievements */
+
+.caught-rewards {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.caught-emoji {
-  font-size: 44px;
-  display: block;
-  margin-bottom: 10px;
+.caught-xp {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #22c55e;
 }
 
-.caught-name {
-  font-size: 22px;
+.level-up {
+  font-size: 1.1rem;
   font-weight: 700;
   color: #fbbf24;
-  margin-bottom: 8px;
+  animation: bounce 0.6s ease-in-out;
 }
 
-.caught-points {
-  font-size: 18px;
-  color: #34d399;
-  font-weight: 700;
+.new-achievements {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.achievement-unlock {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #f59e0b;
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* -------------------------------------------------------
+   Game Controls / Bottom Bar
+-------------------------------------------------------- */
+
+.game-controls-wrapper {
+  margin-top: auto;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 12px;
 }
 
 .game-controls {
-  margin: 24px 18px 32px;
-  padding: 20px 22px;
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(1180px, 100%);
+  padding: 14px 18px 18px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 22px 22px 0 0;
+  background: var(--rq-glass-bg);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow:
+    0 -2px 20px rgba(2, 6, 16, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px);
+  z-index: 30;
+}
+
+.game-control-row {
+  display: flex;
+  justify-content: center;
   align-items: center;
   gap: 14px;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(30, 41, 59, 0.9));
-  border-radius: 24px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  backdrop-filter: blur(15px);
-  box-shadow:
-    0 20px 40px rgba(2, 6, 16, 0.42),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  position: relative;
-  z-index: 20;
+  width: 100%;
+  flex-wrap: wrap;
 }
 
 .game-controls .status-message {
-  text-align: center;
-  margin: 4px 0 0;
-  color: rgba(226, 232, 240, 0.9);
-}
-
-.game-bottom-nav {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin-top: 0.5rem;
-}
-
-.game-bottom-nav .navigation-tabs {
-  width: 100%;
+  position: fixed;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   margin: 0;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.82);
+  color: rgba(226, 232, 240, 0.95);
+  text-align: center;
+  z-index: 40;
+  pointer-events: none;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
 }
 
-.game-bottom-nav.home-nav {
-  margin: 1.75rem 0 0;
-}
-
-.game-bottom-nav.home-nav .navigation-tabs {
-  border-radius: 20px;
-}
+/* Primary action buttons */
 
 .start-button,
 .cast-button,
 .play-again-button,
 .end-game-button {
-  background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
-  color: white;
-  border: none;
-  padding: 16px 28px;
-  border-radius: 18px;
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow:
-    0 12px 24px rgba(16, 185, 129, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22);
   width: 100%;
-  max-width: 320px;
-  position: relative;
-  left: auto;
-  top: auto;
-  transform: none;
-  overflow: hidden;
+  max-width: 260px;
+  padding: 14px 24px;
+  border-radius: var(--rq-radius-md);
+  border: none;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.start-button:hover,
-.cast-button:hover,
-.play-again-button:hover {
-  transform: translateY(-2px) scale(1.01);
-  background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%);
-  box-shadow: 
-    0 15px 35px rgba(16, 185, 129, 0.4),
-    0 8px 15px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+  color: #ecfdf5;
+  background: var(--rq-accent-green);
+  box-shadow:
+    0 14px 28px rgba(16, 185, 129, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  transition: box-shadow var(--rq-transition-fast), transform var(--rq-transition-fast), background var(--rq-transition-fast);
+  transform: none !important;
 }
 
 .start-button::before,
 .cast-button::before,
 .play-again-button::before {
-  content: '';
+  content: "";
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s ease;
+  inset: 0;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+  transform: translateX(-120%);
+  transition: transform 0.6s ease;
+}
+
+.start-button:hover,
+.cast-button:hover,
+.play-again-button:hover {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 50%, #166534 100%);
+  box-shadow:
+    0 18px 36px rgba(16, 185, 129, 0.45),
+    0 8px 16px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
 .start-button:hover::before,
 .cast-button:hover::before,
 .play-again-button:hover::before {
-  left: 100%;
+  transform: translateX(120%);
 }
 
 .cast-button:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
-  transform: none;
   box-shadow: none;
 }
 
@@ -1652,116 +1023,210 @@
 }
 
 @keyframes casting-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.65; }
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.65;
+  }
 }
 
 .end-game-button {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
-  box-shadow: 
-    0 10px 25px rgba(239, 68, 68, 0.25),
-    0 4px 10px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  width: 100%;
   max-width: 320px;
-  font-size: 16px;
+  background: var(--rq-accent-danger);
+  box-shadow:
+    0 14px 28px rgba(239, 68, 68, 0.35),
+    0 6px 12px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .end-game-button:hover {
-  transform: translateY(-2px) scale(1.01);
   background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);
-  box-shadow: 
-    0 15px 35px rgba(239, 68, 68, 0.4),
-    0 8px 15px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 18px 36px rgba(239, 68, 68, 0.45),
+    0 8px 16px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26);
 }
+
+/* Bottom nav tabs container */
+
+.game-bottom-nav {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8px 16px 12px;
+  box-sizing: border-box;
+  z-index: 18;
+}
+
+.game-bottom-nav.home-nav {
+  margin-top: 0;
+}
+
+.game-bottom-nav .navigation-tabs {
+  width: min(1280px, 100%);
+  margin: 0 auto;
+}
+
+/* -------------------------------------------------------
+   Game Over
+-------------------------------------------------------- */
 
 .game-over {
   position: absolute;
-  top: 50%;
+  top: 72%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(4, 12, 22, 0.92);
-  color: #f8fafc;
-  padding: 32px;
+  padding: 28px 30px;
   border-radius: 22px;
+  background: rgba(4, 12, 22, 0.95);
+  color: var(--rq-text-primary);
+  border: 2px solid rgba(251, 191, 36, 0.7);
+  box-shadow: 0 28px 56px rgba(2, 6, 18, 0.6);
   text-align: center;
-  border: 2px solid rgba(251, 191, 36, 0.6);
-  box-shadow: 0 28px 56px rgba(2, 6, 18, 0.55);
   z-index: 25;
 }
 
 .game-over-title {
-  font-size: 26px;
+  margin-bottom: 12px;
+  font-size: 1.5rem;
   color: #fbbf24;
-  margin-bottom: 18px;
 }
 
 .final-stats p {
-  margin: 8px 0;
-  font-size: 16px;
+  margin: 6px 0;
+  font-size: 0.98rem;
   color: rgba(226, 232, 240, 0.9);
 }
 
 .final-stats strong {
+  font-size: 1.05rem;
   color: #34d399;
-  font-size: 18px;
 }
 
 .new-record {
-  color: #fbbf24;
   font-weight: 700;
+  color: #fbbf24;
   animation: record-glow 1.2s ease-in-out infinite alternate;
 }
 
 @keyframes record-glow {
-  0% { text-shadow: 0 0 6px rgba(251, 191, 36, 0.4); }
-  100% { text-shadow: 0 0 16px rgba(251, 191, 36, 0.7); }
+  0% {
+    text-shadow: 0 0 6px rgba(251, 191, 36, 0.4);
+  }
+  100% {
+    text-shadow: 0 0 16px rgba(251, 191, 36, 0.75);
+  }
+}
+
+.game-over-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+}
+
+.home-button {
+  padding: 10px 22px;
+  border-radius: var(--rq-radius-pill);
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--rq-accent-blue);
+  color: #0b1220;
+  transition: transform var(--rq-transition-fast), box-shadow var(--rq-transition-fast);
+}
+
+.home-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgba(37, 99, 235, 0.5);
+}
+
+.shop-button-end {
+  padding: 10px 22px;
+  border-radius: var(--rq-radius-pill);
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--rq-accent-green);
+  color: #022c22;
+  transition: transform var(--rq-transition-fast), box-shadow var(--rq-transition-fast);
+}
+
+.shop-button-end:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgba(16, 185, 129, 0.5);
+}
+
+/* Home button (in-game small square) */
+
+.home-button-game {
+  width: 44px;
+  height: 44px;
+  font-size: 1.2rem;
+}
+
+/* -------------------------------------------------------
+   Instructions Panel
+-------------------------------------------------------- */
+
+.instructions-overlay {
+  top: 90px;
+}
+
+.fishing-game.fullscreen-game .instructions-overlay {
+  top: 110px;
+}
+
+.instructions-content {
+  max-height: calc(78vh - 48px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.instructions-content h3,
+.instructions h3 {
+  margin: 0 0 12px;
+  font-size: 1.1rem;
+  color: var(--rq-text-primary);
+}
+
+.instructions-content ul,
+.instructions ul {
+  margin: 0 0 18px;
+  padding-left: 20px;
+  color: var(--rq-text-secondary);
+}
+
+.instructions-content li,
+.instructions li {
+  margin-bottom: 6px;
+  line-height: 1.5;
 }
 
 .instructions {
   grid-column: 2;
   width: 380px;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);
-  color: rgba(241, 245, 249, 0.95);
-  padding: 32px 36px;
-  border-radius: 0 24px 24px 0;
-  font-size: 16px;
+  padding: 28px 30px;
+  border-radius: 0 var(--rq-radius-lg) var(--rq-radius-lg) 0;
+  font-size: 0.96rem;
   line-height: 1.7;
-  border-left: 1px solid rgba(148, 163, 184, 0.2);
-  box-shadow: 
-    inset 8px 0 28px rgba(3, 7, 18, 0.3),
-    0 0 50px rgba(0, 0, 0, 0.15);
-  overflow-y: auto;
+  border-left: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow:
+    inset 8px 0 28px rgba(3, 7, 18, 0.35),
+    0 0 50px rgba(0, 0, 0, 0.2);
   display: grid;
-  gap: 24px;
+  gap: 20px;
   align-content: start;
-  padding-top: 40px;
-  backdrop-filter: blur(12px);
 }
 
-.instructions h3 {
-  color: #38bdf8;
-  margin: 0;
-  text-align: center;
-  letter-spacing: 0.1em;
-  font-size: 20px;
-  font-weight: 700;
-  text-transform: uppercase;
-  text-shadow: 0 2px 4px rgba(56, 189, 248, 0.3);
-}
-
-.instructions ul {
-  margin: 0;
-  padding-left: 24px;
-  display: grid;
-  gap: 10px;
-}
-
-.instructions li {
-  margin: 0;
-  line-height: 1.55;
-}
+/* Fish guide inside instructions */
 
 .fish-guide {
   margin-top: 6px;
@@ -1770,11 +1235,11 @@
 }
 
 .fish-guide h4 {
-  color: #fbbf24;
-  margin: 0 0 16px;
-  text-align: center;
-  font-size: 16px;
+  margin: 0 0 12px;
+  font-size: 1rem;
   font-weight: 600;
+  color: #fbbf24;
+  text-align: center;
 }
 
 .fish-list {
@@ -1785,301 +1250,567 @@
 .fish-item {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(51, 65, 85, 0.3) 100%);
-  border-radius: 14px;
   gap: 12px;
-  border: 1px solid rgba(148, 163, 184, 0.1);
-  transition: all 0.2s ease;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.6), rgba(51, 65, 85, 0.4));
+  transition: background var(--rq-transition-fast), border-color var(--rq-transition-fast), transform var(--rq-transition-fast);
 }
 
 .fish-item:hover {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(51, 65, 85, 0.5) 100%);
-  border-color: rgba(148, 163, 184, 0.2);
-  transform: translateX(4px);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.6));
+  border-color: rgba(148, 163, 184, 0.3);
+  transform: translateX(3px);
 }
 
 .fish-item .fish-emoji {
-  font-size: 20px;
-  margin-right: 0;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  font-size: 1.25rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
 }
 
 .fish-details {
-  font-size: 13px;
-  color: rgba(226, 232, 240, 0.95);
+  font-size: 0.8rem;
+  color: rgba(226, 232, 240, 0.96);
   line-height: 1.4;
   font-weight: 500;
 }
 
-.status-message {
-  color: #34d399;
-  font-weight: 600;
-  text-align: center;
-  width: 100%;
-  margin: 4px 0 0;
-}
+/* Close overlay button */
 
-@media (max-width: 1200px) {
-  .fishing-game {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr auto;
-  }
-  
-  .fishing-game.fullscreen-game {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr auto;
-  }
-  
-  .fishing-game.fullscreen-game .instructions {
-    position: static;
-    width: 100%;
-    height: auto;
-    border-radius: 0;
-  }
-  
-  .fishing-game.fullscreen-game .game-controls {
-    right: 0;
-  }
-}
-  
-  .instructions {
-    grid-column: 1;
-    grid-row: 2;
-    width: auto;
-    border-radius: 0 0 24px 24px;
-    border-left: none;
-    border-top: 1px solid rgba(148, 163, 184, 0.22);
-    max-height: 300px;
-    padding: 20px 24px;
-  }
-  
-  .game-controls {
-    margin-bottom: 0;
-    border-radius: 20px 20px 0 0;
-  }
-
-
-@media (max-width: 768px) {
-  .fishing-game.mobile-layout {
-    min-height: 100vh;
-    border-radius: 0;
-  }
-
-  .game-ui {
-    padding-bottom: 96px;
-  }
-
-  .game-header {
-    flex-direction: column;
-    align-items: center;
-    gap: 14px;
-    padding: 18px 20px;
-    border-radius: 20px 20px 0 0;
-  }
-
-  .game-stats {
-    margin: 12px 16px 0;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-  }
-
-  .stat-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 6px 10px;
-    background: rgba(15, 23, 42, 0.65);
-    border-radius: 12px;
-    min-width: 88px;
-  }
-
-  .stat-label {
-    font-size: 0.75rem;
-    opacity: 0.7;
-  }
-
-  .stat-value {
-    margin-top: 2px;
-    font-size: 0.9rem;
-  }
-
-  .instructions {
-    padding: 16px 18px;
-    gap: 8px;
-    max-height: 200px;
-  }
-
-  .game-controls {
-    margin: 16px;
-    padding: 14px;
-    gap: 12px;
-    border-radius: 18px;
-  }
-
-  .game-controls button {
-    max-width: 100%;
-  }
-
-  .game-bottom-nav .navigation-tabs {
-    padding: 0;
-  }
-
-  .current-fish,
-  .caught-fish,
-  .game-over,
-  .instructions,
-  .leaderboard-overlay {
-    width: calc(100% - 40px);
-    margin: 0 auto;
-  }
-}
-
-@media (max-width: 520px) {
-  .fishing-game.mobile-layout {
-    min-height: 100vh;
-    border-radius: 0;
-  }
-
-  .game-header h1,
-  .game-title h1 {
-    font-size: 1.9rem;
-  }
-
-  .game-controls {
-    margin: 12px;
-    padding: 10px;
-    gap: 10px;
-  }
-
-  .game-controls button {
-    width: 100%;
-    max-width: 180px;
-    padding: 12px;
-    font-size: 0.95rem;
-  }
-
-  .instructions {
-    font-size: 0.85rem;
-    padding: 14px 16px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .game-controls {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 16px 20px;
-  }
-
-  .game-controls button {
-    flex: 0 1 220px;
-    max-width: 240px;
-  }
-
-  .game-bottom-nav {
-    margin-top: 16px;
-  }
-
-  .game-bottom-nav .navigation-tabs {
-    padding: 0.6rem 0.85rem;
-  }
-}
-
-/* Leaderboard Overlay */
-.leaderboard-overlay {
+.close-overlay-button {
   position: absolute;
-  top: 100px;
-  left: 20px;
-  right: 20px;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%);
-  border-radius: 16px;
-  padding: 24px;
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  z-index: 1000;
-  max-height: 70vh;
-  overflow-y: auto;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  font-size: 1rem;
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.14);
+  color: #fecaca;
 }
 
-.fishing-game.fullscreen-game .leaderboard-overlay {
-  position: fixed;
-  top: 120px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 1000px;
+.close-overlay-button:hover {
+  background: rgba(239, 68, 68, 0.24);
+  border-color: rgba(248, 113, 113, 0.7);
+}
+
+/* -------------------------------------------------------
+   Shop Overlay
+-------------------------------------------------------- */
+
+.shop-overlay {
+  top: 90px;
+}
+
+.fishing-game.fullscreen-game .shop-overlay {
+  top: 110px;
+  width: min(94vw, 1200px);
   z-index: 1001;
 }
 
-.leaderboard-content h3 {
-  color: #f8fafc;
+.shop-content {
+  max-height: calc(78vh - 56px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.shop-content h3 {
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+}
+
+.shop-header p {
+  margin-bottom: 14px;
+  color: var(--rq-text-secondary);
+}
+
+.shop-stats {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(148, 163, 184, 0.14);
+  display: flex;
+  gap: 18px;
+  font-size: 0.9rem;
+}
+
+.shop-stats span {
+  font-weight: 600;
+  color: var(--rq-text-primary);
+}
+
+.inventory-actions {
   margin-bottom: 16px;
-  font-size: 20px;
+}
+
+.sell-all-button {
+  padding: 10px 24px;
+  border-radius: var(--rq-radius-pill);
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--rq-accent-green);
+  color: #022c22;
+  transition: transform var(--rq-transition-fast), box-shadow var(--rq-transition-fast);
+}
+
+.sell-all-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgba(34, 197, 94, 0.5);
+}
+
+.inventory-grid {
+  margin-bottom: 28px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.inventory-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--rq-border-soft);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.85));
+  transition: transform var(--rq-transition-fast), box-shadow var(--rq-transition-fast), border-color var(--rq-transition-fast);
+}
+
+.inventory-item:hover {
+  transform: translateY(-3px);
+  border-color: var(--rq-border-strong);
+  box-shadow: 0 16px 30px rgba(2, 8, 23, 0.55);
+}
+
+.inventory-fish-emoji {
+  font-size: 2rem;
+}
+
+.inventory-fish-details {
+  flex: 1;
+}
+
+.inventory-fish-name {
+  margin-bottom: 2px;
+  font-weight: 600;
+}
+
+.inventory-fish-meta {
+  margin-bottom: 2px;
+  font-size: 0.75rem;
+  color: var(--rq-text-secondary);
+}
+
+.inventory-fish-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fbbf24;
+}
+
+.sell-fish-button {
+  padding: 8px 16px;
+  border-radius: var(--rq-radius-pill);
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--rq-accent-blue);
+  color: #0b1120;
+  transition: transform var(--rq-transition-fast), box-shadow var(--rq-transition-fast);
+}
+
+.sell-fish-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 20px rgba(37, 99, 235, 0.45);
+}
+
+.empty-inventory,
+.empty-leaderboard {
+  padding: 36px 20px;
+  text-align: center;
+  color: var(--rq-text-muted);
+}
+
+/* Shop sections */
+
+.shop-section {
+  margin-bottom: 26px;
+}
+
+.shop-section h4 {
+  margin-bottom: 14px;
+  font-size: 1.05rem;
+}
+
+/* Environment cards in shop */
+
+.environment-inventory-section {
+  margin-bottom: 28px;
+  padding: 20px 22px;
+  border-radius: 20px;
+  border: 1px solid rgba(94, 234, 212, 0.28);
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.18), rgba(8, 47, 73, 0.3));
+  box-shadow: 0 18px 34px rgba(8, 47, 73, 0.35);
+}
+
+.environment-inventory-hint {
+  margin: 6px 0 16px;
+  font-size: 0.8rem;
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.environment-inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.environment-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid var(--rq-border-soft);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.88));
+  transition: transform var(--rq-transition-fast), border-color var(--rq-transition-fast), box-shadow var(--rq-transition-fast);
+}
+
+.environment-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--rq-border-strong);
+  box-shadow: 0 18px 34px rgba(2, 8, 23, 0.6);
+}
+
+.environment-card-active {
+  border-color: var(--rq-border-accent);
+  box-shadow: 0 22px 40px rgba(16, 185, 129, 0.4);
+}
+
+.environment-card-emoji {
+  font-size: 2.2rem;
+}
+
+.environment-card-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.environment-card-name {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.environment-card-description {
+  font-size: 0.8rem;
+  color: rgba(203, 213, 225, 0.9);
+}
+
+.environment-card-button {
+  min-width: 90px;
+  padding: 8px 16px;
+  border-radius: var(--rq-radius-pill);
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--rq-accent-green);
+  color: #022c22;
+  transition: transform var(--rq-transition-fast), box-shadow var(--rq-transition-fast);
+}
+
+.environment-card-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 26px rgba(16, 185, 129, 0.45);
+}
+
+.environment-card-button:disabled {
+  background: rgba(45, 212, 191, 0.28);
+  color: rgba(5, 46, 22, 0.7);
+  cursor: default;
+}
+
+/* Gear shop */
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.shop-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid var(--rq-border-soft);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(24, 35, 58, 0.86));
+  transition: transform var(--rq-transition-fast), border-color var(--rq-transition-fast), box-shadow var(--rq-transition-fast);
+}
+
+.shop-item:hover {
+  transform: translateY(-4px);
+  border-color: var(--rq-border-strong);
+  box-shadow: 0 18px 38px rgba(2, 8, 23, 0.6);
+}
+
+.shop-item-emoji {
+  font-size: 2.4rem;
+}
+
+.shop-item-details {
+  flex: 1;
+}
+
+.shop-item-name {
+  margin-bottom: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.shop-item-description {
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  color: var(--rq-text-secondary);
+}
+
+.shop-item-requirements {
+  font-size: 0.78rem;
+  color: var(--rq-text-muted);
+}
+
+.shop-item-status {
+  margin-top: 8px;
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(148, 163, 184, 0.18);
+  border-radius: var(--rq-radius-pill);
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  color: rgba(226, 232, 240, 0.85);
+}
+
+.shop-item-status-owned {
+  background: rgba(96, 165, 250, 0.2);
+  border-color: rgba(96, 165, 250, 0.4);
+  color: #dbeafe;
+}
+
+.shop-item-status-equipped {
+  background: rgba(45, 212, 191, 0.25);
+  border-color: rgba(45, 212, 191, 0.45);
+  color: #a7f3d0;
+}
+
+.shop-item-status-locked {
+  background: rgba(148, 163, 184, 0.2);
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+/* Purchase button */
+
+.shop-purchase-button {
+  min-width: 94px;
+  padding: 9px 18px;
+  border-radius: var(--rq-radius-pill);
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--rq-accent-green);
+  color: #052e16;
+  transition: transform var(--rq-transition-fast), box-shadow var(--rq-transition-fast);
+}
+
+.shop-purchase-button:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 32px rgba(16, 185, 129, 0.5);
+}
+
+.shop-purchase-button:disabled {
+  background: rgba(148, 163, 184, 0.28);
+  color: rgba(226, 232, 240, 0.75);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* -------------------------------------------------------
+   Achievements
+-------------------------------------------------------- */
+
+.achievements-section h4 {
+  margin-bottom: 12px;
+  font-size: 1.05rem;
+}
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
+}
+
+.environment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.28), rgba(6, 78, 59, 0.38));
+  border: 1px solid rgba(45, 212, 191, 0.45);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.environment-details {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.environment-badge .environment-label {
+  font-size: 0.63rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(165, 243, 252, 0.8);
+}
+
+.environment-badge .environment-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.achievement-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  transition: background var(--rq-transition-fast), border-color var(--rq-transition-fast), transform var(--rq-transition-fast);
+}
+
+.achievement-item.unlocked {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(245, 158, 11, 0.32));
+  border-color: rgba(251, 191, 36, 0.4);
+}
+
+.achievement-item.locked {
+  background: rgba(15, 23, 42, 0.7);
+  opacity: 0.7;
+}
+
+.achievement-emoji {
+  font-size: 1.6rem;
+}
+
+.achievement-details {
+  flex: 1;
+}
+
+.achievement-name {
+  margin-bottom: 2px;
+  font-weight: 600;
+}
+
+.achievement-description {
+  margin-bottom: 2px;
+  font-size: 0.8rem;
+  color: var(--rq-text-secondary);
+}
+
+.achievement-reward {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fbbf24;
+}
+
+/* -------------------------------------------------------
+   Leaderboard Overlay
+-------------------------------------------------------- */
+
+.leaderboard-overlay {
+  top: 90px;
+}
+
+.fishing-game.fullscreen-game .leaderboard-overlay {
+  top: 110px;
+  width: min(94vw, 1100px);
+  z-index: 1001;
+}
+
+.leaderboard-content {
+  max-height: calc(78vh - 48px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.leaderboard-content h3 {
+  margin-bottom: 12px;
+  font-size: 1.1rem;
 }
 
 .leaderboard-header p {
-  color: #cbd5e1;
-  margin-bottom: 24px;
+  margin-bottom: 18px;
+  color: var(--rq-text-secondary);
 }
 
 .stats-section {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .stats-section h4 {
-  color: #f8fafc;
-  margin-bottom: 16px;
-  font-size: 18px;
+  margin-bottom: 10px;
+  font-size: 1.05rem;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 14px;
+  margin-bottom: 18px;
 }
 
 .stat-card {
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(15, 23, 42, 0.85);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
+  transition: background var(--rq-transition-fast), border-color var(--rq-transition-fast), transform var(--rq-transition-fast);
 }
 
 .stat-card:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(15, 23, 42, 0.95);
+  border-color: rgba(255, 255, 255, 0.24);
+  transform: translateY(-2px);
 }
 
 .stat-number {
-  font-size: 24px;
+  margin-bottom: 6px;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #34d399;
-  margin-bottom: 8px;
 }
 
 .stat-label {
-  font-size: 12px;
-  color: #cbd5e1;
-  text-align: center;
-  font-weight: 500;
+  font-size: 0.8rem;
+  color: var(--rq-text-secondary);
 }
 
 .leaderboard-section h4 {
-  color: #f8fafc;
-  margin-bottom: 16px;
-  font-size: 18px;
+  margin-bottom: 12px;
+  font-size: 1.05rem;
 }
 
 .leaderboard-list {
@@ -2089,29 +1820,30 @@
 }
 
 .leaderboard-entry {
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.85);
   display: grid;
   grid-template-columns: 60px 1fr auto auto;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
+  gap: 12px;
+  transition: background var(--rq-transition-fast), border-color var(--rq-transition-fast), transform var(--rq-transition-fast);
 }
 
 .leaderboard-entry:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(15, 23, 42, 0.95);
   border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 .leaderboard-entry.current-player {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.3) 100%);
-  border-color: rgba(34, 197, 94, 0.3);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.22), rgba(22, 163, 74, 0.34));
+  border-color: rgba(34, 197, 94, 0.5);
 }
 
 .rank {
-  font-size: 18px;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #fbbf24;
   text-align: center;
@@ -2120,76 +1852,251 @@
 .player-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .player-name {
-  color: #f8fafc;
-  font-weight: 600;
-  font-size: 16px;
+  font-size: 1rem;
+  font-weight: 40;
 }
 
 .player-meta {
-  color: #94a3b8;
-  font-size: 12px;
+  font-size: 0.8rem;
+  color: var(--rq-text-muted);
 }
 
 .score-info {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 4px;
+  gap: 2px;
+  font-size: 0.85rem;
 }
 
 .score {
-  color: #34d399;
   font-weight: 700;
-  font-size: 16px;
+  color: #34d399;
 }
 
 .catches {
+  font-size: 0.8rem;
   color: #38bdf8;
-  font-size: 12px;
 }
 
 .streak {
-  color: #f59e0b;
+  font-size: 0.85rem;
   font-weight: 600;
-  font-size: 14px;
+  color: #f59e0b;
 }
 
-.empty-leaderboard {
-  text-align: center;
-  padding: 40px 20px;
-  color: #94a3b8;
+/* -------------------------------------------------------
+   Responsive
+-------------------------------------------------------- */
+
+@media (max-width: 1200px) {
+  .fishing-game.fullscreen-game .game-ui {
+    padding-bottom: 120px;
+  }
+
+  .fishing-game.fullscreen-game .instructions {
+    position: static;
+    width: 100%;
+    height: auto;
+    border-radius: 0 0 var(--rq-radius-lg) var(--rq-radius-lg);
+    border-left: none;
+    border-top: 1px solid rgba(148, 163, 184, 0.22);
+    max-height: 280px;
+    padding: 18px 22px;
+  }
+
+  .fishing-game.fullscreen-game .game-controls {
+    left: 50%;
+    transform: translateX(-50%);
+  }
 }
 
 @media (max-width: 768px) {
+  .home-header,
+  .game-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 14px;
+    padding: 18px 18px;
+  }
+
+  .current-fish,
+  .caught-fish {
+    top: 62%;
+    width: calc(100% - 32px);
+    min-width: 0;
+  }
+
+  .home-ui {
+    padding: 20px;
+  }
+
+  .home-content {
+    gap: 28px;
+  }
+
+  .game-title h1,
+  .home-header .game-title h1 {
+    font-size: 2rem;
+  }
+
+  .menu-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .game-ui {
+    padding: 0 16px 96px;
+  }
+
+  .game-stats {
+    margin: 10px 12px 0;
+    padding: 14px 16px;
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.75);
+  }
+
+  .instructions {
+    grid-column: 1;
+    grid-row: 2;
+    width: auto;
+    border-radius: 0 0 var(--rq-radius-lg) var(--rq-radius-lg);
+    max-height: 200px;
+    padding: 16px 18px;
+  }
+
+  .game-controls {
+    margin: 10px auto;
+    padding: 12px 16px;
+    gap: 10px;
+    border-radius: 18px 18px 0 0;
+    width: min(100%, 620px);
+  }
+
+  .game-controls button {
+    max-width: 100%;
+  }
+
+  .current-fish,
+  .caught-fish,
+  .game-over,
+  .instructions-overlay,
+  .shop-overlay,
+  .leaderboard-overlay {
+    width: calc(100% - 36px);
+  }
+
   .leaderboard-entry {
     grid-template-columns: 50px 1fr;
     grid-template-rows: auto auto;
-    gap: 8px;
   }
-  
+
   .rank {
     grid-row: 1 / -1;
   }
-  
+
   .player-info {
     grid-column: 2;
   }
-  
+
   .score-info {
     grid-column: 2;
     align-items: flex-start;
   }
-  
-  .streak {
-    grid-column: 2;
-    align-self: flex-start;
-  }
-  
+
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .game-header h1,
+  .game-title h1 {
+    font-size: 1.7rem;
+  }
+
+  .game-controls {
+    padding: 10px 12px;
+    width: min(100%, 520px);
+  }
+
+  .game-controls button {
+    max-width: 180px;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+
+  .instructions {
+    font-size: 0.84rem;
+    padding: 14px 14px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .fishing-game.fullscreen-game .game-ui {
+    display: grid;
+    grid-template-areas:
+      "header header header"
+      "stats main collection"
+      "stats main collection";
+    grid-template-columns: 280px 1fr 340px;
+    grid-template-rows: auto 1fr 1fr;
+    gap: 18px;
+    padding: 18px 18px 220px;
+  }
+
+  .fishing-game.fullscreen-game .game-header {
+    grid-area: header;
+    width: 100%;
+    border-radius: 0;
+    justify-content: center;
+  }
+
+  .fishing-game.fullscreen-game .game-stats {
+    grid-area: stats;
+    height: fit-content;
+  }
+
+  .fishing-game.fullscreen-game .collection-panel {
+    grid-area: collection;
+    position: static;
+    width: auto;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  .fishing-game.fullscreen-game .current-fish,
+  .fishing-game.fullscreen-game .caught-fish,
+  .fishing-game.fullscreen-game .game-over {
+    grid-area: main;
+    align-self: center;
+    justify-self: center;
+  }
+
+  .game-controls {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px 18px;
+    padding-inline: 28px;
+  }
+
+  .game-controls button {
+    flex: 0 1 220px;
+    max-width: 240px;
+  }
+
+  .game-bottom-nav {
+    margin-top: 14px;
   }
 }

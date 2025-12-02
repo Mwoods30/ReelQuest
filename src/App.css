@@ -338,6 +338,107 @@
   height: 100%;
 }
 
+.full-game-screen {
+  position: relative;
+  min-height: 100vh;
+  background: linear-gradient(160deg, #020817 0%, #0b1120 45%, #0f172a 70%, #0f766e 100%);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.full-game-screen > .fishing-game {
+  flex: 1;
+}
+
+.game-account-overlay {
+  position: absolute;
+  top: calc(1.25rem + env(safe-area-inset-top));
+  right: clamp(1rem, 4vw, 2.25rem);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  border-radius: 18px;
+  background: var(--surface-glass);
+  border: 1px solid var(--border-glass);
+  box-shadow: 0 18px 32px rgba(2, 6, 23, 0.4);
+  backdrop-filter: var(--blur-high);
+  color: rgba(226, 232, 240, 0.92);
+  z-index: 30;
+  flex-wrap: wrap;
+}
+
+.game-account-overlay-mobile {
+  top: auto;
+  right: auto;
+  left: 50%;
+  bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: calc(100% - clamp(1.5rem, 6vw, 3rem));
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.game-account-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.game-account-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(148, 163, 184, 0.85);
+}
+
+.game-account-name {
+  font-weight: 700;
+  color: rgba(224, 242, 254, 0.95);
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-account-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.game-account-button {
+  padding: 0.55rem 1.15rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.68);
+  color: rgba(226, 232, 240, 0.92);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.game-account-button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.42);
+  background: rgba(15, 23, 42, 0.82);
+}
+
+.game-account-button-primary {
+  color: rgba(56, 189, 248, 0.98);
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.game-account-button-danger {
+  color: rgba(244, 114, 182, 0.92);
+  border-color: rgba(244, 114, 182, 0.38);
+}
+
 
 .about-container,
 .leaderboard-container {
@@ -360,6 +461,41 @@
 
 .about-text + .about-text {
   margin-top: 1.25rem;
+  align-items: center;
+}
+.about-copyright-text{
+  margin-top: 1.25rem;
+  font-size: 0. nine rem;
+  color: rgba(203, 213, 225, 0.7);
+  justify-content: center;
+  margin-right: auto;
+}
+
+.about-section {
+  margin-top: 1.4rem;
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.about-section h3 {
+  margin: 0 0 0.65rem 0;
+  font-size: 1.1rem;
+  color: #e2e8f0;
+  letter-spacing: 0.01em;
+}
+
+.about-section ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.4rem;
+  color: rgba(226, 232, 240, 0.82);
+}
+
+.about-section li {
+  line-height: 1.6;
 }
 
 
@@ -378,27 +514,33 @@
 
 .navigation-tabs.navigation-tabs-game {
   width: 100%;
-  margin: 1rem 0 0;
-  padding: 0.6rem;
-  border-radius: 18px;
+  margin: 0;
+  padding: 0.4rem 0.5rem;
+  border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.22);
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.88));
-  box-shadow: 0 12px 24px rgba(2, 6, 23, 0.38);
+  background: rgba(8, 15, 27, 0.7);
+  box-shadow: 0 18px 38px rgba(2, 6, 23, 0.4);
+  backdrop-filter: blur(18px);
 }
 
 .navigation-tabs.navigation-tabs-game .navigation-tab {
-  padding: 0.65rem 0.45rem;
-  font-size: 0.7rem;
-  background: rgba(15, 23, 42, 0.68);
+  flex-direction: row;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.72rem;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
 }
 
 .navigation-tabs.navigation-tabs-game .navigation-tab-icon {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
 }
 
 .navigation-tabs.navigation-tabs-mobile {
   margin: 0;
-  padding: 0.5rem clamp(0.75rem, 4vw, 1.5rem);
+  padding: 0.45rem clamp(0.75rem, 4vw, 1.5rem);
 }
 
 .navigation-tabs.navigation-tabs-mobile:not(.navigation-tabs-game) {
@@ -409,7 +551,17 @@
 }
 
 .navigation-tabs.navigation-tabs-game.navigation-tabs-mobile {
-  padding: 0.4rem;
+  padding: 0.35rem 0.45rem;
+}
+
+.navigation-tabs.navigation-tabs-game .navigation-tab-label {
+  letter-spacing: 0.14em;
+}
+
+.navigation-tabs.navigation-tabs-game .navigation-tab-active {
+  border: 1px solid rgba(56, 189, 248, 0.42);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.28), rgba(52, 211, 153, 0.28));
+  box-shadow: 0 14px 24px rgba(14, 165, 233, 0.38);
 }
 
 .navigation-tab {
@@ -478,6 +630,27 @@
   .play-container-mobile .play-header {
     display: none;
   }
+
+  .game-account-overlay {
+    padding: 0.75rem 1rem;
+    gap: 0.65rem;
+  }
+
+  .game-account-overlay-mobile {
+    flex-direction: column;
+    align-items: stretch;
+    bottom: calc(6.25rem + env(safe-area-inset-bottom));
+  }
+
+  .game-account-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .game-account-button {
+    flex: 1;
+    justify-content: center;
+  }
 }
 
 @media (max-width: 520px) {
@@ -499,6 +672,14 @@
 
   .play-content {
     padding-top: 100px;
+  }
+
+  .game-account-name {
+    font-size: 0.85rem;
+  }
+
+  .game-account-overlay-mobile {
+    width: calc(100% - clamp(1rem, 8vw, 1.5rem));
   }
 }
 

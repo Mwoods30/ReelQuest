@@ -501,6 +501,13 @@
   background: linear-gradient(135deg, rgba(34, 197, 94, 0.16), rgba(22, 163, 74, 0.28));
 }
 
+.achievement-item.locked {
+  border-style: dashed;
+  border-color: rgba(148, 163, 184, 0.3);
+  background: linear-gradient(135deg, rgba(75, 85, 99, 0.24), rgba(30, 41, 59, 0.32));
+  opacity: 0.9;
+}
+
 .achievement-icon {
   font-size: 24px;
 }
@@ -520,6 +527,18 @@
 .achievement-description {
   font-size: 13px;
   color: rgba(203, 213, 225, 0.85);
+}
+
+.achievement-status {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.achievement-item.unlocked .achievement-status {
+  color: #86efac;
 }
 
 .empty-achievements {

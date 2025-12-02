@@ -152,7 +152,7 @@ function AppContent() {
         </div>
         
         <p className="welcome-text">
-          Welcome to <span className="brand-accent">ReelQuest</span>, the most immersive fishing experience on the web!
+          Welcome to <span className="brand-accent">ReelQuest</span>, one most immersive fishing experience on the web!
           <br />Cast your line, catch <span className="brand-accent-green">rare fish</span>, and climb the leaderboard.
           <br />Built with React and modern web technologies.
         </p>
@@ -195,34 +195,25 @@ function AppContent() {
   const GameScreen = () => {
     const handleGameComplete = (gameResult) => {
       console.log('Game completed:', gameResult);
-      // Here you could update user stats, show achievements, etc.
+      // Hook for future post-game logic (achievements, analytics, etc.).
     };
 
+    const overlayClasses = ['game-account-overlay'];
+    if (isMobile) {
+      overlayClasses.push('game-account-overlay-mobile');
+    }
+
     return (
-      <div className={`container play-container${isMobile ? ' play-container-mobile' : ''}`}>
-        <div className="play-content">
-          <div className="play-header">
-            <h1 className="title">Play ReelQuest</h1>
-            <p className="play-subtitle">Cast your line and race the clock. Catch as many fish as you can in 60 seconds!</p>
-            {isAuthenticated && userProfile && (
-              <div className="player-info-header">
-                <span>{userProfile.playerName} - Level {userProfile.level}</span>
-                <span>💰 {userProfile.currency}</span>
-              </div>
-            )}
-          </div>
-          <div className={`game-container${isMobile ? ' game-container-mobile' : ''}`}>
-            <FishingGame 
-              onGameComplete={handleGameComplete}
-              user={user}
-              userProfile={userProfile}
-              isAuthenticated={isAuthenticated}
-              onProfileCacheUpdate={updateUserProfileCache}
-              renderNavigationTabs={renderNavigationTabs}
-              isMobile={isMobile}
-            />
-          </div>
-        </div>
+      <div className="full-game-screen">
+        <FishingGame
+          onGameComplete={handleGameComplete}
+          user={user}
+          userProfile={userProfile}
+          isAuthenticated={isAuthenticated}
+          onProfileCacheUpdate={updateUserProfileCache}
+          renderNavigationTabs={renderNavigationTabs}
+          isMobile={isMobile}
+        />
       </div>
     );
   };
@@ -232,17 +223,77 @@ function AppContent() {
   const AboutScreen = () => (
     <div className={`container${isMobile ? ' container-mobile-about' : ''}`}>
       <div className="scroll-content">
-        <h1 className="title">About</h1>
+        <h1 className="title">About ReelQuest</h1>
         <div className="about-container">
           <p className="about-text">
-            <span className="brand-accent">ReelQuest</span> is a modern web-based fishing game. Cast your line, catch <span className="brand-accent-green">rare fish</span>, and compete for the top score!
+            <span className="brand-accent">ReelQuest</span> is a fast-paced, 60-second fishing challenge built for the web. Cast, reel, and climb the leaderboard while leveling up your fisher through events, quests, and collectibles.
           </p>
+
+          <div className="about-section">
+            <h3>Gameplay Loop</h3>
+            <ul>
+              <li>Cast and reel to land fish before the meter drains—streaks boost your score.</li>
+              <li>Runs last 60 seconds; every catch can tip the leaderboard.</li>
+              <li>Ghost races: pick a leaderboard run and race its pace bar live.</li>
+            </ul>
+          </div>
+
+          <div className="about-section">
+            <h3>Events & Competition</h3>
+            <ul>
+              <li>Rotating tournaments with special rules and bonuses (Rare Rush, Streak Madness, more).</li>
+              <li>Global leaderboard with filters for Top Score, Catches, Streaks, Level, Recent.</li>
+              <li>Race ghosts to benchmark yourself against top runs.</li>
+            </ul>
+          </div>
+
+          <div className="about-section">
+            <h3>Progression & Economy</h3>
+            <ul>
+              <li>Daily/weekly quests for coins and skill points; daily contracts to deliver fish for payouts.</li>
+              <li>Shop with environments and upgrades; sell inventory to fund purchases.</li>
+              <li>Skills boost reel power, escape reduction, rare chance, and XP gains.</li>
+            </ul>
+          </div>
+
+          <div className="about-section">
+            <h3>Collection & Cosmetics</h3>
+            <ul>
+              <li>Fish Compendium tracks every species, catch counts, and best sizes.</li>
+              <li>Cosmetic skins re-theme the waters; pick your vibe without pay-to-win.</li>
+              <li>Achievements, stats, and player profile keep long-term progress visible.</li>
+            </ul>
+          </div>
+
+          <div className="about-section">
+            <h3>Platform & Tech</h3>
+            <ul>
+              <li>Built with <span className="brand-accent">React</span> and modern web tooling for desktop and mobile.</li>
+              <li>Realtime-friendly leaderboard and persistence (sign in to sync across devices).</li>
+              <li>Responsive navigation with quick access to Play, Home, About, and Profile.</li>
+            </ul>
+          </div>
+
+          <div className="about-section">
+            <h3>Team</h3>
+            <p className="about-text">
+              <strong>Developed by:</strong> <span className="brand-accent">Matthew Woods</span>, <span className="brand-accent-green">Ryan McKearnin</span>, <span className="brand-accent">Tyler Klimczak</span>, <span className="brand-accent-green">Willow Iloka</span>
+            </p>
+          </div>
+
           <p className="about-text">
-            <strong>Developed by:</strong> <span className="brand-accent">Matthew Woods</span>, <span className="brand-accent-green">Ryan McKearnin</span>, <span className="brand-accent">Tyler Klimczak</span>, <span className="brand-accent-green">Willow Iloka</span>
+            Ready to fish? Jump into the Play tab, claim your quests, and set a new tournament record.
           </p>
-          <p className="about-text">
-            Built with <span className="brand-accent">React</span> and modern web technologies.
-          </p>
+
+          <div className="about-section">
+            <h3>Trademark & Credits</h3>
+            <p className="about-text">
+              ReelQuest (TM) and the ReelQuest logo are trademarks of the ReelQuest team. All other trademarks, logos, and brands are the property of their respective owners.
+            </p>
+            <p className="about-copyright-text">
+              © 2025 ReelQuest . All rights reserved.
+            </p>
+          </div>
         </div>
       </div>
       {renderNavigationTabs('standard')}
