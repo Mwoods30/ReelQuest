@@ -9,13 +9,19 @@ import {
   signInWithPopup,
   sendPasswordResetEmail
 } from 'firebase/auth';
-import { auth } from './config.js';
+import { auth, firebaseEnabled } from './config.js';
+
+const disabledResponse = (operation) => ({
+  success: false,
+  error: `${operation} unavailable: Firebase disabled or missing config`
+});
 
 // Google Auth Provider
 const googleProvider = new GoogleAuthProvider();
 
 // Authentication functions
 export const createAccount = async (email, password, displayName) => {
+  if (!firebaseEnabled || !auth) return disabledResponse('Account creation');
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
@@ -32,6 +38,7 @@ export const createAccount = async (email, password, displayName) => {
 };
 
 export const signInUser = async (email, password) => {
+  if (!firebaseEnabled || !auth) return disabledResponse('Sign in');
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return { success: true, user: userCredential.user };
@@ -41,6 +48,7 @@ export const signInUser = async (email, password) => {
 };
 
 export const signInWithGoogle = async () => {
+  if (!firebaseEnabled || !auth) return disabledResponse('Google sign-in');
   try {
     const result = await signInWithPopup(auth, googleProvider);
     return { success: true, user: result.user };
@@ -50,6 +58,7 @@ export const signInWithGoogle = async () => {
 };
 
 export const signOutUser = async () => {
+  if (!firebaseEnabled || !auth) return disabledResponse('Sign out');
   try {
     await signOut(auth);
     return { success: true };
@@ -59,6 +68,7 @@ export const signOutUser = async () => {
 };
 
 export const resetPassword = async (email) => {
+  if (!firebaseEnabled || !auth) return disabledResponse('Password reset');
   try {
     await sendPasswordResetEmail(auth, email);
     return { success: true };
@@ -69,10 +79,15 @@ export const resetPassword = async (email) => {
 
 // Auth state observer
 export const onAuthChange = (callback) => {
+  if (!firebaseEnabled || !auth) {
+    callback(null);
+    return () => {};
+  }
   return onAuthStateChanged(auth, callback);
 };
 
 // Get current user
 export const getCurrentUser = () => {
+  if (!firebaseEnabled || !auth) return null;
   return auth.currentUser;
 };

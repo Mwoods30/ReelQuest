@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { UserContext } from './UserContext.js';
 import { onAuthChange } from '../firebase/auth.js';
+import { firebaseEnabled } from '../firebase/config.js';
 
 const buildFallbackProfile = (firebaseUser) => ({
   level: 1,
@@ -43,6 +44,11 @@ export function UserProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    if (!firebaseEnabled) {
+      setLoading(false);
+      return undefined;
+    }
+
     let unsubscribeProfile = null;
 
     const unsubscribeAuth = onAuthChange(async (firebaseUser) => {

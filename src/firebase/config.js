@@ -14,11 +14,10 @@ const REQUIRED_ENV_VARS = [
 
 const missingEnvVars = REQUIRED_ENV_VARS.filter((envVar) => !import.meta.env[envVar]);
 
+export const firebaseEnabled = missingEnvVars.length === 0;
+
 if (missingEnvVars.length > 0) {
   const message = `Missing Firebase environment variables: ${missingEnvVars.join(', ')}`;
-  if (import.meta.env.PROD) {
-    throw new Error(message);
-  }
   console.warn(message);
 }
 
@@ -40,11 +39,19 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+let app = null;
+let authInstance = null;
+let dbInstance = null;
 
-// Initialize Firebase services
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+if (firebaseEnabled) {
+  app = initializeApp(firebaseConfig);
+  authInstance = getAuth(app);
+  dbInstance = getFirestore(app);
+} else {
+  console.warn('Firebase disabled: running in offline/guest mode.');
+}
+
+export const auth = authInstance;
+export const db = dbInstance;
 
 export default app;

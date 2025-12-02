@@ -16,7 +16,14 @@ import {
   where,
   getDocs
 } from 'firebase/firestore';
-import { db } from './config.js';
+import { db, firebaseEnabled } from './config.js';
+
+const ensureDb = () => {
+  if (!firebaseEnabled || !db) {
+    throw new Error('Firestore unavailable: Firebase disabled or missing config');
+  }
+  return db;
+};
 
 // Collections
 const USERS_COLLECTION = 'users';
@@ -26,6 +33,7 @@ const GAME_SESSIONS_COLLECTION = 'gameSessions';
 // User Data Management
 export const createUserProfile = async (userId, userData) => {
   try {
+    ensureDb();
     const defaultUserData = {
       level: 1,
       xp: 0,
@@ -56,6 +64,7 @@ export const createUserProfile = async (userId, userData) => {
 
 export const getUserProfile = async (userId) => {
   try {
+    ensureDb();
     const docRef = doc(db, USERS_COLLECTION, userId);
     const docSnap = await getDoc(docRef);
     
@@ -76,6 +85,7 @@ export const getUserProfile = async (userId) => {
 
 export const updateUserProfile = async (userId, updates) => {
   try {
+    ensureDb();
     if (!userId) {
       return { success: false, error: 'No user id provided', errorCode: 'missing-user' };
     }
@@ -99,6 +109,7 @@ export const updateUserProfile = async (userId, updates) => {
 // Game Progress Management
 export const saveGameProgress = async (userId, progressData) => {
   try {
+    ensureDb();
     const updates = {
       ...progressData,
       lastActive: serverTimestamp()
@@ -121,6 +132,7 @@ export const saveGameProgress = async (userId, progressData) => {
 
 export const addFishToInventory = async (userId, fish) => {
   try {
+    ensureDb();
     const docRef = doc(db, USERS_COLLECTION, userId);
     await updateDoc(docRef, {
       inventory: arrayUnion(fish),
@@ -136,6 +148,7 @@ export const addFishToInventory = async (userId, fish) => {
 
 export const sellFishFromInventory = async (userId, fishId, saleValue, newInventory) => {
   try {
+    ensureDb();
     const docRef = doc(db, USERS_COLLECTION, userId);
     await updateDoc(docRef, {
       inventory: newInventory,
@@ -152,6 +165,7 @@ export const sellFishFromInventory = async (userId, fishId, saleValue, newInvent
 
 export const purchaseShopItem = async (userId, itemPrice, updates) => {
   try {
+    ensureDb();
     const docRef = doc(db, USERS_COLLECTION, userId);
     await updateDoc(docRef, {
       ...updates,
@@ -169,6 +183,7 @@ export const purchaseShopItem = async (userId, itemPrice, updates) => {
 // Leaderboard Management
 export const addToLeaderboard = async (userId, gameResult, playerData) => {
   try {
+    ensureDb();
     const leaderboardEntry = {
       userId,
       playerName: playerData.playerName || 'Anonymous',
@@ -195,6 +210,7 @@ export const addToLeaderboard = async (userId, gameResult, playerData) => {
 
 export const getTopScores = async (limitCount = 50) => {
   try {
+    ensureDb();
     const q = query(
       collection(db, LEADERBOARD_COLLECTION),
       orderBy('score', 'desc'),
@@ -217,6 +233,7 @@ export const getTopScores = async (limitCount = 50) => {
 
 export const getUserRanking = async (userId, userScore) => {
   try {
+    ensureDb();
     const q = query(
       collection(db, LEADERBOARD_COLLECTION),
       where('score', '>', userScore)
@@ -234,6 +251,7 @@ export const getUserRanking = async (userId, userScore) => {
 
 // Real-time Leaderboard Listener
 export const subscribeToLeaderboard = (callback, limitCount = 50) => {
+  ensureDb();
   const q = query(
     collection(db, LEADERBOARD_COLLECTION),
     orderBy('score', 'desc'),
@@ -252,6 +270,7 @@ export const subscribeToLeaderboard = (callback, limitCount = 50) => {
 // Game Session Tracking
 export const logGameSession = async (userId, sessionData) => {
   try {
+    ensureDb();
     const sessionEntry = {
       userId,
       ...sessionData,
@@ -277,6 +296,7 @@ export const logGameSession = async (userId, sessionData) => {
 // Achievement Management
 export const unlockAchievement = async (userId, achievementId, reward = 0) => {
   try {
+    ensureDb();
     const docRef = doc(db, USERS_COLLECTION, userId);
     await updateDoc(docRef, {
       achievements: arrayUnion(achievementId),
@@ -292,6 +312,7 @@ export const unlockAchievement = async (userId, achievementId, reward = 0) => {
 
 // Real-time User Profile Listener
 export const subscribeToUserProfile = (userId, callback, errorCallback) => {
+  ensureDb();
   const docRef = doc(db, USERS_COLLECTION, userId);
   return onSnapshot(
     docRef,
