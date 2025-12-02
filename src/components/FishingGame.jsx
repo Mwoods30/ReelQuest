@@ -469,7 +469,7 @@ function FishingGame({
   );
 
   const handleCatch = useCallback(
-    (fish) => {
+    async (fish) => {
       try {
         if (!fish) return;
         clearReelDecay();
@@ -534,7 +534,7 @@ function FishingGame({
         writePlayerData(updatedPlayerData);
 
         if (isAuthenticated && user && !OFFLINE_MODE) {
-          persistProgress({
+          await persistProgress({
             xp: updatedPlayerData.xp,
             level: updatedPlayerData.level,
             totalCatches: updatedPlayerData.totalCatches,
