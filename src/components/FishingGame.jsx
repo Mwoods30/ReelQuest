@@ -387,45 +387,42 @@ function FishingGame({
     // Add to global leaderboard and save progress
     if (score > 0) {
       if (!OFFLINE_MODE && isAuthenticated && user) {
-        // Firebase operations for authenticated users
-        try {
-          const { addToLeaderboard, logGameSession } = await import('../firebase/database.js');
+        // Firebase operations for authenticated users (non-blocking)
+        import('../firebase/database.js')
+          .then(async ({ addToLeaderboard, logGameSession }) => {
+            const leaderboardResult = await addToLeaderboard(user.uid, gameResult, playerData);
+            await logGameSession(user.uid, {
+              score: gameResult.score,
+              catches: gameResult.catches,
+              longestStreak: gameResult.longestStreak,
+              playTime: sessionTime
+            });
 
-          // Add to Firebase leaderboard
-          const leaderboardResult = await addToLeaderboard(user.uid, gameResult, playerData);
+            const remotePlayerData = {
+              ...playerData,
+              gamesPlayed: (playerData.gamesPlayed || 0) + 1,
+              totalPlayTime: (playerData.totalPlayTime || 0) + sessionTime,
+              bestScore: Math.max(playerData.bestScore || 0, nextBest),
+              xp: playerData.xp,
+              level: playerData.level
+            };
+            syncPlayerData(remotePlayerData);
+            persistProgress({
+              gamesPlayed: remotePlayerData.gamesPlayed,
+              totalPlayTime: remotePlayerData.totalPlayTime,
+              bestScore: remotePlayerData.bestScore,
+              xp: remotePlayerData.xp,
+              level: remotePlayerData.level
+            });
 
-          // Log game session
-          await logGameSession(user.uid, {
-            score: gameResult.score,
-            catches: gameResult.catches,
-            longestStreak: gameResult.longestStreak,
-            playTime: sessionTime
+            if (leaderboardResult.success) {
+              setStatusMessage(`Game saved! Check the leaderboard to see your ranking!`);
+            }
+          })
+          .catch((error) => {
+            console.error('[endGame] Error saving game to Firebase:', error);
+            setStatusMessage('Game completed but failed to save to server.');
           });
-
-          const remotePlayerData = {
-            ...playerData,
-            gamesPlayed: (playerData.gamesPlayed || 0) + 1,
-            totalPlayTime: (playerData.totalPlayTime || 0) + sessionTime,
-            bestScore: Math.max(playerData.bestScore || 0, nextBest),
-            xp: playerData.xp,
-            level: playerData.level
-          };
-          syncPlayerData(remotePlayerData);
-          persistProgress({
-            gamesPlayed: remotePlayerData.gamesPlayed,
-            totalPlayTime: remotePlayerData.totalPlayTime,
-            bestScore: remotePlayerData.bestScore,
-            xp: remotePlayerData.xp,
-            level: remotePlayerData.level
-          });
-
-          if (leaderboardResult.success) {
-            setStatusMessage(`Game saved! Check the leaderboard to see your ranking!`);
-          }
-        } catch (error) {
-          console.error('[endGame] Error saving game to Firebase:', error);
-          setStatusMessage('Game completed but failed to save to server.');
-        }
       } else {
         // localStorage operations for guests
         const leaderboardEntry = addToGlobalLeaderboard(playerData, gameResult);
