@@ -1,4 +1,4 @@
-export const OFFLINE_MODE = true; // demo stability: force local/offline mode
+export const OFFLINE_MODE = false; // cloud sync enabled
 
 export const GAME_DURATION = 60;
 export const STORAGE_KEY = 'reelquest:fishing:best-score';
