@@ -127,7 +127,7 @@ function AuthForm({ onAuthSuccess, onClose }) {
         <div className="auth-brand-panel">
           <div className="auth-brand-intro">
             <div className="auth-brand-logo">
-              <img src="/Reelquest.png" alt="ReelQuest logo" />
+              <img src="/Reelquest.png" alt="ReelQuest logo" loading="lazy" />
               <h1>ReelQuest</h1>
               <p>Cast, compete, and climb with your progress saved in the cloud.</p>
             </div>
