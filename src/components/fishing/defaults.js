@@ -12,7 +12,7 @@ export const getDefaultPlayerData = () => ({
   ownedUpgrades: [],
   currentEnvironment: 'crystal_lake',
   totalPurchases: 0,
-  playerName: `Fisher${Math.floor(Math.random() * 10000)}`,
+  playerName: `Fisher${Math.floor(Math.random() * 1000)}`,
   gamesPlayed: 0,
   totalPlayTime: 0
 });

@@ -17,136 +17,179 @@ const buildFallbackProfile = (firebaseUser) => ({
   ownedUpgrades: [],
   currentEnvironment: 'crystal_lake',
   totalPurchases: 0,
-  playerName: firebaseUser?.displayName || `Fisher${Math.floor(Math.random() * 10000)}`,
   gamesPlayed: 0,
   totalPlayTime: 0,
-  email: firebaseUser?.email || null,
+  playerName:
+    firebaseUser?.displayName ||
+    `Fisher${Math.floor(Math.random() * 10000)}`,
+  email: firebaseUser?.email ?? null,
   id: firebaseUser?.uid
 });
 
 export function UserProvider({ children }) {
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  /** ------------------------------
+   *  Merge partial updates into profile
+   * ------------------------------ */
   const updateUserProfileCache = useCallback((updates) => {
-    setUserProfile((prev) => {
-      if (!updates) {
-        return prev;
-      }
+    if (!updates) return;
 
-      if (!prev) {
-        return { ...updates };
-      }
-      return { ...prev, ...updates };
-    });
+    setUserProfile((prev) =>
+      prev ? { ...prev, ...updates } : { ...updates }
+    );
   }, []);
 
+  /** ------------------------------
+   *  Profile subscription error handler
+   * ------------------------------ */
+  const handleProfileStreamError = (streamError, fallback) => {
+    console.error('Realtime profile error:', streamError);
+
+    if (streamError?.code === 'permission-denied') {
+      setError(
+        'Cloud save is unavailable due to Firestore permissions. Using local progress only.'
+      );
+    } else {
+      setError('Failed to sync profile data. Using local progress only.');
+    }
+
+    setUserProfile((prev) => prev ?? fallback);
+  };
+
+  /** ------------------------------
+   *  Main Auth Effect
+   * ------------------------------ */
   useEffect(() => {
     if (!firebaseEnabled) {
       setLoading(false);
-      return undefined;
+      return;
     }
 
     let unsubscribeProfile = null;
 
     const unsubscribeAuth = onAuthChange(async (firebaseUser) => {
+      setLoading(true);
+
       try {
-        if (firebaseUser) {
-          // User is signed in
-          setUser(firebaseUser);
-          const fallbackProfile = buildFallbackProfile(firebaseUser);
-
-          const handleProfileStreamError = (streamError) => {
-            console.error('Realtime profile error:', streamError);
-
-            if (streamError?.code === 'permission-denied') {
-              setError('Cloud save is unavailable due to Firestore permissions. Using local progress only.');
-            } else {
-              setError('Failed to sync profile data. Using local progress only.');
-            }
-
-            setUserProfile((prev) => prev ?? fallbackProfile);
-          };
-          
-          const { getUserProfile, createUserProfile, subscribeToUserProfile } = await import('../firebase/database.js');
-
-          // Get or create user profile
-          const profileResult = await getUserProfile(firebaseUser.uid);
-          
-          if (profileResult.success) {
-            setUserProfile(profileResult.data);
-            // Profile exists, subscribe to updates
-            unsubscribeProfile = subscribeToUserProfile(
-              firebaseUser.uid, 
-              setUserProfile,
-              handleProfileStreamError
-            );
-            return;
-          } else {
-            if (profileResult.errorCode === 'permission-denied') {
-              setError('Cloud save access denied. Playing with local progress only.');
-              setUserProfile(fallbackProfile);
-              return;
-            }
-
-            if (profileResult.errorCode !== 'not-found') {
-              setError(profileResult.error || 'Failed to load user profile. Using local progress only.');
-              setUserProfile(fallbackProfile);
-              return;
-            }
-
-            // Create new profile
-            const newProfileData = {
-              playerName: fallbackProfile.playerName,
-              email: firebaseUser.email
-            };
-            
-            const createResult = await createUserProfile(firebaseUser.uid, newProfileData);
-            
-            if (createResult.success) {
-              setUserProfile(createResult.data);
-              unsubscribeProfile = subscribeToUserProfile(
-                firebaseUser.uid, 
-                setUserProfile,
-                handleProfileStreamError
-              );
-            } else {
-              if (createResult.errorCode === 'permission-denied') {
-                setError('Cannot create profile due to Firestore permissions. Using local progress only.');
-                setUserProfile(fallbackProfile);
-              } else {
-                setError(createResult.error || 'Failed to create user profile');
-                setUserProfile(fallbackProfile);
-              }
-            }
-          }
-        } else {
-          // User is signed out
+        if (!firebaseUser) {
+          // Signed OUT
           setUser(null);
           setUserProfile(null);
-          if (unsubscribeProfile) {
-            unsubscribeProfile();
-            unsubscribeProfile = null;
-          }
+
+          unsubscribeProfile?.();
+          unsubscribeProfile = null;
+
+          setLoading(false);
+          return;
         }
+
+        // Signed IN
+        setUser(firebaseUser);
+        const fallback = buildFallbackProfile(firebaseUser);
+
+        const {
+          getUserProfile,
+          createUserProfile,
+          subscribeToUserProfile
+        } = await import('../firebase/database.js');
+
+        /** ------------------------------
+         * Try to load profile
+         * ------------------------------ */
+        const profileResult = await getUserProfile(firebaseUser.uid);
+
+        if (profileResult.success) {
+          // start stream first
+          unsubscribeProfile = subscribeToUserProfile(
+            firebaseUser.uid,
+            setUserProfile,
+            (err) => handleProfileStreamError(err, fallback)
+          );
+
+          setUserProfile(profileResult.data);
+          setLoading(false);
+          return;
+        }
+
+        /** ------------------------------
+         * If Firestore denies access
+         * ------------------------------ */
+        if (profileResult.errorCode === 'permission-denied') {
+          setError('Cloud save access denied. Playing with local progress only.');
+          setUserProfile(fallback);
+          setLoading(false);
+          return;
+        }
+
+        /** ------------------------------
+         * If profile not found → create it
+         * ------------------------------ */
+        if (profileResult.errorCode === 'not-found') {
+          const newProfile = {
+            playerName: fallback.playerName,
+            email: firebaseUser.email
+          };
+
+          const createResult = await createUserProfile(firebaseUser.uid, newProfile);
+
+          if (createResult.success) {
+            unsubscribeProfile = subscribeToUserProfile(
+              firebaseUser.uid,
+              setUserProfile,
+              (err) => handleProfileStreamError(err, fallback)
+            );
+
+            setUserProfile(createResult.data);
+            setLoading(false);
+            return;
+          }
+
+          if (createResult.errorCode === 'permission-denied') {
+            setError(
+              'Cannot create profile due to Firestore permissions. Using local progress only.'
+            );
+            setUserProfile(fallback);
+            setLoading(false);
+            return;
+          }
+
+          // Some other creation error
+          setError(createResult.error || 'Failed to create user profile');
+          setUserProfile(fallback);
+          setLoading(false);
+          return;
+        }
+
+        /** ------------------------------
+         * Unknown profile load error
+         * ------------------------------ */
+        setError(profileResult.error || 'Failed to load user profile');
+        setUserProfile(fallback);
       } catch (err) {
-        setError('Authentication error occurred');
         console.error('Auth error:', err);
-      } finally {
-        setLoading(false);
+        setError('Authentication error occurred');
       }
+
+      setLoading(false);
     });
 
+    /** ------------------------------
+     * Cleanup on unmount
+     * ------------------------------ */
     return () => {
       unsubscribeAuth();
-      if (unsubscribeProfile) {
-        unsubscribeProfile();
-      }
+      unsubscribeProfile?.();
     };
   }, []);
 
+  /** ------------------------------
+   * Context value
+   * ------------------------------ */
   const value = {
     user,
     userProfile,
@@ -156,11 +199,7 @@ export function UserProvider({ children }) {
     updateUserProfileCache
   };
 
-  return (
-    <UserContext.Provider value={value}>
-      {children}
-    </UserContext.Provider>
-  );
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }
 
 UserProvider.propTypes = {

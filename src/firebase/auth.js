@@ -1,8 +1,9 @@
-// Firebase Authentication Service
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut, 
+// Firebase Authentication Service (Optimized + SSR Safe)
+
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
   onAuthStateChanged,
   updateProfile,
   GoogleAuthProvider,
@@ -11,84 +12,110 @@ import {
 } from 'firebase/auth';
 import { auth, firebaseEnabled } from './config.js';
 
-const disabledResponse = (operation) => ({
+// -------------------------------------
+// Helpers
+// -------------------------------------
+
+const disabled = (operation) => ({
   success: false,
   error: `${operation} unavailable: Firebase disabled or missing config`
 });
 
+const formatError = (error) => ({
+  success: false,
+  error: error?.message || 'Unknown authentication error'
+});
+
+// Local storage cleanup for logout
 const clearLocalProgress = () => {
-  if (typeof window === 'undefined' || !window.localStorage) return;
-  [
+  if (typeof window === 'undefined') return;
+
+  const keys = [
     'reelquest:fishing:best-score',
     'reelquest:player:data',
     'reelquest:global:leaderboard',
     'reelquest:player:stats'
-  ].forEach((key) => window.localStorage.removeItem(key));
+  ];
+
+  keys.forEach((key) => localStorage.removeItem(key));
 };
 
-// Google Auth Provider
-const googleProvider = new GoogleAuthProvider();
+// Google provider (safe to define)
+const googleProvider =
+  typeof window !== 'undefined' ? new GoogleAuthProvider() : null;
 
-// Authentication functions
+// -------------------------------------
+// Authentication API
+// -------------------------------------
+
 export const createAccount = async (email, password, displayName) => {
-  if (!firebaseEnabled || !auth) return disabledResponse('Account creation');
+  if (!firebaseEnabled || !auth) return disabled('Account creation');
+
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    
-    // Update user profile with display name
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    const user = cred.user;
+
+    // Apply display name if provided
     await updateProfile(user, {
       displayName: displayName || `Fisher${Math.floor(Math.random() * 10000)}`
     });
-    
+
     return { success: true, user };
   } catch (error) {
-    return { success: false, error: error.message };
+    return formatError(error);
   }
 };
 
 export const signInUser = async (email, password) => {
-  if (!firebaseEnabled || !auth) return disabledResponse('Sign in');
+  if (!firebaseEnabled || !auth) return disabled('Sign in');
+
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return { success: true, user: userCredential.user };
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    return { success: true, user: cred.user };
   } catch (error) {
-    return { success: false, error: error.message };
+    return formatError(error);
   }
 };
 
 export const signInWithGoogle = async () => {
-  if (!firebaseEnabled || !auth) return disabledResponse('Google sign-in');
+  if (!firebaseEnabled || !auth || !googleProvider)
+    return disabled('Google sign-in');
+
   try {
     const result = await signInWithPopup(auth, googleProvider);
     return { success: true, user: result.user };
   } catch (error) {
-    return { success: false, error: error.message };
+    return formatError(error);
   }
 };
 
 export const signOutUser = async () => {
-  if (!firebaseEnabled || !auth) return disabledResponse('Sign out');
+  if (!firebaseEnabled || !auth) return disabled('Sign out');
+
   try {
     await signOut(auth);
     clearLocalProgress();
     return { success: true };
   } catch (error) {
-    return { success: false, error: error.message };
+    return formatError(error);
   }
 };
 
 export const resetPassword = async (email) => {
-  if (!firebaseEnabled || !auth) return disabledResponse('Password reset');
+  if (!firebaseEnabled || !auth) return disabled('Password reset');
+
   try {
     await sendPasswordResetEmail(auth, email);
     return { success: true };
   } catch (error) {
-    return { success: false, error: error.message };
+    return formatError(error);
   }
 };
 
-// Auth state observer
+// -------------------------------------
+// Auth State Listener
+// -------------------------------------
+
 export const onAuthChange = (callback) => {
   if (!firebaseEnabled || !auth) {
     callback(null);
@@ -97,7 +124,10 @@ export const onAuthChange = (callback) => {
   return onAuthStateChanged(auth, callback);
 };
 
+// -------------------------------------
 // Get current user
+// -------------------------------------
+
 export const getCurrentUser = () => {
   if (!firebaseEnabled || !auth) return null;
   return auth.currentUser;

@@ -1,4 +1,4 @@
-export const OFFLINE_MODE = true; // keep cloud disabled while debugging signed-in crash
+export const OFFLINE_MODE = false; // keep cloud disabled while debugging signed-in crash
 
 export const GAME_DURATION = 60;
 export const STORAGE_KEY = 'reelquest:fishing:best-score';
