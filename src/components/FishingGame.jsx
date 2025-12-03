@@ -275,9 +275,15 @@ function FishingGame({
 
     // Fire-and-forget to avoid blocking UI or crashing on network errors
     import('../firebase/database.js')
-      .then(({ saveGameProgress }) => saveGameProgress(user.uid, sanitized))
+      .then(({ saveGameProgress }) => {
+        console.debug('[sync] persistProgress start', { uid: user?.uid, ...sanitized });
+        return saveGameProgress(user.uid, sanitized);
+      })
+      .then(() => {
+        console.debug('[sync] persistProgress ok');
+      })
       .catch((error) => {
-        console.warn('Failed to sync progress to Firebase:', error);
+        console.warn('[sync] persistProgress failed', error);
       });
   }, [isAuthenticated, user]);
 
@@ -473,6 +479,12 @@ function FishingGame({
     (fish) => {
       try {
         if (!fish) return;
+        console.debug('[catch] start', {
+          isAuthenticated,
+          userPresent: !!user,
+          offline: OFFLINE_MODE,
+          playerDataNull: !playerData
+        });
         clearReelDecay();
         const nextStreak = streakRef.current + 1;
         streakRef.current = nextStreak;
