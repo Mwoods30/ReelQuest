@@ -263,7 +263,7 @@ function FishingGame({
   }, [isAuthenticated, onProfileCacheUpdate]);
   const playerLevel = playerData?.level || 1;
   const levelDifficulty = useMemo(() => getLevelDifficultyProfile(playerLevel), [playerLevel]);
-  const persistProgress = useCallback(async (updates) => {
+  const persistProgress = useCallback((updates) => {
     if (OFFLINE_MODE) return;
     if (!isAuthenticated || !user) return;
 
@@ -272,12 +272,12 @@ function FishingGame({
     );
     if (Object.keys(sanitized).length === 0) return;
 
-    try {
-      const { saveGameProgress } = await import('../firebase/database.js');
-      await saveGameProgress(user.uid, sanitized);
-    } catch (error) {
-      console.error('Failed to sync progress to Firebase:', error);
-    }
+    // Fire-and-forget to avoid blocking UI or crashing on network errors
+    import('../firebase/database.js')
+      .then(({ saveGameProgress }) => saveGameProgress(user.uid, sanitized))
+      .catch((error) => {
+        console.warn('Failed to sync progress to Firebase:', error);
+      });
   }, [isAuthenticated, user]);
 
 
@@ -469,7 +469,7 @@ function FishingGame({
   );
 
   const handleCatch = useCallback(
-    async (fish) => {
+    (fish) => {
       try {
         if (!fish) return;
         clearReelDecay();
@@ -534,21 +534,17 @@ function FishingGame({
         writePlayerData(updatedPlayerData);
 
         if (isAuthenticated && user && !OFFLINE_MODE) {
-          try {
-            await persistProgress({
-              xp: updatedPlayerData.xp,
-              level: updatedPlayerData.level,
-              totalCatches: updatedPlayerData.totalCatches,
-              achievements: updatedPlayerData.achievements,
-              currency: updatedPlayerData.currency,
-              inventory: newInventory,
-              ownedEnvironments: updatedPlayerData.ownedEnvironments,
-              ownedUpgrades: updatedPlayerData.ownedUpgrades,
-              totalPurchases: updatedPlayerData.totalPurchases
-            });
-          } catch (syncError) {
-            console.warn('Cloud sync failed, continuing locally:', syncError);
-          }
+          persistProgress({
+            xp: updatedPlayerData.xp,
+            level: updatedPlayerData.level,
+            totalCatches: updatedPlayerData.totalCatches,
+            achievements: updatedPlayerData.achievements,
+            currency: updatedPlayerData.currency,
+            inventory: newInventory,
+            ownedEnvironments: updatedPlayerData.ownedEnvironments,
+            ownedUpgrades: updatedPlayerData.ownedUpgrades,
+            totalPurchases: updatedPlayerData.totalPurchases
+          });
         }
 
         writePlayerData(updatedPlayerData);
