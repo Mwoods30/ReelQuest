@@ -423,7 +423,7 @@ function FishingGame({
             setStatusMessage(`Game saved! Check the leaderboard to see your ranking!`);
           }
         } catch (error) {
-          console.error('Error saving game to Firebase:', error);
+          console.error('[endGame] Error saving game to Firebase:', error);
           setStatusMessage('Game completed but failed to save to server.');
         }
       } else {

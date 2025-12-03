@@ -1,4 +1,4 @@
-export const OFFLINE_MODE = true; // keep cloud disabled to prevent signed-in crash during demo
+export const OFFLINE_MODE = false; // cloud sync enabled (with extra logging)
 
 export const GAME_DURATION = 60;
 export const STORAGE_KEY = 'reelquest:fishing:best-score';
