@@ -6,42 +6,12 @@ import { readPlayerData, readPlayerStats } from './fishing/storage.js';
 import './UserProfile.css';
 
 const ALL_ACHIEVEMENTS = [
-  {
-    id: 'first_catch',
-    title: 'First Catch',
-    description: 'Reel in your very first fish.',
-    icon: '🎣'
-  },
-  {
-    id: 'streak_master',
-    title: 'Streak Master',
-    description: 'Hit a streak of 5 catches without a miss.',
-    icon: '⚡'
-  },
-  {
-    id: 'silver_monger',
-    title: 'Silver Monger',
-    description: 'Sell 10 fish back-to-back.',
-    icon: '💰'
-  },
-  {
-    id: 'voyager',
-    title: 'Voyager',
-    description: 'Play in two different environments.',
-    icon: '🧭'
-  },
-  {
-    id: 'marathoner',
-    title: 'Marathoner',
-    description: 'Complete 10 game sessions.',
-    icon: '🏁'
-  },
-  {
-    id: 'wealth_builder',
-    title: 'Wealth Builder',
-    description: 'Accumulate 1,000 coins across runs.',
-    icon: '💎'
-  }
+  { id: 'first_catch', title: 'First Catch', description: 'Reel in your very first fish.', icon: '🎣' },
+  { id: 'streak_master', title: 'Streak Master', description: 'Hit a streak of 5 catches without a miss.', icon: '⚡' },
+  { id: 'silver_monger', title: 'Silver Monger', description: 'Sell 10 fish back-to-back.', icon: '💰' },
+  { id: 'voyager', title: 'Voyager', description: 'Play in two different environments.', icon: '🧭' },
+  { id: 'marathoner', title: 'Marathoner', description: 'Complete 10 game sessions.', icon: '🏁' },
+  { id: 'wealth_builder', title: 'Wealth Builder', description: 'Accumulate 1,000 coins across runs.', icon: '💎' }
 ];
 
 const formatDate = (timestamp) => {
@@ -50,88 +20,84 @@ const formatDate = (timestamp) => {
   return date.toLocaleDateString();
 };
 
-const formatPlayTime = (minutes) => {
-  if (!minutes) return '0m';
-  const hours = Math.floor(minutes / 60);
+const formatPlayTime = (minutes = 0) => {
+  const hrs = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+  return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
 };
 
 function UserProfile({ onClose }) {
   const { user, userProfile } = useUser();
-  const localPlayerData = useMemo(readPlayerData, [userProfile]);
-  const localPlayerStats = useMemo(readPlayerStats, [userProfile]);
-  const profileSource = userProfile ?? localPlayerData;
+  const localData = useMemo(readPlayerData, [userProfile]);
+  const localStats = useMemo(readPlayerStats, [userProfile]);
+
+  const profile = userProfile ?? localData;
+  const stats = userProfile ?? localStats;
+
   const [isEditing, setIsEditing] = useState(false);
-  const [playerName, setPlayerName] = useState(userProfile?.playerName || '');
+  const [playerName, setPlayerName] = useState(profile?.playerName || '');
   const [loading, setLoading] = useState(false);
+
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  const heroStats = useMemo(() => ([
-    {
-      label: 'Level',
-      value: profileSource?.level ?? 1,
-      accent: 'emerald'
-    },
-    {
-      label: 'XP',
-      value: profileSource?.xp ?? 0,
-      accent: 'sky'
-    },
-    {
-      label: 'Currency',
-      value: `💰 ${profileSource?.currency ?? 0}`,
-      accent: 'amber'
-    }
-  ]), [profileSource]);
+  /** --------------------------- HERO STATS --------------------------- **/
+  const heroStats = useMemo(() => [
+    { label: 'Level', value: profile?.level ?? 1, accent: 'emerald' },
+    { label: 'XP', value: profile?.xp ?? 0, accent: 'sky' },
+    { label: 'Currency', value: `💰 ${profile?.currency ?? 0}`, accent: 'amber' }
+  ], [profile]);
 
+  /** ---------------------- ACHIEVEMENTS MERGING ---------------------- **/
   const achievementsWithStatus = useMemo(() => {
-    const unlockedSet = new Set(userProfile?.achievements ?? []);
+    const unlocked = new Set(userProfile?.achievements ?? []);
 
-    const baseAchievements = ALL_ACHIEVEMENTS.map((achievement) => ({
-      ...achievement,
-      unlocked: unlockedSet.has(achievement.id)
+    const base = ALL_ACHIEVEMENTS.map(a => ({
+      ...a,
+      unlocked: unlocked.has(a.id)
     }));
 
-    const legacyAchievements = (userProfile?.achievements ?? [])
-      .filter((achievementId) => !ALL_ACHIEVEMENTS.some((achievement) => achievement.id === achievementId))
-      .map((achievementId) => ({
-        id: achievementId,
-        title: achievementId,
+    const legacy = [...unlocked]
+      .filter(id => !ALL_ACHIEVEMENTS.some(a => a.id === id))
+      .map(id => ({
+        id,
+        title: id,
         description: 'Unlocked during a special event.',
         icon: '🏅',
         unlocked: true,
         isLegacy: true
       }));
 
-    return [...baseAchievements, ...legacyAchievements];
+    return [...base, ...legacy];
   }, [userProfile]);
 
-  const unlockedAchievementsCount = useMemo(
-    () => achievementsWithStatus.filter((achievement) => achievement.unlocked).length,
+  const unlockedCount = useMemo(
+    () => achievementsWithStatus.filter(a => a.unlocked).length,
     [achievementsWithStatus]
   );
 
-  const profileStats = useMemo(() => ([
-    { label: 'Games Played', value: (userProfile?.gamesPlayed ?? localPlayerStats.gamesPlayed ?? 0) },
-    { label: 'Total Catches', value: (userProfile?.totalCatches ?? localPlayerStats.totalCatches ?? 0) },
-    { label: 'Fish Sold', value: (userProfile?.totalFishSold ?? localPlayerStats.totalFishSold ?? 0) },
-    { label: 'Play Time', value: formatPlayTime(userProfile?.totalPlayTime ?? localPlayerStats.totalPlayTime ?? 0) },
-    { label: 'Achievements', value: unlockedAchievementsCount },
-    { label: 'Last Active', value: formatDate(userProfile?.lastActive ?? localPlayerStats.lastPlayed) },
-  ]), [unlockedAchievementsCount, userProfile, localPlayerStats]);
+  /** ------------------------ PROFILE SUMMARY STATS ------------------------ **/
+  const profileStats = useMemo(() => [
+    { label: 'Games Played', value: stats.gamesPlayed ?? 0 },
+    { label: 'Total Catches', value: stats.totalCatches ?? 0 },
+    { label: 'Fish Sold', value: stats.totalFishSold ?? 0 },
+    { label: 'Play Time', value: formatPlayTime(stats.totalPlayTime ?? 0) },
+    { label: 'Achievements', value: unlockedCount },
+    { label: 'Last Active', value: formatDate(stats.lastActive ?? stats.lastPlayed) }
+  ], [stats, unlockedCount]);
 
-  const getPlayerInitials = (name, email) => {
+  /** ---------------------- UTIL: INITIALS FROM NAME ---------------------- **/
+  const getInitials = (name, email) => {
     const source = name || email || 'P';
     return source
       .trim()
       .split(/\s+/)
       .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase() ?? '')
+      .map(x => x[0]?.toUpperCase() || '')
       .join('') || 'P';
   };
 
+  /** --------------------- SAVE PROFILE NAME --------------------- **/
   const handleSaveProfile = async () => {
     if (!user || !playerName.trim()) {
       setError('Player name is required');
@@ -160,22 +126,18 @@ function UserProfile({ onClose }) {
     setLoading(false);
   };
 
+  /** --------------------- SEND RESET PASSWORD --------------------- **/
   const handleResetPassword = async () => {
-    if (!user?.email) {
-      setError('No email associated with this account');
-      return;
-    }
+    if (!user?.email) return setError('No email associated with this account');
 
     setLoading(true);
     setError('');
 
     try {
       const result = await resetPassword(user.email);
-      if (result.success) {
-        setMessage('Password reset email sent! Check your inbox.');
-      } else {
-        setError(result.error || 'Failed to send reset email');
-      }
+      result.success
+        ? setMessage('Password reset email sent! Check your inbox.')
+        : setError(result.error || 'Failed to send reset email');
     } catch {
       setError('An error occurred while sending reset email');
     }
@@ -183,6 +145,7 @@ function UserProfile({ onClose }) {
     setLoading(false);
   };
 
+  /** -------------------------- SIGN OUT -------------------------- **/
   const handleSignOut = async () => {
     setLoading(true);
     try {
@@ -194,6 +157,7 @@ function UserProfile({ onClose }) {
     }
   };
 
+  /** -------------------------- GUEST MODE -------------------------- **/
   if (!user || !userProfile) {
     return (
       <div className="profile-overlay">
@@ -201,7 +165,7 @@ function UserProfile({ onClose }) {
           <div className="profile-hero">
             <button className="close-button" onClick={onClose} aria-label="Close profile">×</button>
             <div className="profile-identity">
-              <div className="profile-avatar" aria-hidden="true">RQ</div>
+              <div className="profile-avatar">RQ</div>
               <div className="identity-meta">
                 <span className="identity-label">Adventurer</span>
                 <h2>Sign in to continue</h2>
@@ -217,163 +181,169 @@ function UserProfile({ onClose }) {
     );
   }
 
+  /** --------------------------- FULL PROFILE UI --------------------------- **/
   return (
     <div className="profile-overlay">
       <div className="profile-container">
+
+        {/* HEADER + HERO */}
         <div className="profile-hero">
           <button className="close-button" onClick={onClose} aria-label="Close profile">×</button>
+
           <div className="profile-identity">
-            <div className="profile-avatar" aria-hidden="true">
-              {getPlayerInitials(userProfile.playerName, user.email)}
+            <div className="profile-avatar">
+              {getInitials(profile.playerName, user.email)}
             </div>
+
             <div className="identity-meta">
               <span className="identity-label">Signed in as</span>
-              <h2>{userProfile.playerName}</h2>
+              <h2>{profile.playerName}</h2>
               <span className="identity-email">{user.email}</span>
+
               <div className="identity-dates">
-                <span>Member since {formatDate(userProfile.createdAt)}</span>
-                <span>Last played {formatDate(userProfile.lastActive)}</span>
+                <span>Member since {formatDate(profile.createdAt)}</span>
+                <span>Last played {formatDate(profile.lastActive)}</span>
               </div>
             </div>
           </div>
+
           <div className="profile-hero-stats">
-            {heroStats.map(({ label, value, accent }) => (
-              <div key={label} className={`hero-stat hero-stat-${accent}`}>
-                <span className="hero-stat-label">{label}</span>
-                <span className="hero-stat-value">{value}</span>
+            {heroStats.map(s => (
+              <div key={s.label} className={`hero-stat hero-stat-${s.accent}`}>
+                <span className="hero-stat-label">{s.label}</span>
+                <span className="hero-stat-value">{s.value}</span>
               </div>
             ))}
           </div>
         </div>
 
+        {/* PROFILE CONTENT */}
         <div className="profile-content">
+
+          {/* --- PLAYER NAME CARD --- */}
           <section className="profile-card">
             <header className="profile-card-header">
               <h3>Player Identity</h3>
+
               {!isEditing && (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="chip-button"
-                  type="button"
-                >
+                <button className="chip-button" onClick={() => setIsEditing(true)} type="button">
                   ✏️ Edit name
                 </button>
               )}
             </header>
+
             <div className="profile-fields">
               <div className="profile-field">
                 <label>Display name</label>
+
                 {isEditing ? (
                   <div className="edit-field">
                     <input
                       type="text"
                       value={playerName}
-                      onChange={(e) => setPlayerName(e.target.value)}
-                      disabled={loading}
                       maxLength={20}
+                      disabled={loading}
                       placeholder="Your fishing alias"
+                      onChange={(e) => setPlayerName(e.target.value)}
                     />
+
                     <div className="edit-buttons">
-                      <button
-                        onClick={handleSaveProfile}
-                        disabled={loading}
-                        className="save-button"
-                        type="button"
-                      >
+                      <button className="save-button" disabled={loading} onClick={handleSaveProfile}>
                         {loading ? '💾 Saving...' : '💾 Save'}
                       </button>
                       <button
+                        className="cancel-button"
+                        disabled={loading}
                         onClick={() => {
                           setIsEditing(false);
-                          setPlayerName(userProfile.playerName || '');
+                          setPlayerName(profile.playerName);
                           setError('');
                         }}
-                        disabled={loading}
-                        className="cancel-button"
-                        type="button"
                       >
                         Cancel
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <span className="field-value">{userProfile.playerName}</span>
+                  <span className="field-value">{profile.playerName}</span>
                 )}
               </div>
+
               <div className="profile-field">
                 <label>Email</label>
                 <span className="field-value">{user.email}</span>
               </div>
+
               <div className="profile-field">
                 <label>Fisherman since</label>
-                <span className="field-value">{formatDate(userProfile.createdAt)}</span>
+                <span className="field-value">{formatDate(profile.createdAt)}</span>
               </div>
             </div>
           </section>
 
+          {/* --- STATS OVERVIEW --- */}
           <section className="profile-card">
             <header className="profile-card-header">
               <h3>Stats Overview</h3>
             </header>
+
             <div className="stats-grid">
-              {profileStats.map(({ label, value }) => (
-                <div key={label} className="stat-item">
-                  <span className="stat-label">{label}</span>
-                  <span className="stat-value">{value}</span>
+              {profileStats.map(stat => (
+                <div key={stat.label} className="stat-item">
+                  <span className="stat-label">{stat.label}</span>
+                  <span className="stat-value">{stat.value}</span>
                 </div>
               ))}
             </div>
           </section>
 
+          {/* --- ACCOUNT ACTIONS --- */}
           <section className="profile-card">
             <header className="profile-card-header">
               <h3>Account Actions</h3>
             </header>
+
             <div className="action-buttons">
               <button
-                onClick={handleResetPassword}
-                disabled={loading}
                 className="action-button password-button"
-                type="button"
+                disabled={loading}
+                onClick={handleResetPassword}
               >
                 🔒 Send password reset
               </button>
+
               <button
-                onClick={handleSignOut}
-                disabled={loading}
                 className="action-button signout-button"
-                type="button"
+                disabled={loading}
+                onClick={handleSignOut}
               >
                 {loading ? '🚪 Signing out...' : '🚪 Sign out'}
               </button>
             </div>
           </section>
 
+          {/* --- ACHIEVEMENTS --- */}
           <section className="profile-card">
             <header className="profile-card-header achievements-header">
               <h3>Achievements</h3>
-              <span className="chip">
-                {unlockedAchievementsCount}/{achievementsWithStatus.length} unlocked
-              </span>
+              <span className="chip">{unlockedCount}/{achievementsWithStatus.length} unlocked</span>
             </header>
-            {achievementsWithStatus.length ? (
+
+            {achievementsWithStatus.length > 0 ? (
               <div className="achievements-grid">
-                {achievementsWithStatus.map((achievement) => (
-                  <div
-                    key={achievement.id}
-                    className={`achievement-item ${achievement.unlocked ? 'unlocked' : 'locked'}`}
-                  >
-                    <span className="achievement-icon" aria-hidden="true">
-                      {achievement.unlocked ? achievement.icon : '🔒'}
+                {achievementsWithStatus.map(ach => (
+                  <div key={ach.id} className={`achievement-item ${ach.unlocked ? 'unlocked' : 'locked'}`}>
+                    <span className="achievement-icon">
+                      {ach.unlocked ? ach.icon : '🔒'}
                     </span>
+
                     <div className="achievement-meta">
                       <span className="achievement-title">
-                        {achievement.title}
-                        {achievement.isLegacy ? ' (Legacy)' : ''}
+                        {ach.title}{ach.isLegacy ? ' (Legacy)' : ''}
                       </span>
-                      <span className="achievement-description">{achievement.description}</span>
+                      <span className="achievement-description">{ach.description}</span>
                       <span className="achievement-status">
-                        {achievement.unlocked ? 'Unlocked' : 'Locked'}
+                        {ach.unlocked ? 'Unlocked' : 'Locked'}
                       </span>
                     </div>
                   </div>
@@ -388,6 +358,7 @@ function UserProfile({ onClose }) {
 
           {error && <div className="error-message">{error}</div>}
           {message && <div className="success-message">{message}</div>}
+
         </div>
       </div>
     </div>
