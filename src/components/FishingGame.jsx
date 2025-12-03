@@ -238,6 +238,7 @@ function FishingGame({
   const [playerStats, setPlayerStats] = useState(readPlayerStats());
   const [gameMode, setGameMode] = useState(() => (isMobile ? 'playing' : 'home')); // 'home' | 'playing'
   const [globalLeaderboard, setGlobalLeaderboard] = useLeaderboard(isAuthenticated);
+  const playerDataSafe = playerData || getDefaultPlayerData();
   const ownedEnvironmentIds = playerData?.ownedEnvironments?.length
     ? playerData.ownedEnvironments
     : ['crystal_lake'];
@@ -485,9 +486,10 @@ function FishingGame({
         const baseXP = XP_PER_CATCH[fish.rarity] || 10;
         const xpMultiplier = getUpgradeMultiplier('xp_multiplier');
         const xpGained = Math.floor(baseXP * xpMultiplier);
-        const newXP = (playerData?.xp || 0) + xpGained;
+        const basePlayerData = playerData || getDefaultPlayerData();
+        const newXP = (basePlayerData.xp || 0) + xpGained;
         const newLevel = calculateLevelFromXP(newXP);
-        const leveledUp = newLevel > (playerData?.level || 1);
+        const leveledUp = newLevel > (basePlayerData.level || 1);
 
         // Add fish to inventory
         const caughtFish = {
@@ -504,10 +506,10 @@ function FishingGame({
         // Update player data
         const updatedPlayerData = {
           ...getDefaultPlayerData(),
-          ...playerData,
+          ...basePlayerData,
           xp: newXP,
           level: newLevel,
-          totalCatches: (playerData?.totalCatches || 0) + 1,
+          totalCatches: (basePlayerData.totalCatches || 0) + 1,
           inventory: newInventory
         };
 
@@ -516,8 +518,8 @@ function FishingGame({
           ...updatedPlayerData,
           lastCaughtRarity: fish.rarity
         };
-        const newAchievements = checkAchievements(playerData, newStats);
-        let nextCurrency = playerData?.currency || 0;
+        const newAchievements = checkAchievements(basePlayerData, newStats);
+        let nextCurrency = basePlayerData.currency || 0;
 
         if (newAchievements.length > 0) {
           updatedPlayerData.achievements = [
@@ -588,7 +590,7 @@ function FishingGame({
 
   const { sellFish, sellAllFish, purchaseItem, equipEnvironment } = useInventory({
     inventory,
-    playerData,
+    playerData: playerDataSafe,
     setInventory,
     syncPlayerData,
     persistProgress,
