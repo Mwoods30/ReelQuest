@@ -549,9 +549,9 @@ function FishingGame({
           } catch (syncError) {
             console.warn('Cloud sync failed, continuing locally:', syncError);
           }
-        } else {
-          writePlayerData(updatedPlayerData);
         }
+
+        writePlayerData(updatedPlayerData);
 
         setScore((value) => value + pointsEarned);
         setTotalCatches((value) => value + 1);
