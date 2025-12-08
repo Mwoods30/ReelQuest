@@ -45,7 +45,7 @@ export const useInventory = ({
         return;
       }
 
-      persistProgress({
+      await persistProgress({
         currency: updatedPlayerData.currency,
         totalFishSold: updatedPlayerData.totalFishSold,
         inventory: updatedInventory
@@ -88,7 +88,7 @@ export const useInventory = ({
         return;
       }
 
-      persistProgress({
+      await persistProgress({
         currency: updatedPlayerData.currency,
         totalFishSold: updatedPlayerData.totalFishSold,
         inventory: []
@@ -109,7 +109,7 @@ export const useInventory = ({
 
 
   /** ---------------------- PURCHASE SHOP ITEM ---------------------- **/
-  const purchaseItem = useCallback((itemType, itemId) => {
+  const purchaseItem = useCallback(async (itemType, itemId) => {
     const items = SHOP_ITEMS[itemType];
     const item = items?.find(i => i.id === itemId);
     if (!item) return setStatusMessage('Item not found.');
@@ -180,7 +180,7 @@ export const useInventory = ({
         payload.ownedUpgrades = updatedPlayerData.ownedUpgrades;
       }
 
-      persistProgress(payload);
+      await persistProgress(payload);
     }
 
     /** Message **/
@@ -202,7 +202,7 @@ export const useInventory = ({
 
 
   /** ---------------------- EQUIP ENVIRONMENT ---------------------- **/
-  const equipEnvironment = useCallback((environmentId) => {
+  const equipEnvironment = useCallback(async (environmentId) => {
     const env = ENVIRONMENT_LIBRARY[environmentId];
     if (!env) return setStatusMessage('Environment not available.');
 
@@ -221,7 +221,7 @@ export const useInventory = ({
     writePlayerData(updatedPlayerData);
 
     if (isAuthenticated && user && !OFFLINE_MODE) {
-      persistProgress({ currentEnvironment: environmentId });
+      await persistProgress({ currentEnvironment: environmentId });
     }
 
     setStatusMessage(`${env.name} equipped!`);
