@@ -2,17 +2,11 @@
 
 ReelQuest is an interactive, browser-based fishing adventure built with React, Vite, and Firebase. Cast your line, reel in unique fish, unlock new environments, and climb the global leaderboard — all while your progress syncs seamlessly across devices.
 
-## 🔑 Key Features
-- Bite-sized 60-second fishing sessions packed with streak multipliers, rare catches, and level-ups.
-- Unlockable lakes, rods, and upgrades that tailor your playstyle and increase reward potential.
-- Live global leaderboard races where top anglers flex high scores while guests chase local bragging rights.
-- Responsive controls built for keyboard or touch.
+This project was created for a Software Engineering Final Project and demonstrates requirements gathering, architecture design, implementation, testing, and cloud deployment.
 
 ## 🚀 Live Demo & Project Links
-- **Production App:** https://mwoods30.github.io/ReelQuest/
+- **Production App:** https://reelquest-fishing.web.app
 - **Repository:** https://github.com/Mwoods30/ReelQuest
-- **Trello Board (User Stories + Acceptance Criteria):** _Add link here_
-- **CI/CD & Deployment Documentation:** Included in final submission package
 
 ## 🎮 Core Gameplay Features
 - **Dynamic Fishing Engine:** streak bonuses, XP, leveling, biome-specific fish
@@ -62,11 +56,6 @@ For detailed diagrams, see `docs/architecture/reelquest-architecture.md`.
 | Rules Check | Attempt invalid write | Firestore blocks operation |
 
 The full plan lives in `docs/testing/test-plan.md`.
-
-## 📚 Additional Documentation
-- System diagrams: `docs/architecture/reelquest-architecture.md`
-- Manual test plan & regression checklist: `docs/testing/test-plan.md`
-
 
 ## 🧰 Development Workflow
 | Command | Description |
@@ -243,3 +232,4 @@ firestore.rules  # Firestore security rules
 ## 📄 License
 
 This project is private and proprietary.
+

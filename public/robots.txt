@@ -1,6 +1,0 @@
-# Allow all crawlers
-User-agent: *
-Allow: /
-
-# Sitemap placeholder (update if you publish one)
-# Sitemap: https://reelquest-fishing.web.app/sitemap.xml
