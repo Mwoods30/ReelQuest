@@ -33,31 +33,6 @@ import ShopOverlay from './fishing/ShopOverlay.jsx';
 import LeaderboardOverlay from './fishing/LeaderboardOverlay.jsx';
 import InstructionsOverlay from './fishing/InstructionsOverlay.jsx';
 
-const ALLOWED_PROGRESS_FIELDS = new Set([
-  'level',
-  'xp',
-  'currency',
-  'inventory',
-  'achievements',
-  'totalCatches',
-  'totalFishSold',
-  'ownedEnvironments',
-  'ownedUpgrades',
-  'currentEnvironment',
-  'totalPurchases',
-  'playerName',
-  'gamesPlayed',
-  'totalPlayTime',
-  'createdAt',
-  'lastActive',
-  'email',
-  'bestScore',
-  'skillPoints',
-  'skills',
-  'prestigeLevel',
-  'cosmeticSkin'
-]);
-
 const getLevelDifficultyProfile = (level = 1) => {
   const progress = Math.max(0, level - 1);
   const reelPenalty = Math.min(0.45, progress * 0.03);
@@ -245,8 +220,6 @@ function FishingGame({
   const [statusMessage, setStatusMessage] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
-  const permissionDeniedRef = useRef(false);
-  const permissionWarnedRef = useRef(false);
   
   // Initialize player data based on authentication status
   const initializePlayerData = () => {
@@ -291,69 +264,28 @@ function FishingGame({
   }, [isAuthenticated, onProfileCacheUpdate]);
   const playerLevel = playerData?.level || 1;
   const levelDifficulty = useMemo(() => getLevelDifficultyProfile(playerLevel), [playerLevel]);
-  const persistProgress = useCallback(async (updates, { silent = false } = {}) => {
-    if (OFFLINE_MODE || !isAuthenticated || !user) {
-      return { success: false, skipped: true };
-    }
+  const persistProgress = useCallback((updates) => {
+    if (OFFLINE_MODE) return;
+    if (!isAuthenticated || !user) return;
 
-    if (permissionDeniedRef.current) {
-      return { success: false, errorCode: 'permission-denied', muted: true };
-    }
+    const sanitized = Object.fromEntries(
+      Object.entries(updates).filter(([, value]) => value !== undefined)
+    );
+    if (Object.keys(sanitized).length === 0) return;
 
-    const entries = Object.entries(updates || {});
-    const sanitizedEntries = entries.filter(([key, value]) => {
-      if (value === undefined) return false;
-      return ALLOWED_PROGRESS_FIELDS.has(key);
-    });
-
-    if (import.meta.env?.DEV) {
-      const ignoredKeys = entries
-        .map(([key]) => key)
-        .filter((key) => !ALLOWED_PROGRESS_FIELDS.has(key));
-      if (ignoredKeys.length > 0) {
-        console.debug('[sync] ignoring unsupported progress fields', ignoredKeys);
-      }
-    }
-
-    if (sanitizedEntries.length === 0) {
-      return { success: true, skipped: true };
-    }
-
-    const sanitized = Object.fromEntries(sanitizedEntries);
-
-    try {
-      const { saveGameProgress } = await import('../firebase/database.js');
-      const result = await saveGameProgress(user.uid, sanitized);
-
-      if (!result?.success && result?.errorCode === 'permission-denied') {
-        permissionDeniedRef.current = true;
-        if (!silent && !permissionWarnedRef.current) {
-          permissionWarnedRef.current = true;
-          setStatusMessage('Playing offline: unable to sync to server (permissions).');
-        }
-      }
-
-      return result ?? { success: true };
-    } catch (error) {
-      const errorCode = error?.code || error?.errorCode;
-      const permissionDenied = errorCode === 'permission-denied';
-
-      if (permissionDenied) {
-        permissionDeniedRef.current = true;
-        if (!silent && !permissionWarnedRef.current) {
-          permissionWarnedRef.current = true;
-          setStatusMessage('Playing offline: unable to sync to server (permissions).');
-        }
-        return { success: false, errorCode: 'permission-denied', error };
-      }
-
-      console.warn('[sync] persistProgress failed', error);
-      if (!silent) {
-        setStatusMessage('Progress saved locally. Reconnecting soon…');
-      }
-      return { success: false, errorCode: errorCode || 'unknown', error };
-    }
-  }, [OFFLINE_MODE, isAuthenticated, user, setStatusMessage]);
+    // Fire-and-forget to avoid blocking UI or crashing on network errors
+    import('../firebase/database.js')
+      .then(({ saveGameProgress }) => {
+        console.debug('[sync] persistProgress start', { uid: user?.uid, ...sanitized });
+        return saveGameProgress(user.uid, sanitized);
+      })
+      .then(() => {
+        console.debug('[sync] persistProgress ok');
+      })
+      .catch((error) => {
+        console.warn('[sync] persistProgress failed', error);
+      });
+  }, [isAuthenticated, user]);
 
 
   const streakRef = useRef(0);
@@ -386,11 +318,6 @@ function FishingGame({
       celebrationTimeoutRef.current = null;
     }
   }, []);
-
-  useEffect(() => {
-    permissionDeniedRef.current = false;
-    permissionWarnedRef.current = false;
-  }, [user?.uid]);
 
   // Sync userProfile with local playerData when user logs in/out
   useEffect(() => {
@@ -460,42 +387,45 @@ function FishingGame({
     // Add to global leaderboard and save progress
     if (score > 0) {
       if (!OFFLINE_MODE && isAuthenticated && user) {
-        // Firebase operations for authenticated users (non-blocking)
-        import('../firebase/database.js')
-          .then(async ({ addToLeaderboard, logGameSession }) => {
-            const leaderboardResult = await addToLeaderboard(user.uid, gameResult, playerData);
-            await logGameSession(user.uid, {
-              score: gameResult.score,
-              catches: gameResult.catches,
-              longestStreak: gameResult.longestStreak,
-              playTime: sessionTime
-            });
+        // Firebase operations for authenticated users
+        try {
+          const { addToLeaderboard, logGameSession } = await import('../firebase/database.js');
 
-            const remotePlayerData = {
-              ...playerData,
-              gamesPlayed: (playerData.gamesPlayed || 0) + 1,
-              totalPlayTime: (playerData.totalPlayTime || 0) + sessionTime,
-              bestScore: Math.max(playerData.bestScore || 0, nextBest),
-              xp: playerData.xp,
-              level: playerData.level
-            };
-            syncPlayerData(remotePlayerData);
-            persistProgress({
-              gamesPlayed: remotePlayerData.gamesPlayed,
-              totalPlayTime: remotePlayerData.totalPlayTime,
-              bestScore: remotePlayerData.bestScore,
-              xp: remotePlayerData.xp,
-              level: remotePlayerData.level
-            });
+          // Add to Firebase leaderboard
+          const leaderboardResult = await addToLeaderboard(user.uid, gameResult, playerData);
 
-            if (leaderboardResult.success) {
-              setStatusMessage(`Game saved! Check the leaderboard to see your ranking!`);
-            }
-          })
-          .catch((error) => {
-            console.error('[endGame] Error saving game to Firebase:', error);
-            setStatusMessage('Game completed but failed to save to server.');
+          // Log game session
+          await logGameSession(user.uid, {
+            score: gameResult.score,
+            catches: gameResult.catches,
+            longestStreak: gameResult.longestStreak,
+            playTime: sessionTime
           });
+
+          const remotePlayerData = {
+            ...playerData,
+            gamesPlayed: (playerData.gamesPlayed || 0) + 1,
+            totalPlayTime: (playerData.totalPlayTime || 0) + sessionTime,
+            bestScore: Math.max(playerData.bestScore || 0, nextBest),
+            xp: playerData.xp,
+            level: playerData.level
+          };
+          syncPlayerData(remotePlayerData);
+          persistProgress({
+            gamesPlayed: remotePlayerData.gamesPlayed,
+            totalPlayTime: remotePlayerData.totalPlayTime,
+            bestScore: remotePlayerData.bestScore,
+            xp: remotePlayerData.xp,
+            level: remotePlayerData.level
+          });
+
+          if (leaderboardResult.success) {
+            setStatusMessage(`Game saved! Check the leaderboard to see your ranking!`);
+          }
+        } catch (error) {
+          console.error('Error saving game to Firebase:', error);
+          setStatusMessage('Game completed but failed to save to server.');
+        }
       } else {
         // localStorage operations for guests
         const leaderboardEntry = addToGlobalLeaderboard(playerData, gameResult);
@@ -630,6 +560,8 @@ function FishingGame({
             totalPurchases: updatedPlayerData.totalPurchases
           });
         }
+
+        writePlayerData(updatedPlayerData);
 
         setScore((value) => value + pointsEarned);
         setTotalCatches((value) => value + 1);

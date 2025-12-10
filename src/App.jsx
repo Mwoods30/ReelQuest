@@ -110,7 +110,7 @@ function AppContent() {
       <div className="scroll-content">
         <div className="logo-section">
           <div className="logo-container">
-            <img src="/Reelquest.png" alt="ReelQuest - Fishing Rod and Fish Logo" loading="lazy" />
+            <img src="/Reelquest.png" alt="ReelQuest - Fishing Rod and Fish Logo" />
           </div>
         </div>
         <div className="title-section">
