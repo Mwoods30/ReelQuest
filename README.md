@@ -5,10 +5,8 @@ ReelQuest is an interactive, browser-based fishing adventure built with React, V
 This project was created for a Software Engineering Final Project and demonstrates requirements gathering, architecture design, implementation, testing, and cloud deployment.
 
 ## 🚀 Live Demo & Project Links
-- **Production App:** https://mwoods30.github.io/ReelQuest/
+- **Production App:** https://reelquest-fishing.web.app
 - **Repository:** https://github.com/Mwoods30/ReelQuest
-- **Trello Board (User Stories + Acceptance Criteria):** _Add link here_
-- **CI/CD & Deployment Documentation:** Included in final submission package
 
 ## 🎮 Core Gameplay Features
 - **Dynamic Fishing Engine:** streak bonuses, XP, leveling, biome-specific fish
