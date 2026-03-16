@@ -152,7 +152,7 @@ function AppContent() {
         </div>
         
         <p className="welcome-text">
-          Welcome to <span className="brand-accent">ReelQuest</span>, one most immersive fishing experience on the web!
+          Welcome to <span className="brand-accent">ReelQuest</span>, the most immersive fishing experience on the web!
           <br />Cast your line, catch <span className="brand-accent-green">rare fish</span>, and climb the leaderboard.
           <br />Built with React and modern web technologies.
         </p>

@@ -650,7 +650,10 @@ function FishingGame({
   );
 
   const castLine = useCallback(() => {
-    if (phase !== PHASES.READY || timeLeft <= 0) return;
+    if ((phase !== PHASES.READY && phase !== PHASES.CELEBRATE) || timeLeft <= 0) return;
+
+    // Allow skipping the celebration animation to cast immediately
+    if (phase === PHASES.CELEBRATE) clearCelebration();
 
     streakRef.current = Math.max(0, streakRef.current);
     setPhase(PHASES.WAITING);
@@ -667,7 +670,7 @@ function FishingGame({
       const fish = pickRandomFish(playerLevel);
       beginFishFight(fish);
     }, biteDelay);
-  }, [phase, timeLeft, beginFishFight, clearBiteTimeout, levelDifficulty, playerLevel]);
+  }, [phase, timeLeft, beginFishFight, clearBiteTimeout, clearCelebration, levelDifficulty, playerLevel]);
 
   const startGame = useCallback(() => {
     cleanupAll();

@@ -61,15 +61,20 @@ export const useGameTimer = (phase, onExpire, duration = 60) => {
     }
   }, []);
 
-  // Handle starting/ending timer based on game phase
+  // Handle starting/ending timer based on game active state.
+  // Using a boolean instead of phase prevents the interval from
+  // restarting on every phase change (ready→waiting→hooked→celebrate→ready),
+  // which caused the timer to drift by up to 1 second per catch.
+  const isActive = phase !== 'idle' && phase !== 'ended';
+
   useEffect(() => {
-    // Reset / idle states don't run timers
-    if (phase === 'idle' || phase === 'ended') {
+    if (!isActive) {
       clearTimer();
       return;
     }
 
-    clearTimer();
+    // Already running — don't create a duplicate interval
+    if (timerRef.current !== null) return;
 
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
@@ -82,7 +87,7 @@ export const useGameTimer = (phase, onExpire, duration = 60) => {
     }, 1000);
 
     return () => clearTimer();
-  }, [phase, clearTimer]);
+  }, [isActive, clearTimer]);
 
   // Fire onExpire EXACTLY once when timer hits zero
   useEffect(() => {
