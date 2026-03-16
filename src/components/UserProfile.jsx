@@ -43,9 +43,9 @@ function UserProfile({ onClose }) {
 
   /** --------------------------- HERO STATS --------------------------- **/
   const heroStats = useMemo(() => [
-    { label: 'Level', value: profile?.level ?? 1, accent: 'emerald' },
-    { label: 'XP', value: profile?.xp ?? 0, accent: 'sky' },
-    { label: 'Currency', value: `💰 ${profile?.currency ?? 0}`, accent: 'amber' }
+    { label: 'Level', value: profile?.level ?? 1, accent: 'emerald', valueColor: '#34d399' },
+    { label: 'XP',    value: (profile?.xp ?? 0).toLocaleString(), accent: 'sky', valueColor: '#38bdf8' },
+    { label: 'Coins', value: (profile?.currency ?? 0).toLocaleString(), accent: 'amber', valueColor: '#fbbf24', prefix: '💰 ' }
   ], [profile]);
 
   /** ---------------------- ACHIEVEMENTS MERGING ---------------------- **/
@@ -191,8 +191,11 @@ function UserProfile({ onClose }) {
           <button className="close-button" onClick={onClose} aria-label="Close profile">×</button>
 
           <div className="profile-identity">
-            <div className="profile-avatar">
-              {getInitials(profile.playerName, user.email)}
+            <div className="profile-avatar-wrap">
+              <div className="profile-avatar">
+                {getInitials(profile.playerName, user.email)}
+              </div>
+              <span className="avatar-level-badge">Lv {profile?.level ?? 1}</span>
             </div>
 
             <div className="identity-meta">
@@ -211,7 +214,9 @@ function UserProfile({ onClose }) {
             {heroStats.map(s => (
               <div key={s.label} className={`hero-stat hero-stat-${s.accent}`}>
                 <span className="hero-stat-label">{s.label}</span>
-                <span className="hero-stat-value">{s.value}</span>
+                <span className="hero-stat-value" style={{ color: s.valueColor }}>
+                  {s.prefix}{s.value}
+                </span>
               </div>
             ))}
           </div>

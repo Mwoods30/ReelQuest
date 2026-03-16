@@ -230,75 +230,78 @@ function AppContent() {
   const AboutScreen = () => (
     <div className={`container${isMobile ? ' container-mobile-about' : ''}`}>
       <div className="scroll-content">
-        <h1 className="title">About ReelQuest</h1>
+        <div className="about-hero">
+          <h1 className="title">About ReelQuest</h1>
+          <p className="subtitle">Cast. Reel. Conquer.</p>
+        </div>
+
         <div className="about-container">
-          <p className="about-text">
-            <span className="brand-accent">ReelQuest</span> is a fast-paced, 60-second fishing challenge built for the web. Cast, reel, and climb the leaderboard while leveling up your fisher through events, quests, and collectibles.
+          <p className="about-text about-lead">
+            <span className="brand-accent">ReelQuest</span> is a fast-paced, 60-second fishing challenge built for the web. Cast your line, land rare fish, and climb the global leaderboard — all in your browser.
           </p>
 
-          <div className="about-section">
-            <h3>Gameplay Loop</h3>
-            <ul>
-              <li>Cast and reel to land fish before the meter drains—streaks boost your score.</li>
-              <li>Runs last 60 seconds; every catch can tip the leaderboard.</li>
-              <li>Ghost races: pick a leaderboard run and race its pace bar live.</li>
-            </ul>
+          <div className="about-features-grid">
+            <div className="about-feature-card">
+              <span className="about-feature-icon">🎮</span>
+              <h4>Gameplay</h4>
+              <p>Cast and reel before the meter drains. Streaks multiply your score — keep the chain alive.</p>
+            </div>
+            <div className="about-feature-card">
+              <span className="about-feature-icon">🏆</span>
+              <h4>Competition</h4>
+              <p>Global leaderboard updated in real time. Race ghost replays of top runs to benchmark yourself.</p>
+            </div>
+            <div className="about-feature-card">
+              <span className="about-feature-icon">📈</span>
+              <h4>Progression</h4>
+              <p>Level up, unlock environments, and buy rod upgrades that change how the game plays.</p>
+            </div>
+            <div className="about-feature-card">
+              <span className="about-feature-icon">🐟</span>
+              <h4>Collection</h4>
+              <p>14 fish species across 4 rarity tiers — from common Bluegill to the legendary Abyss Leviathan.</p>
+            </div>
+            <div className="about-feature-card">
+              <span className="about-feature-icon">🌍</span>
+              <h4>Environments</h4>
+              <p>8 unlockable locations from Crystal Lake to Deep Sea, each with a unique visual theme.</p>
+            </div>
+            <div className="about-feature-card">
+              <span className="about-feature-icon">⚛️</span>
+              <h4>Tech</h4>
+              <p>Built with React 18, Firebase, and Vite. Cloud save syncs your progress across every device.</p>
+            </div>
+          </div>
+
+          <div className="about-section about-team-section">
+            <h3>👥 The Team</h3>
+            <div className="team-grid">
+              {[
+                { name: 'Matthew Woods',  role: 'Developer', accent: 'sky' },
+                { name: 'Ryan McKearnin', role: 'Developer', accent: 'emerald' },
+                { name: 'Tyler Klimczak', role: 'Developer', accent: 'sky' },
+                { name: 'Willow Iloka',   role: 'Developer', accent: 'emerald' },
+              ].map(({ name, role, accent }) => (
+                <div key={name} className={`team-card team-card-${accent}`}>
+                  <div className="team-avatar">{name[0]}</div>
+                  <div className="team-info">
+                    <span className="team-name">{name}</span>
+                    <span className="team-role">{role}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="about-cta">
+            <button className="play-button" onClick={() => setCurrentScreen('game')}>
+              🎣 Start Fishing
+            </button>
           </div>
 
           <div className="about-section">
-            <h3>Events & Competition</h3>
-            <ul>
-              <li>Rotating tournaments with special rules and bonuses (Rare Rush, Streak Madness, more).</li>
-              <li>Global leaderboard with filters for Top Score, Catches, Streaks, Level, Recent.</li>
-              <li>Race ghosts to benchmark yourself against top runs.</li>
-            </ul>
-          </div>
-
-          <div className="about-section">
-            <h3>Progression & Economy</h3>
-            <ul>
-              <li>Daily/weekly quests for coins and skill points; daily contracts to deliver fish for payouts.</li>
-              <li>Shop with environments and upgrades; sell inventory to fund purchases.</li>
-              <li>Skills boost reel power, escape reduction, rare chance, and XP gains.</li>
-            </ul>
-          </div>
-
-          <div className="about-section">
-            <h3>Collection & Cosmetics</h3>
-            <ul>
-              <li>Fish Compendium tracks every species, catch counts, and best sizes.</li>
-              <li>Cosmetic skins re-theme the waters; pick your vibe without pay-to-win.</li>
-              <li>Achievements, stats, and player profile keep long-term progress visible.</li>
-            </ul>
-          </div>
-
-          <div className="about-section">
-            <h3>Platform & Tech</h3>
-            <ul>
-              <li>Built with <span className="brand-accent">React</span> and modern web tooling for desktop and mobile.</li>
-              <li>Realtime-friendly leaderboard and persistence (sign in to sync across devices).</li>
-              <li>Responsive navigation with quick access to Play, Home, About, and Profile.</li>
-            </ul>
-          </div>
-
-          <div className="about-section">
-            <h3>Team</h3>
-            <p className="about-text">
-              <strong>Developed by:</strong> <span className="brand-accent">Matthew Woods</span>, <span className="brand-accent-green">Ryan McKearnin</span>, <span className="brand-accent">Tyler Klimczak</span>, <span className="brand-accent-green">Willow Iloka</span>
-            </p>
-          </div>
-
-          <p className="about-text">
-            Ready to fish? Jump into the Play tab, claim your quests, and set a new tournament record.
-          </p>
-
-          <div className="about-section">
-            <h3>Trademark & Credits</h3>
-            <p className="about-text">
-              ReelQuest (TM) and the ReelQuest logo are trademarks of the ReelQuest team. All other trademarks, logos, and brands are the property of their respective owners.
-            </p>
             <p className="about-copyright-text">
-              © 2025 ReelQuest . All rights reserved.
+              ReelQuest™ and the ReelQuest logo are trademarks of the ReelQuest team. © 2025 ReelQuest. All rights reserved.
             </p>
           </div>
         </div>
