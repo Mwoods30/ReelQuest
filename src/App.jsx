@@ -115,8 +115,15 @@ function AppContent() {
         </div>
         <div className="title-section">
           <h1 className="title">ReelQuest</h1>
+          <p className="subtitle">Cast. Reel. Conquer.</p>
         </div>
-        
+
+        <div className="hero-badges">
+          <span className="hero-badge">⚡ 60 Second Rounds</span>
+          <span className="hero-badge">🐟 14 Fish Species</span>
+          <span className="hero-badge">🏆 Global Leaderboard</span>
+        </div>
+
         {/* User Status Section */}
         <div className="user-status-section">
           {isAuthenticated ? (
@@ -157,7 +164,7 @@ function AppContent() {
           <br />Built with React and modern web technologies.
         </p>
         
-        <div className="features-container">
+        <div className="features-container features-grid">
           <div className="feature-item">
             <p className="feature-text">🎮 Play a realistic <span className="brand-accent">fishing game</span> in your browser</p>
           </div>
@@ -176,7 +183,7 @@ function AppContent() {
           className="play-button"
           onClick={() => setCurrentScreen('game')}
         >
-          Play Now
+          🎣 Start Fishing
         </button>
         
         {!isAuthenticated && (
@@ -184,7 +191,7 @@ function AppContent() {
             className="auth-button"
             onClick={() => setShowAuth(true)}
           >
-            Sign In / Register
+            🌟 Sign In to Save Progress
           </button>
         )}
       </div>

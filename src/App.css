@@ -915,3 +915,53 @@ html {
     transition-duration: 0.01ms !important;
   }
 }
+
+.subtitle {
+  margin: -1rem 0 0;
+  text-align: center;
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  color: rgba(148, 163, 184, 0.85);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.65rem;
+}
+
+.hero-badge {
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.65);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(203, 213, 225, 0.9);
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(10px);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (max-width: 520px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.features-grid .feature-item:nth-child(1),
+.features-grid .feature-item:nth-child(4) {
+  border-left: 3px solid rgba(56, 189, 248, 0.6);
+}
+
+.features-grid .feature-item:nth-child(2),
+.features-grid .feature-item:nth-child(3) {
+  border-left: 3px solid rgba(52, 211, 153, 0.6);
+}

@@ -2100,3 +2100,94 @@
     margin-top: 14px;
   }
 }
+
+/* XP bar in player card */
+.player-xp-bar-wrap {
+  margin-top: 10px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.1);
+  overflow: hidden;
+}
+.player-xp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #38bdf8, #34d399);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+.player-xp-label {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.72rem;
+  color: rgba(148, 163, 184, 0.75);
+  text-align: right;
+}
+
+/* Rarity-colored reel fill */
+.reel-fill-common    { background: linear-gradient(90deg, #6b7280, #9ca3af); }
+.reel-fill-uncommon  { background: linear-gradient(90deg, #22c55e, #86efac); }
+.reel-fill-rare      { background: linear-gradient(90deg, #3b82f6, #93c5fd); }
+.reel-fill-legendary { background: linear-gradient(90deg, #f59e0b, #fde68a); }
+
+/* Polished game-over stat pills */
+.final-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 16px 0;
+}
+.stat-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  gap: 4px;
+}
+.stat-pill-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(148, 163, 184, 0.75);
+}
+.stat-pill-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #f0f9ff;
+}
+.score-value-big {
+  font-size: 2rem;
+  background: linear-gradient(135deg, #38bdf8, #34d399);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.new-record {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fbbf24;
+  margin-bottom: 8px;
+  animation: pulse-gold 1.5s ease-in-out infinite;
+}
+@keyframes pulse-gold {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.04); }
+}
+.game-over-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Streak hot animation */
+.streak-hot {
+  color: #fb923c;
+  animation: streak-pulse 0.6s ease-in-out infinite alternate;
+}
+@keyframes streak-pulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.1); }
+}

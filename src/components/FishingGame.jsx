@@ -881,6 +881,17 @@ function FishingGame({
                   <span>💰 {playerData.currency}</span>
                   <span>🏆 {playerStats.bestScore}</span>
                 </div>
+                <div className="player-xp-bar-wrap">
+                  <div
+                    className="player-xp-bar-fill"
+                    style={{
+                      width: `${Math.min(100, ((playerData?.xp || 0) / (LEVEL_XP_REQUIREMENTS[playerData?.level || 1] || 1)) * 100)}%`
+                    }}
+                  />
+                </div>
+                <span className="player-xp-label">
+                  {playerData?.xp || 0} / {LEVEL_XP_REQUIREMENTS[playerData?.level || 1] || '—'} XP
+                </span>
                 <div className="player-environment" title="Current environment">
                   <span className="environment-emoji">{activeEnvironment.emoji || '🌊'}</span>
                   <div className="environment-text">
@@ -923,7 +934,10 @@ function FishingGame({
                 <div className="menu-text">
                   <h4>Leaderboard</h4>
                   <p>Global rankings & stats</p>
-                  <span className="menu-badge">#{globalLeaderboard.findIndex(s => s.playerName === playerData.playerName) + 1 || 'Unranked'}</span>
+                  {(() => {
+                    const rank = globalLeaderboard.findIndex(s => s.playerName === playerData.playerName);
+                    return <span className="menu-badge">{rank >= 0 ? `#${rank + 1}` : 'Unranked'}</span>;
+                  })()}
                 </div>
               </button>
 
@@ -1042,7 +1056,7 @@ function FishingGame({
               <div className="reel-progress-label">Tap reel to fill the meter!</div>
               <div className="reel-progress-bar">
                 <div
-                  className="reel-progress-fill"
+                  className={`reel-progress-fill reel-fill-${currentFish.rarity.toLowerCase()}`}
                   style={{ width: `${Math.min(100, Math.max(0, reelProgress))}%` }}
                 />
               </div>
@@ -1078,20 +1092,33 @@ function FishingGame({
 
         {phase === PHASES.ENDED ? (
           <div className="game-over" role="status">
-            <div className="game-over-title">Time&apos;s Up!</div>
+            <div className="game-over-title">⏱ Time&apos;s Up!</div>
             <div className="final-stats">
-              <p>
-                Score: <strong>{score}</strong>
-              </p>
-              <p>
-                Total Catches: <strong>{totalCatches}</strong>
-              </p>
-              <p>
-                Longest Streak: <strong>{longestStreak}</strong>
-              </p>
-              {score >= bestScore ? <p className="new-record">New personal best!</p> : null}
+              <div className="stat-pill">
+                <span className="stat-pill-label">Score</span>
+                <span className="stat-pill-value score-value-big">{score}</span>
+              </div>
+              <div className="stat-pill">
+                <span className="stat-pill-label">Catches</span>
+                <span className="stat-pill-value">{totalCatches}</span>
+              </div>
+              <div className="stat-pill">
+                <span className="stat-pill-label">Best Streak</span>
+                <span className="stat-pill-value">{longestStreak}x</span>
+              </div>
+              <div className="stat-pill">
+                <span className="stat-pill-label">Best Ever</span>
+                <span className="stat-pill-value">{Math.max(bestScore, score)}</span>
+              </div>
             </div>
+            {score >= bestScore && score > 0 ? (
+              <div className="new-record">🏆 New Personal Best!</div>
+            ) : null}
+            {statusMessage ? <p className="status-message">{statusMessage}</p> : null}
             <div className="game-over-actions">
+              <button className="play-again-button" onClick={startGame}>
+                🎣 Fish Again
+              </button>
               <button className="home-button" onClick={returnToHome}>
                 🏠 Home
               </button>
