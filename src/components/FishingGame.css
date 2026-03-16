@@ -2191,3 +2191,315 @@
   from { transform: scale(1); }
   to { transform: scale(1.1); }
 }
+
+/* -------------------------------------------------------
+   Waiting / Bobber State
+-------------------------------------------------------- */
+
+.waiting-state {
+  animation: card-pop-in 0.25s ease-out both;
+}
+
+.bobber-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 12px;
+  height: 56px;
+}
+
+.bobber {
+  font-size: 2rem;
+  animation: bobber-dip 1.4s ease-in-out infinite;
+  display: block;
+  filter: drop-shadow(0 6px 14px rgba(239, 68, 68, 0.5));
+}
+
+@keyframes bobber-dip {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  45%       { transform: translateY(10px) rotate(4deg); }
+  55%       { transform: translateY(10px) rotate(4deg); }
+}
+
+.bobber-ripple {
+  position: absolute;
+  bottom: 2px;
+  width: 36px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid rgba(56, 189, 248, 0.45);
+  animation: ripple-out 1.4s ease-in-out infinite;
+}
+
+@keyframes ripple-out {
+  0%   { transform: scale(0.6); opacity: 0.8; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+.waiting-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.waiting-hint {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: rgba(148, 163, 184, 0.75);
+}
+
+/* -------------------------------------------------------
+   Hooked State — urgency
+-------------------------------------------------------- */
+
+.hooked-state {
+  border-color: rgba(239, 68, 68, 0.7) !important;
+  box-shadow:
+    0 28px 56px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(239, 68, 68, 0.25),
+    0 0 28px rgba(239, 68, 68, 0.2) !important;
+  animation: card-pop-in 0.2s ease-out both;
+}
+
+.hooked-shake {
+  display: inline-block;
+  font-size: 2.8rem;
+  animation: fish-shake 0.45s ease-in-out infinite;
+}
+
+@keyframes fish-shake {
+  0%, 100% { transform: rotate(-6deg) scale(1);   }
+  25%       { transform: rotate( 6deg) scale(1.05); }
+  50%       { transform: rotate(-4deg) scale(1);   }
+  75%       { transform: rotate( 4deg) scale(1.03); }
+}
+
+/* -------------------------------------------------------
+   Rarity badge (used in hooked + celebrate)
+-------------------------------------------------------- */
+
+.fish-rarity-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.rarity-common    { background: rgba(148,163,184,0.18); color: #94a3b8; border: 1px solid rgba(148,163,184,0.3); }
+.rarity-uncommon  { background: rgba(74,222,128,0.15);  color: #4ade80; border: 1px solid rgba(74,222,128,0.35); }
+.rarity-rare      { background: rgba(96,165,250,0.15);  color: #60a5fa; border: 1px solid rgba(96,165,250,0.35); }
+.rarity-legendary { background: rgba(251,191,36,0.18);  color: #fbbf24; border: 1px solid rgba(251,191,36,0.45); }
+
+/* Rarity border on caught card */
+.rarity-border-common    { border-color: rgba(148,163,184,0.55) !important; }
+.rarity-border-uncommon  { border-color: rgba(74,222,128,0.65)  !important; }
+.rarity-border-rare      { border-color: rgba(96,165,250,0.65)  !important; }
+.rarity-border-legendary {
+  border-color: rgba(251,191,36,0.75) !important;
+  box-shadow: 0 28px 56px rgba(0,0,0,0.5), 0 0 32px rgba(251,191,36,0.25) !important;
+}
+
+/* -------------------------------------------------------
+   Celebrate / Caught pop-in
+-------------------------------------------------------- */
+
+.celebrate-pop {
+  animation: card-pop-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.catch-bounce {
+  display: inline-block;
+  font-size: 3rem;
+  animation: catch-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes catch-pop {
+  0%   { transform: scale(0.4) rotate(-15deg); opacity: 0; }
+  70%  { transform: scale(1.15) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg);   opacity: 1; }
+}
+
+@keyframes card-pop-in {
+  from { opacity: 0; transform: translate(-50%, -46%); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+/* -------------------------------------------------------
+   Instructions redesign
+-------------------------------------------------------- */
+
+.instructions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.instructions-header h3 {
+  margin: 0 0 4px;
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.instructions-subtitle {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--rq-text-muted);
+}
+
+.tips-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+@media (max-width: 600px) {
+  .tips-grid { grid-template-columns: 1fr; }
+}
+
+.tip-card {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(148,163,184,0.15);
+}
+
+.tip-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.tip-text {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--rq-text-secondary);
+}
+
+.fish-guide h4 {
+  margin: 0 0 14px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.fish-guide-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fish-rarity-group {
+  border-radius: 14px;
+  border: 1px solid rgba(148,163,184,0.2);
+  overflow: hidden;
+}
+
+.fish-rarity-label {
+  padding: 5px 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.fish-rarity-group .fish-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1px;
+  background: rgba(148,163,184,0.08);
+}
+
+.fish-rarity-group .fish-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(15, 23, 42, 0.85);
+}
+
+.fish-item-name {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.fish-item-stats {
+  display: block;
+  font-size: 0.7rem;
+  margin-top: 2px;
+}
+
+/* -------------------------------------------------------
+   Leaderboard podium
+-------------------------------------------------------- */
+
+.podium-section {
+  margin-bottom: 20px;
+}
+
+.podium-section h4 {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--rq-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.podium-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.podium-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 10px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(148,163,184,0.18);
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.podium-card:hover { transform: translateY(-2px); }
+
+.podium-1 { border-color: rgba(251,191,36,0.55); background: rgba(251,191,36,0.06); }
+.podium-2 { border-color: rgba(148,163,184,0.45); background: rgba(148,163,184,0.05); }
+.podium-3 { border-color: rgba(205,127,50,0.45);  background: rgba(205,127,50,0.05);  }
+.podium-me { outline: 2px solid rgba(56,189,248,0.55); }
+
+.podium-medal { font-size: 1.6rem; }
+.podium-name  { font-size: 0.8rem; font-weight: 700; color: #e2e8f0; word-break: break-word; }
+.podium-score { font-size: 1.3rem; font-weight: 800; color: #f0f9ff; }
+.podium-meta  { font-size: 0.68rem; color: var(--rq-text-muted); }
+
+.my-rank-badge {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.82rem;
+  color: rgba(56,189,248,0.9);
+  background: rgba(56,189,248,0.08);
+  border: 1px solid rgba(56,189,248,0.25);
+  border-radius: 999px;
+  padding: 4px 14px;
+}
+
+.my-rank-badge strong { color: #38bdf8; }
+
+/* leaderboard row tweak */
+.leaderboard-entry { gap: 12px; }
+.leaderboard-entry .catches { font-size: 0.72rem; color: var(--rq-text-muted); }

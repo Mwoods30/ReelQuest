@@ -1034,22 +1034,23 @@ function FishingGame({
         {isPlaying ? <div className="fishing-line" aria-hidden="true" /> : null}
 
         {phase === PHASES.WAITING ? (
-          <div className="current-fish" role="status">
-            <div className="fish-info">
-              <span className="fish-emoji">🎣</span>
-              <span className="fish-name">Something is nibbling…</span>
+          <div className="current-fish waiting-state" role="status">
+            <div className="bobber-wrap" aria-hidden="true">
+              <span className="bobber">🔴</span>
+              <span className="bobber-ripple" />
             </div>
-            <p>Stay ready! Reel as soon as the fish bites.</p>
+            <span className="fish-name waiting-text">Waiting for a bite…</span>
+            <p className="waiting-hint">Stay ready — reel the instant it strikes!</p>
           </div>
         ) : null}
 
         {phase === PHASES.HOOKED && currentFish ? (
-          <div className="current-fish">
+          <div className="current-fish hooked-state">
             <div className="fish-info">
-              <span className="fish-emoji">{currentFish.emoji}</span>
+              <span className="fish-emoji hooked-shake">{currentFish.emoji}</span>
               <span className="fish-name">{currentFish.name}</span>
-              <span className="fish-points">
-                {currentFish.points} pts • {currentFish.rarity}
+              <span className={`fish-rarity-badge rarity-${currentFish.rarity.toLowerCase()}`}>
+                {currentFish.rarity} · {currentFish.points} pts
               </span>
             </div>
             <div className="reel-progress-container">
@@ -1065,9 +1066,10 @@ function FishingGame({
         ) : null}
 
         {phase === PHASES.CELEBRATE && lastCatch ? (
-          <div className="caught-fish" role="status">
-            <span className="caught-emoji">{lastCatch.emoji}</span>
+          <div className={`caught-fish celebrate-pop rarity-border-${lastCatch.rarity.toLowerCase()}`} role="status">
+            <span className="caught-emoji catch-bounce">{lastCatch.emoji}</span>
             <span className="caught-name">{lastCatch.name}</span>
+            <span className={`fish-rarity-badge rarity-${lastCatch.rarity.toLowerCase()}`}>{lastCatch.rarity}</span>
             <div className="caught-rewards">
               <span className="caught-points">
                 +{lastCatch.pointsEarned} pts
